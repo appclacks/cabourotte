@@ -58,6 +58,18 @@ func (c *Component) Stop() error {
 	return nil
 }
 
+func (c *Component) removeCheck(identifier string) error {
+	if existingCheck, ok := c.Healthchecks[identifier]; ok {
+		existingCheck.LogInfo("Stopping healthcheck")
+		err := existingCheck.Stop()
+		if err != nil {
+			return errors.Wrapf(err, "Fail to stop healthcheck %s", existingCheck.Identifier())
+		}
+		delete(c.Healthchecks, identifier)
+	}
+	return nil
+}
+
 // AddCheck add an healthcheck to the component and starts it.
 func (c *Component) AddCheck(healthcheck Healthcheck) error {
 	err := healthcheck.Initialize()
@@ -67,10 +79,11 @@ func (c *Component) AddCheck(healthcheck Healthcheck) error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
-	if existingCheck, ok := c.Healthchecks[healthcheck.Identifier()]; ok {
-		healthcheck.LogInfo("The healthcheck already exists and will be replaced")
-		existingCheck.Stop()
-		delete(c.Healthchecks, healthcheck.Identifier())
+	// verifies if the healthcheck already exists, and removes it if needed.
+	// Updating an healthcheck is removing the old one and adding the new one.
+	err = c.removeCheck(healthcheck.Identifier())
+	if err != nil {
+		return errors.Wrapf(err, "Fail to stop existing healthcheck %s", healthcheck.Identifier())
 	}
 	err = healthcheck.Start()
 	if err != nil {
@@ -78,4 +91,11 @@ func (c *Component) AddCheck(healthcheck Healthcheck) error {
 	}
 	c.Healthchecks[healthcheck.Identifier()] = healthcheck
 	return nil
+}
+
+// RemoveCheck Removes an healthchec
+func (c *Component) RemoveCheck(identifier string) error {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	return c.removeCheck(identifier)
 }
