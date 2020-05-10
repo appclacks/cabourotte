@@ -1,6 +1,8 @@
 package healthcheck
 
 import (
+	"sync"
+
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -13,6 +15,7 @@ type Healthcheck interface {
 	Stop() error
 	Execute() error
 	LogDebug(message string)
+	LogInfo(message string)
 	LogError(err error, message string)
 }
 
@@ -20,6 +23,7 @@ type Healthcheck interface {
 type Component struct {
 	Logger       *zap.Logger
 	Healthchecks map[string]Healthcheck
+	lock         sync.RWMutex
 }
 
 // New creates a new Healthcheck component
@@ -54,6 +58,24 @@ func (c *Component) Stop() error {
 	return nil
 }
 
-func (c *Component) AddCheck(Healthcheck *Healthcheck) error {
+// AddCheck add an healthcheck to the component and starts it.
+func (c *Component) AddCheck(healthcheck Healthcheck) error {
+	err := healthcheck.Initialize()
+	if err != nil {
+		return errors.Wrapf(err, "Fail to initialize healthcheck %s", healthcheck.Identifier())
+	}
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	if existingCheck, ok := c.Healthchecks[healthcheck.Identifier()]; ok {
+		healthcheck.LogInfo("The healthcheck already exists and will be replaced")
+		existingCheck.Stop()
+		delete(c.Healthchecks, healthcheck.Identifier())
+	}
+	err = healthcheck.Start()
+	if err != nil {
+		return errors.Wrapf(err, "Fail to start healthcheck %s", healthcheck.Identifier())
+	}
+	c.Healthchecks[healthcheck.Identifier()] = healthcheck
 	return nil
 }

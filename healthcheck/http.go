@@ -77,8 +77,8 @@ func (h *HTTPHealthcheck) Initialize() error {
 // Start an Healthcheck, which will be periodically executed after a
 //  given interval of time
 func (h *HTTPHealthcheck) Start() error {
+	h.LogInfo("Starting healthcheck")
 	h.Tick = time.NewTicker(time.Duration(h.config.Interval))
-	h.buildURL()
 	h.t.Go(func() error {
 		for {
 			select {
@@ -94,6 +94,7 @@ func (h *HTTPHealthcheck) Start() error {
 
 // Stop an Healthcheck
 func (h *HTTPHealthcheck) Stop() error {
+	h.LogInfo("Stopping healthcheck")
 	h.Tick.Stop()
 	h.t.Kill(nil)
 	h.t.Wait()
@@ -124,6 +125,14 @@ func (h *HTTPHealthcheck) LogError(err error, message string) {
 // LogDebug logs a message with context
 func (h *HTTPHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
+		zap.String("target", h.config.Target),
+		zap.Uint("port", h.config.Port),
+		zap.String("name", h.config.Name))
+}
+
+// LogInfo logs a message with context
+func (h *HTTPHealthcheck) LogInfo(message string) {
+	h.Logger.Info(message,
 		zap.String("target", h.config.Target),
 		zap.Uint("port", h.config.Port),
 		zap.String("name", h.config.Name))
