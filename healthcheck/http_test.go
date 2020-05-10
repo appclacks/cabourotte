@@ -55,7 +55,7 @@ func TestIssuccessfulFailure(t *testing.T) {
 	}
 }
 
-func TestExecuteSuccess(t *testing.T) {
+func TestHTTPExecuteSuccess(t *testing.T) {
 	count := 0
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		count++
@@ -88,7 +88,7 @@ func TestExecuteSuccess(t *testing.T) {
 	}
 }
 
-func TestExecuteFailure(t *testing.T) {
+func TestHTTPExecuteFailure(t *testing.T) {
 	count := 0
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		count++
