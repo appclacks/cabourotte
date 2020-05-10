@@ -60,6 +60,8 @@ func (c *Component) Stop() error {
 	return nil
 }
 
+// removeCheck removes an healthcheck from the component.
+// The function is *not* thread-safe.
 func (c *Component) removeCheck(identifier string) error {
 	if existingCheck, ok := c.Healthchecks[identifier]; ok {
 		existingCheck.LogInfo("Stopping healthcheck")
