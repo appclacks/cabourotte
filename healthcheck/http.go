@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"time"
 
@@ -56,7 +57,11 @@ func (h *HTTPHealthcheck) buildURL() {
 	if h.config.Protocol == HTTPS {
 		protocol = "https"
 	}
-	h.URL = fmt.Sprintf("%s://%s:%d%s", protocol, h.config.Target, h.config.Port, h.config.Path)
+	h.URL = fmt.Sprintf(
+		"%s://%s%s",
+		protocol,
+		net.JoinHostPort(h.config.Target, fmt.Sprintf("%d", h.config.Port)),
+		h.config.Path)
 }
 
 // Start an Healthcheck, which will be periodically executed after a

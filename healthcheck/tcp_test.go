@@ -1,6 +1,7 @@
 package healthcheck
 
 import (
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -40,6 +41,38 @@ func TestTCPExecuteSuccess(t *testing.T) {
 		config: &TCPHealthcheckConfiguration{
 			Port:    uint(port),
 			Target:  "127.0.0.1",
+			Timeout: time.Second * 2,
+		},
+	}
+	h.buildURL()
+	err = h.Execute()
+	if err != nil {
+		t.Errorf("healthcheck error :\n%v", err)
+	}
+}
+func TestTCPv6ExecuteSuccess(t *testing.T) {
+	l, err := net.Listen("tcp", "[::1]:0")
+	if err != nil {
+		t.Error("fail to listen :\n/v", err)
+	}
+	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	ts.Listener.Close()
+	ts.Listener = l
+	ts.Start()
+	defer ts.Close()
+
+	splitted := strings.Split(ts.URL, ":")
+	port, err := strconv.ParseUint(splitted[len(splitted)-1], 10, 16)
+	if err != nil {
+		t.Errorf("error getting HTTP server port :\n%v", err)
+	}
+	h := TCPHealthcheck{
+		Logger: zap.NewExample(),
+		config: &TCPHealthcheckConfiguration{
+			Port:    uint(port),
+			Target:  "::1",
 			Timeout: time.Second * 2,
 		},
 	}

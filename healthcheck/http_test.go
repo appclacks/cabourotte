@@ -1,6 +1,7 @@
 package healthcheck
 
 import (
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -73,6 +74,47 @@ func TestHTTPExecuteSuccess(t *testing.T) {
 			ValidStatus: []uint{200},
 			Port:        uint(port),
 			Target:      "127.0.0.1",
+			Protocol:    HTTP,
+			Path:        "/",
+			Timeout:     time.Second * 2,
+		},
+	}
+	h.buildURL()
+	err = h.Execute()
+	if err != nil {
+		t.Errorf("healthcheck error :\n%v", err)
+	}
+	if count != 1 {
+		t.Errorf("The request counter is invalid")
+	}
+}
+
+func TestHTTPv6ExecuteSuccess(t *testing.T) {
+	count := 0
+	l, err := net.Listen("tcp", "[::1]:0")
+	if err != nil {
+		t.Error("fail to listen :\n/v", err)
+	}
+	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		count++
+		w.WriteHeader(http.StatusOK)
+	}))
+	ts.Listener.Close()
+	ts.Listener = l
+	ts.Start()
+	defer ts.Close()
+
+	splitted := strings.Split(ts.URL, ":")
+	port, err := strconv.ParseUint(splitted[len(splitted)-1], 10, 16)
+	if err != nil {
+		t.Errorf("error getting HTTP server port :\n%v", err)
+	}
+	h := HTTPHealthcheck{
+		Logger: zap.NewExample(),
+		config: &HTTPHealthcheckConfiguration{
+			ValidStatus: []uint{200},
+			Port:        uint(port),
+			Target:      "::1",
 			Protocol:    HTTP,
 			Path:        "/",
 			Timeout:     time.Second * 2,

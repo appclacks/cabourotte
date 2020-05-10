@@ -38,7 +38,7 @@ type TCPHealthcheck struct {
 // buildURL build the target URL for the TCP healthcheck, depending of its
 // configuration
 func (h *TCPHealthcheck) buildURL() {
-	h.URL = fmt.Sprintf("%s:%d", h.config.Target, h.config.Port)
+	h.URL = net.JoinHostPort(h.config.Target, fmt.Sprintf("%d", h.config.Port))
 }
 
 // Start an Healthcheck, which will be periodically executed after a
