@@ -68,6 +68,7 @@ func TestExecuteSuccess(t *testing.T) {
 		t.Errorf("error getting HTTP server port :\n%v", err)
 	}
 	h := HTTPHealthcheck{
+		Logger: zap.NewExample(),
 		config: &HTTPHealthcheckConfiguration{
 			ValidStatus: []uint{200},
 			Port:        uint(port),

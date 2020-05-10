@@ -106,8 +106,16 @@ func (h *HTTPHealthcheck) logError(err error, message string) {
 		zap.String("id", h.ID))
 }
 
+// logError logs a message with context
+func (h *HTTPHealthcheck) logInfo(message string) {
+	h.Logger.Info(message,
+		zap.String("name", h.config.Name),
+		zap.String("id", h.ID))
+}
+
 // Execute executes an healthcheck on the given target
 func (h *HTTPHealthcheck) Execute() error {
+	h.logInfo("start executing healthcheck")
 	ctx := h.t.Context(nil)
 	req, err := http.NewRequest("GET", h.URL, nil)
 	if err != nil {
