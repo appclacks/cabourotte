@@ -64,6 +64,12 @@ func (h *HTTPHealthcheck) buildURL() {
 		h.config.Path)
 }
 
+// Initialize the healthcheck.
+func (h *HTTPHealthcheck) Initialize() error {
+	h.buildURL()
+	return nil
+}
+
 // Start an Healthcheck, which will be periodically executed after a
 //  given interval of time
 func (h *HTTPHealthcheck) Start() error {
@@ -102,8 +108,8 @@ func (h *HTTPHealthcheck) isSuccessful(response *http.Response) bool {
 	return false
 }
 
-// logError logs an error with context
-func (h *HTTPHealthcheck) logError(err error, message string) {
+// LogError logs an error with context
+func (h *HTTPHealthcheck) LogError(err error, message string) {
 	h.Logger.Error(err.Error(),
 		zap.String("extra", message),
 		zap.String("target", h.config.Target),
@@ -112,8 +118,8 @@ func (h *HTTPHealthcheck) logError(err error, message string) {
 		zap.String("id", h.ID))
 }
 
-// logError logs a message with context
-func (h *HTTPHealthcheck) logDebug(message string) {
+// LogDebug logs a message with context
+func (h *HTTPHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
 		zap.String("target", h.config.Target),
 		zap.Uint("port", h.config.Port),
@@ -123,7 +129,7 @@ func (h *HTTPHealthcheck) logDebug(message string) {
 
 // Execute executes an healthcheck on the given target
 func (h *HTTPHealthcheck) Execute() error {
-	h.logDebug("start executing healthcheck")
+	h.LogDebug("start executing healthcheck")
 	ctx := h.t.Context(nil)
 	req, err := http.NewRequest("GET", h.URL, nil)
 	if err != nil {

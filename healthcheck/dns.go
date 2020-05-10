@@ -30,6 +30,11 @@ type DNSHealthcheck struct {
 	t    tomb.Tomb
 }
 
+// Initialize the healthcheck.
+func (h *DNSHealthcheck) Initialize() error {
+	return nil
+}
+
 // Start an Healthcheck, which will be periodically executed after a
 // given interval of time
 func (h *DNSHealthcheck) Start() error {
@@ -48,7 +53,7 @@ func (h *DNSHealthcheck) Start() error {
 }
 
 // logError logs an error with context
-func (h *DNSHealthcheck) logError(err error, message string) {
+func (h *DNSHealthcheck) LogError(err error, message string) {
 	h.Logger.Error(err.Error(),
 		zap.String("extra", message),
 		zap.String("domain", h.config.Domain),
@@ -57,7 +62,7 @@ func (h *DNSHealthcheck) logError(err error, message string) {
 }
 
 // logError logs a message with context
-func (h *DNSHealthcheck) logDebug(message string) {
+func (h *DNSHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
 		zap.String("domain", h.config.Domain),
 		zap.String("name", h.config.Name),
@@ -75,7 +80,7 @@ func (h *DNSHealthcheck) Stop() error {
 
 // Execute executes an healthcheck on the given domain
 func (h *DNSHealthcheck) Execute() error {
-	h.logDebug("start executing healthcheck")
+	h.LogDebug("start executing healthcheck")
 	_, err := net.LookupIP(h.config.Domain)
 	if err != nil {
 		return errors.Wrapf(err, "Fail to lookup IP for domain")

@@ -41,6 +41,12 @@ func (h *TCPHealthcheck) buildURL() {
 	h.URL = net.JoinHostPort(h.config.Target, fmt.Sprintf("%d", h.config.Port))
 }
 
+// Initialize the healthcheck.
+func (h *TCPHealthcheck) Initialize() error {
+	h.buildURL()
+	return nil
+}
+
 // Start an Healthcheck, which will be periodically executed after a
 // given interval of time
 func (h *TCPHealthcheck) Start() error {
@@ -69,7 +75,7 @@ func (h *TCPHealthcheck) Stop() error {
 }
 
 // logError logs an error with context
-func (h *TCPHealthcheck) logError(err error, message string) {
+func (h *TCPHealthcheck) LogError(err error, message string) {
 	h.Logger.Error(err.Error(),
 		zap.String("extra", message),
 		zap.String("target", h.config.Target),
@@ -78,8 +84,8 @@ func (h *TCPHealthcheck) logError(err error, message string) {
 		zap.String("id", h.ID))
 }
 
-// logError logs a message with context
-func (h *TCPHealthcheck) logDebug(message string) {
+// logDebug logs a message with context
+func (h *TCPHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
 		zap.String("target", h.config.Target),
 		zap.Uint("port", h.config.Port),
@@ -89,7 +95,7 @@ func (h *TCPHealthcheck) logDebug(message string) {
 
 // Execute executes an healthcheck on the given target
 func (h *TCPHealthcheck) Execute() error {
-	h.logDebug("start executing healthcheck")
+	h.LogDebug("start executing healthcheck")
 	ctx := h.t.Context(nil)
 	dialer := net.Dialer{}
 	timeoutCtx, cancel := context.WithTimeout(ctx, h.config.Timeout)
