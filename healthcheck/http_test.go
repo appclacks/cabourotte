@@ -144,7 +144,6 @@ func TestHTTPExecuteFailure(t *testing.T) {
 	}
 	h := HTTPHealthcheck{
 		Logger: zap.NewExample(),
-		ID:     "bar",
 		config: &HTTPHealthcheckConfiguration{
 			Name:        "foo",
 			ValidStatus: []uint{200},

@@ -22,7 +22,6 @@ type DNSHealthcheckConfiguration struct {
 // DNSHealthcheck defines an HTTP healthcheck
 type DNSHealthcheck struct {
 	Logger *zap.Logger
-	ID     string
 	config *DNSHealthcheckConfiguration
 	URL    string
 
@@ -33,6 +32,11 @@ type DNSHealthcheck struct {
 // Initialize the healthcheck.
 func (h *DNSHealthcheck) Initialize() error {
 	return nil
+}
+
+// Identifier returns the healthcheck identifier.
+func (h *DNSHealthcheck) Identifier() string {
+	return h.config.Name
 }
 
 // Start an Healthcheck, which will be periodically executed after a
@@ -57,16 +61,14 @@ func (h *DNSHealthcheck) LogError(err error, message string) {
 	h.Logger.Error(err.Error(),
 		zap.String("extra", message),
 		zap.String("domain", h.config.Domain),
-		zap.String("name", h.config.Name),
-		zap.String("id", h.ID))
+		zap.String("name", h.config.Name))
 }
 
 // logError logs a message with context
 func (h *DNSHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
 		zap.String("domain", h.config.Domain),
-		zap.String("name", h.config.Name),
-		zap.String("id", h.ID))
+		zap.String("name", h.config.Name))
 }
 
 // Stop an Healthcheck

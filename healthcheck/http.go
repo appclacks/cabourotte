@@ -42,7 +42,6 @@ type HTTPHealthcheckConfiguration struct {
 // HTTPHealthcheck defines an HTTP healthcheck
 type HTTPHealthcheck struct {
 	Logger *zap.Logger
-	ID     string
 	config *HTTPHealthcheckConfiguration
 	URL    string
 
@@ -62,6 +61,11 @@ func (h *HTTPHealthcheck) buildURL() {
 		protocol,
 		net.JoinHostPort(h.config.Target, fmt.Sprintf("%d", h.config.Port)),
 		h.config.Path)
+}
+
+// Identifier returns the healthcheck identifier.
+func (h *HTTPHealthcheck) Identifier() string {
+	return h.config.Name
 }
 
 // Initialize the healthcheck.
@@ -114,8 +118,7 @@ func (h *HTTPHealthcheck) LogError(err error, message string) {
 		zap.String("extra", message),
 		zap.String("target", h.config.Target),
 		zap.Uint("port", h.config.Port),
-		zap.String("name", h.config.Name),
-		zap.String("id", h.ID))
+		zap.String("name", h.config.Name))
 }
 
 // LogDebug logs a message with context
@@ -123,8 +126,7 @@ func (h *HTTPHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
 		zap.String("target", h.config.Target),
 		zap.Uint("port", h.config.Port),
-		zap.String("name", h.config.Name),
-		zap.String("id", h.ID))
+		zap.String("name", h.config.Name))
 }
 
 // Execute executes an healthcheck on the given target

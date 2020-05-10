@@ -8,6 +8,7 @@ import (
 // Healthcheck is the face for an healthcheck
 type Healthcheck interface {
 	Initialize() error
+	Identifier() string
 	Start() error
 	Stop() error
 	Execute() error
@@ -50,5 +51,9 @@ func (c *Component) Stop() error {
 			return errors.Wrap(err, "Fail to stop the healthcheck component")
 		}
 	}
+	return nil
+}
+
+func (c *Component) AddCheck(Healthcheck *Healthcheck) error {
 	return nil
 }

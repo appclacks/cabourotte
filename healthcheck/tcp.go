@@ -27,7 +27,6 @@ type TCPHealthcheckConfiguration struct {
 // TCPHealthcheck defines a TCP healthcheck
 type TCPHealthcheck struct {
 	Logger *zap.Logger
-	ID     string
 	config *TCPHealthcheckConfiguration
 	URL    string
 
@@ -39,6 +38,11 @@ type TCPHealthcheck struct {
 // configuration
 func (h *TCPHealthcheck) buildURL() {
 	h.URL = net.JoinHostPort(h.config.Target, fmt.Sprintf("%d", h.config.Port))
+}
+
+// Identifier returns the healthcheck identifier.
+func (h *TCPHealthcheck) Identifier() string {
+	return h.config.Name
 }
 
 // Initialize the healthcheck.
@@ -80,8 +84,7 @@ func (h *TCPHealthcheck) LogError(err error, message string) {
 		zap.String("extra", message),
 		zap.String("target", h.config.Target),
 		zap.Uint("port", h.config.Port),
-		zap.String("name", h.config.Name),
-		zap.String("id", h.ID))
+		zap.String("name", h.config.Name))
 }
 
 // logDebug logs a message with context
@@ -89,8 +92,7 @@ func (h *TCPHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
 		zap.String("target", h.config.Target),
 		zap.Uint("port", h.config.Port),
-		zap.String("name", h.config.Name),
-		zap.String("id", h.ID))
+		zap.String("name", h.config.Name))
 }
 
 // Execute executes an healthcheck on the given target
