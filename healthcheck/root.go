@@ -46,6 +46,8 @@ func (c *Component) Start() error {
 
 // Stop stop the healthcheck component, stopping all healthchecks being executed.
 func (c *Component) Stop() error {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	c.Logger.Info("Stopping the healthcheck component")
 	for _, healthcheck := range c.Healthchecks {
 		healthcheck.LogDebug("stopping healthcheck")
