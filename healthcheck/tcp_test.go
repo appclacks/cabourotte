@@ -82,3 +82,27 @@ func TestTCPv6ExecuteSuccess(t *testing.T) {
 		t.Errorf("healthcheck error :\n%v", err)
 	}
 }
+
+func TestTCPStartStop(t *testing.T) {
+	logger := zap.NewExample()
+	healthcheck := NewTCPHealthcheck(
+		logger,
+		&TCPHealthcheckConfiguration{
+			Name:        "foo",
+			Description: "bar",
+			Target:      "127.0.0.1",
+			Port:        9000,
+			Timeout:     time.Second * 3,
+			Interval:    time.Second * 5,
+			OneOff:      false,
+		},
+	)
+	err := healthcheck.Start()
+	if err != nil {
+		t.Errorf("Fail to start the healthcheck\n%v", err)
+	}
+	err = healthcheck.Stop()
+	if err != nil {
+		t.Errorf("Fail to stop the healthcheck\n%v", err)
+	}
+}

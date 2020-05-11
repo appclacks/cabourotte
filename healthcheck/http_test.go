@@ -199,3 +199,29 @@ func TestHTTPSBuildURL(t *testing.T) {
 		t.Errorf("Invalid URL\nexpected: %s\nactual: %s", expectedURL, h.URL)
 	}
 }
+
+func TestHTTPStartStop(t *testing.T) {
+	logger := zap.NewExample()
+	healthcheck := NewHTTPHealthcheck(
+		logger,
+		&HTTPHealthcheckConfiguration{
+			Name:        "foo",
+			Description: "bar",
+			Target:      "127.0.0.1",
+			Path:        "/",
+			Protocol:    HTTP,
+			Port:        9000,
+			Timeout:     time.Second * 3,
+			Interval:    time.Second * 5,
+			OneOff:      false,
+		},
+	)
+	err := healthcheck.Start()
+	if err != nil {
+		t.Errorf("Fail to start the healthcheck\n%v", err)
+	}
+	err = healthcheck.Stop()
+	if err != nil {
+		t.Errorf("Fail to stop the healthcheck\n%v", err)
+	}
+}
