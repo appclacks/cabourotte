@@ -42,7 +42,7 @@ type HTTPHealthcheckConfiguration struct {
 // HTTPHealthcheck defines an HTTP healthcheck
 type HTTPHealthcheck struct {
 	Logger *zap.Logger
-	config *HTTPHealthcheckConfiguration
+	Config *HTTPHealthcheckConfiguration
 	URL    string
 
 	Tick *time.Ticker
@@ -53,19 +53,19 @@ type HTTPHealthcheck struct {
 // configuration
 func (h *HTTPHealthcheck) buildURL() {
 	protocol := "http"
-	if h.config.Protocol == HTTPS {
+	if h.Config.Protocol == HTTPS {
 		protocol = "https"
 	}
 	h.URL = fmt.Sprintf(
 		"%s://%s%s",
 		protocol,
-		net.JoinHostPort(h.config.Target, fmt.Sprintf("%d", h.config.Port)),
-		h.config.Path)
+		net.JoinHostPort(h.Config.Target, fmt.Sprintf("%d", h.Config.Port)),
+		h.Config.Path)
 }
 
 // Identifier returns the healthcheck identifier.
 func (h *HTTPHealthcheck) Identifier() string {
-	return h.config.Name
+	return h.Config.Name
 }
 
 // Initialize the healthcheck.
@@ -78,7 +78,7 @@ func (h *HTTPHealthcheck) Initialize() error {
 //  given interval of time
 func (h *HTTPHealthcheck) Start() error {
 	h.LogInfo("Starting healthcheck")
-	h.Tick = time.NewTicker(time.Duration(h.config.Interval))
+	h.Tick = time.NewTicker(time.Duration(h.Config.Interval))
 	h.t.Go(func() error {
 		for {
 			select {
@@ -105,7 +105,7 @@ func (h *HTTPHealthcheck) Stop() error {
 // isSuccessful verifies if a healthcheck result is considered valid
 // depending of the healthcheck configuration
 func (h *HTTPHealthcheck) isSuccessful(response *http.Response) bool {
-	for _, s := range h.config.ValidStatus {
+	for _, s := range h.Config.ValidStatus {
 		if uint(response.StatusCode) == s {
 			return true
 		}
@@ -117,25 +117,25 @@ func (h *HTTPHealthcheck) isSuccessful(response *http.Response) bool {
 func (h *HTTPHealthcheck) LogError(err error, message string) {
 	h.Logger.Error(err.Error(),
 		zap.String("extra", message),
-		zap.String("target", h.config.Target),
-		zap.Uint("port", h.config.Port),
-		zap.String("name", h.config.Name))
+		zap.String("target", h.Config.Target),
+		zap.Uint("port", h.Config.Port),
+		zap.String("name", h.Config.Name))
 }
 
 // LogDebug logs a message with context
 func (h *HTTPHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
-		zap.String("target", h.config.Target),
-		zap.Uint("port", h.config.Port),
-		zap.String("name", h.config.Name))
+		zap.String("target", h.Config.Target),
+		zap.Uint("port", h.Config.Port),
+		zap.String("name", h.Config.Name))
 }
 
 // LogInfo logs a message with context
 func (h *HTTPHealthcheck) LogInfo(message string) {
 	h.Logger.Info(message,
-		zap.String("target", h.config.Target),
-		zap.Uint("port", h.config.Port),
-		zap.String("name", h.config.Name))
+		zap.String("target", h.Config.Target),
+		zap.Uint("port", h.Config.Port),
+		zap.String("name", h.Config.Name))
 }
 
 // Execute executes an healthcheck on the given target
@@ -152,7 +152,7 @@ func (h *HTTPHealthcheck) Execute() error {
 			return http.ErrUseLastResponse
 		},
 	}
-	timeoutCtx, cancel := context.WithTimeout(ctx, h.config.Timeout)
+	timeoutCtx, cancel := context.WithTimeout(ctx, h.Config.Timeout)
 	defer cancel()
 	req = req.WithContext(timeoutCtx)
 	response, err := client.Do(req)
@@ -171,4 +171,12 @@ func (h *HTTPHealthcheck) Execute() error {
 		return err
 	}
 	return nil
+}
+
+// NewHTTPHealthcheck creates a HTTP healthcheck from a logger and a configuration
+func NewHTTPHealthcheck(logger *zap.Logger, config *HTTPHealthcheckConfiguration) HTTPHealthcheck {
+	return HTTPHealthcheck{
+		Logger: logger,
+		Config: config,
+	}
 }

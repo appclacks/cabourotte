@@ -14,7 +14,7 @@ import (
 
 func TestisSuccessfulOK(t *testing.T) {
 	h := HTTPHealthcheck{
-		config: &HTTPHealthcheckConfiguration{
+		Config: &HTTPHealthcheckConfiguration{
 			ValidStatus: []uint{200},
 		},
 	}
@@ -24,7 +24,7 @@ func TestisSuccessfulOK(t *testing.T) {
 	}
 
 	h = HTTPHealthcheck{
-		config: &HTTPHealthcheckConfiguration{
+		Config: &HTTPHealthcheckConfiguration{
 			ValidStatus: []uint{200, 201, 400},
 		},
 	}
@@ -36,7 +36,7 @@ func TestisSuccessfulOK(t *testing.T) {
 
 func TestIssuccessfulFailure(t *testing.T) {
 	h := HTTPHealthcheck{
-		config: &HTTPHealthcheckConfiguration{
+		Config: &HTTPHealthcheckConfiguration{
 			ValidStatus: []uint{200},
 		},
 	}
@@ -46,7 +46,7 @@ func TestIssuccessfulFailure(t *testing.T) {
 	}
 
 	h = HTTPHealthcheck{
-		config: &HTTPHealthcheckConfiguration{
+		Config: &HTTPHealthcheckConfiguration{
 			ValidStatus: []uint{200, 201, 400},
 		},
 	}
@@ -70,7 +70,7 @@ func TestHTTPExecuteSuccess(t *testing.T) {
 	}
 	h := HTTPHealthcheck{
 		Logger: zap.NewExample(),
-		config: &HTTPHealthcheckConfiguration{
+		Config: &HTTPHealthcheckConfiguration{
 			ValidStatus: []uint{200},
 			Port:        uint(port),
 			Target:      "127.0.0.1",
@@ -111,7 +111,7 @@ func TestHTTPv6ExecuteSuccess(t *testing.T) {
 	}
 	h := HTTPHealthcheck{
 		Logger: zap.NewExample(),
-		config: &HTTPHealthcheckConfiguration{
+		Config: &HTTPHealthcheckConfiguration{
 			ValidStatus: []uint{200},
 			Port:        uint(port),
 			Target:      "::1",
@@ -144,7 +144,7 @@ func TestHTTPExecuteFailure(t *testing.T) {
 	}
 	h := HTTPHealthcheck{
 		Logger: zap.NewExample(),
-		config: &HTTPHealthcheckConfiguration{
+		Config: &HTTPHealthcheckConfiguration{
 			Name:        "foo",
 			ValidStatus: []uint{200},
 			Port:        uint(port),
@@ -166,7 +166,7 @@ func TestHTTPExecuteFailure(t *testing.T) {
 
 func TestHTTPBuildURL(t *testing.T) {
 	h := HTTPHealthcheck{
-		config: &HTTPHealthcheckConfiguration{
+		Config: &HTTPHealthcheckConfiguration{
 			ValidStatus: []uint{200},
 			Port:        2000,
 			Target:      "127.0.0.1",
@@ -184,7 +184,7 @@ func TestHTTPBuildURL(t *testing.T) {
 
 func TestHTTPSBuildURL(t *testing.T) {
 	h := HTTPHealthcheck{
-		config: &HTTPHealthcheckConfiguration{
+		Config: &HTTPHealthcheckConfiguration{
 			ValidStatus: []uint{200},
 			Port:        2000,
 			Target:      "127.0.0.1",

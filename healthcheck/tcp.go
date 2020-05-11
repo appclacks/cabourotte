@@ -27,7 +27,7 @@ type TCPHealthcheckConfiguration struct {
 // TCPHealthcheck defines a TCP healthcheck
 type TCPHealthcheck struct {
 	Logger *zap.Logger
-	config *TCPHealthcheckConfiguration
+	Config *TCPHealthcheckConfiguration
 	URL    string
 
 	Tick *time.Ticker
@@ -37,12 +37,12 @@ type TCPHealthcheck struct {
 // buildURL build the target URL for the TCP healthcheck, depending of its
 // configuration
 func (h *TCPHealthcheck) buildURL() {
-	h.URL = net.JoinHostPort(h.config.Target, fmt.Sprintf("%d", h.config.Port))
+	h.URL = net.JoinHostPort(h.Config.Target, fmt.Sprintf("%d", h.Config.Port))
 }
 
 // Identifier returns the healthcheck identifier.
 func (h *TCPHealthcheck) Identifier() string {
-	return h.config.Name
+	return h.Config.Name
 }
 
 // Initialize the healthcheck.
@@ -55,7 +55,7 @@ func (h *TCPHealthcheck) Initialize() error {
 // given interval of time
 func (h *TCPHealthcheck) Start() error {
 	h.LogInfo("Starting healthcheck")
-	h.Tick = time.NewTicker(time.Duration(h.config.Interval))
+	h.Tick = time.NewTicker(time.Duration(h.Config.Interval))
 	h.t.Go(func() error {
 		for {
 			select {
@@ -83,25 +83,25 @@ func (h *TCPHealthcheck) Stop() error {
 func (h *TCPHealthcheck) LogError(err error, message string) {
 	h.Logger.Error(err.Error(),
 		zap.String("extra", message),
-		zap.String("target", h.config.Target),
-		zap.Uint("port", h.config.Port),
-		zap.String("name", h.config.Name))
+		zap.String("target", h.Config.Target),
+		zap.Uint("port", h.Config.Port),
+		zap.String("name", h.Config.Name))
 }
 
 // LogDebug logs a message with context
 func (h *TCPHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
-		zap.String("target", h.config.Target),
-		zap.Uint("port", h.config.Port),
-		zap.String("name", h.config.Name))
+		zap.String("target", h.Config.Target),
+		zap.Uint("port", h.Config.Port),
+		zap.String("name", h.Config.Name))
 }
 
 // LogInfo logs a message with context
 func (h *TCPHealthcheck) LogInfo(message string) {
 	h.Logger.Info(message,
-		zap.String("target", h.config.Target),
-		zap.Uint("port", h.config.Port),
-		zap.String("name", h.config.Name))
+		zap.String("target", h.Config.Target),
+		zap.Uint("port", h.Config.Port),
+		zap.String("name", h.Config.Name))
 }
 
 // Execute executes an healthcheck on the given target
@@ -109,7 +109,7 @@ func (h *TCPHealthcheck) Execute() error {
 	h.LogDebug("start executing healthcheck")
 	ctx := h.t.Context(nil)
 	dialer := net.Dialer{}
-	timeoutCtx, cancel := context.WithTimeout(ctx, h.config.Timeout)
+	timeoutCtx, cancel := context.WithTimeout(ctx, h.Config.Timeout)
 	defer cancel()
 	conn, err := dialer.DialContext(timeoutCtx, "tcp", h.URL)
 	if err != nil {
@@ -120,4 +120,12 @@ func (h *TCPHealthcheck) Execute() error {
 		return errors.Wrapf(err, "Unable to close TCP connection")
 	}
 	return nil
+}
+
+// NewTCPHealthcheck creates a TCP healthcheck from a logger and a configuration
+func NewTCPHealthcheck(logger *zap.Logger, config *TCPHealthcheckConfiguration) TCPHealthcheck {
+	return TCPHealthcheck{
+		Logger: logger,
+		Config: config,
+	}
 }

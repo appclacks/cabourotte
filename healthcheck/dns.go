@@ -22,7 +22,7 @@ type DNSHealthcheckConfiguration struct {
 // DNSHealthcheck defines an HTTP healthcheck
 type DNSHealthcheck struct {
 	Logger *zap.Logger
-	config *DNSHealthcheckConfiguration
+	Config *DNSHealthcheckConfiguration
 	URL    string
 
 	Tick *time.Ticker
@@ -36,14 +36,14 @@ func (h *DNSHealthcheck) Initialize() error {
 
 // Identifier returns the healthcheck identifier.
 func (h *DNSHealthcheck) Identifier() string {
-	return h.config.Name
+	return h.Config.Name
 }
 
 // Start an Healthcheck, which will be periodically executed after a
 // given interval of time
 func (h *DNSHealthcheck) Start() error {
 	h.LogInfo("Starting healthcheck")
-	h.Tick = time.NewTicker(time.Duration(h.config.Interval))
+	h.Tick = time.NewTicker(time.Duration(h.Config.Interval))
 	h.t.Go(func() error {
 		for {
 			select {
@@ -61,22 +61,22 @@ func (h *DNSHealthcheck) Start() error {
 func (h *DNSHealthcheck) LogError(err error, message string) {
 	h.Logger.Error(err.Error(),
 		zap.String("extra", message),
-		zap.String("domain", h.config.Domain),
-		zap.String("name", h.config.Name))
+		zap.String("domain", h.Config.Domain),
+		zap.String("name", h.Config.Name))
 }
 
 // LogDebug logs a message with context
 func (h *DNSHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
-		zap.String("domain", h.config.Domain),
-		zap.String("name", h.config.Name))
+		zap.String("domain", h.Config.Domain),
+		zap.String("name", h.Config.Name))
 }
 
 // LogInfo logs a message with context
 func (h *DNSHealthcheck) LogInfo(message string) {
 	h.Logger.Info(message,
-		zap.String("domain", h.config.Domain),
-		zap.String("name", h.config.Name))
+		zap.String("domain", h.Config.Domain),
+		zap.String("name", h.Config.Name))
 }
 
 // Stop an Healthcheck
@@ -92,9 +92,17 @@ func (h *DNSHealthcheck) Stop() error {
 // Execute executes an healthcheck on the given domain
 func (h *DNSHealthcheck) Execute() error {
 	h.LogDebug("start executing healthcheck")
-	_, err := net.LookupIP(h.config.Domain)
+	_, err := net.LookupIP(h.Config.Domain)
 	if err != nil {
 		return errors.Wrapf(err, "Fail to lookup IP for domain")
 	}
 	return nil
+}
+
+// NewDNSHealthcheck creates a DNS healthcheck from a logger and a configuration
+func NewDNSHealthcheck(logger *zap.Logger, config *DNSHealthcheckConfiguration) DNSHealthcheck {
+	return DNSHealthcheck{
+		Logger: logger,
+		Config: config,
+	}
 }

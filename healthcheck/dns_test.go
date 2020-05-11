@@ -9,7 +9,7 @@ import (
 func TestDNSExecuteSuccess(t *testing.T) {
 	h := DNSHealthcheck{
 		Logger: zap.NewExample(),
-		config: &DNSHealthcheckConfiguration{
+		Config: &DNSHealthcheckConfiguration{
 			// it will hopefully resolve ^^
 			Domain: "mcorbin.fr",
 		},
@@ -24,7 +24,7 @@ func TestDNSExecuteSuccess(t *testing.T) {
 func TestDNSExecuteFailure(t *testing.T) {
 	h := DNSHealthcheck{
 		Logger: zap.NewExample(),
-		config: &DNSHealthcheckConfiguration{
+		Config: &DNSHealthcheckConfiguration{
 			Domain: "doesnotexist.mcorbin.fr",
 		},
 	}

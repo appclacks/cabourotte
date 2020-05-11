@@ -14,7 +14,7 @@ import (
 
 func TestTCPBuildURL(t *testing.T) {
 	h := TCPHealthcheck{
-		config: &TCPHealthcheckConfiguration{
+		Config: &TCPHealthcheckConfiguration{
 			Port:   2000,
 			Target: "127.0.0.1",
 		},
@@ -38,7 +38,7 @@ func TestTCPExecuteSuccess(t *testing.T) {
 	}
 	h := TCPHealthcheck{
 		Logger: zap.NewExample(),
-		config: &TCPHealthcheckConfiguration{
+		Config: &TCPHealthcheckConfiguration{
 			Port:    uint(port),
 			Target:  "127.0.0.1",
 			Timeout: time.Second * 2,
@@ -70,7 +70,7 @@ func TestTCPv6ExecuteSuccess(t *testing.T) {
 	}
 	h := TCPHealthcheck{
 		Logger: zap.NewExample(),
-		config: &TCPHealthcheckConfiguration{
+		Config: &TCPHealthcheckConfiguration{
 			Port:    uint(port),
 			Target:  "::1",
 			Timeout: time.Second * 2,
