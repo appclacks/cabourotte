@@ -127,8 +127,8 @@ func (h *TCPHealthcheck) Execute() error {
 }
 
 // NewTCPHealthcheck creates a TCP healthcheck from a logger and a configuration
-func NewTCPHealthcheck(logger *zap.Logger, config *TCPHealthcheckConfiguration) TCPHealthcheck {
-	return TCPHealthcheck{
+func NewTCPHealthcheck(logger *zap.Logger, config *TCPHealthcheckConfiguration) *TCPHealthcheck {
+	return &TCPHealthcheck{
 		Logger: logger,
 		Config: config,
 	}

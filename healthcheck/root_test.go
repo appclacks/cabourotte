@@ -44,7 +44,7 @@ func TestAddRemoveCheck(t *testing.T) {
 			OneOff:      false,
 		},
 	)
-	err = component.AddCheck(&healthcheck)
+	err = component.AddCheck(healthcheck)
 	if err != nil {
 		t.Errorf("Fail to add the healthcheck\n%v", err)
 	}
@@ -64,7 +64,7 @@ func TestAddRemoveCheck(t *testing.T) {
 		},
 	)
 	// add replaces the existing healthcheck
-	err = component.AddCheck(&newHealthcheck)
+	err = component.AddCheck(newHealthcheck)
 	if err != nil {
 		t.Errorf("Fail to add the healthcheck\n%v", err)
 	}

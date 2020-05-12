@@ -104,8 +104,8 @@ func (h *DNSHealthcheck) Execute() error {
 }
 
 // NewDNSHealthcheck creates a DNS healthcheck from a logger and a configuration
-func NewDNSHealthcheck(logger *zap.Logger, config *DNSHealthcheckConfiguration) DNSHealthcheck {
-	return DNSHealthcheck{
+func NewDNSHealthcheck(logger *zap.Logger, config *DNSHealthcheckConfiguration) *DNSHealthcheck {
+	return &DNSHealthcheck{
 		Logger: logger,
 		Config: config,
 	}

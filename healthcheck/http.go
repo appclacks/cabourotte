@@ -178,8 +178,8 @@ func (h *HTTPHealthcheck) Execute() error {
 }
 
 // NewHTTPHealthcheck creates a HTTP healthcheck from a logger and a configuration
-func NewHTTPHealthcheck(logger *zap.Logger, config *HTTPHealthcheckConfiguration) HTTPHealthcheck {
-	return HTTPHealthcheck{
+func NewHTTPHealthcheck(logger *zap.Logger, config *HTTPHealthcheckConfiguration) *HTTPHealthcheck {
+	return &HTTPHealthcheck{
 		Logger: logger,
 		Config: config,
 	}
