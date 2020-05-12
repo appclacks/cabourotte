@@ -54,8 +54,9 @@ func (h *TCPHealthcheck) Initialize() error {
 
 // Start an Healthcheck, which will be periodically executed after a
 // given interval of time
-func (h *TCPHealthcheck) Start() error {
+func (h *TCPHealthcheck) Start(chanResult chan *Result) error {
 	h.LogInfo("Starting healthcheck")
+	h.ChanResult = chanResult
 	h.Tick = time.NewTicker(time.Duration(h.Config.Interval))
 	h.t.Go(func() error {
 		for {
@@ -126,10 +127,9 @@ func (h *TCPHealthcheck) Execute() error {
 }
 
 // NewTCPHealthcheck creates a TCP healthcheck from a logger and a configuration
-func NewTCPHealthcheck(logger *zap.Logger, chanResult chan *Result, config *TCPHealthcheckConfiguration) TCPHealthcheck {
+func NewTCPHealthcheck(logger *zap.Logger, config *TCPHealthcheckConfiguration) TCPHealthcheck {
 	return TCPHealthcheck{
-		ChanResult: chanResult,
-		Logger:     logger,
-		Config:     config,
+		Logger: logger,
+		Config: config,
 	}
 }

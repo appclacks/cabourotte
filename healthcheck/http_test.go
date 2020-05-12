@@ -204,7 +204,6 @@ func TestHTTPStartStop(t *testing.T) {
 	logger := zap.NewExample()
 	healthcheck := NewHTTPHealthcheck(
 		logger,
-		make(chan *Result, 100),
 		&HTTPHealthcheckConfiguration{
 			Name:        "foo",
 			Description: "bar",
@@ -217,7 +216,7 @@ func TestHTTPStartStop(t *testing.T) {
 			OneOff:      false,
 		},
 	)
-	err := healthcheck.Start()
+	err := healthcheck.Start(make(chan *Result, 10))
 	if err != nil {
 		t.Errorf("Fail to start the healthcheck\n%v", err)
 	}

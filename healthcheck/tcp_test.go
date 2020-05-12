@@ -87,7 +87,6 @@ func TestTCPStartStop(t *testing.T) {
 	logger := zap.NewExample()
 	healthcheck := NewTCPHealthcheck(
 		logger,
-		make(chan *Result, 10),
 		&TCPHealthcheckConfiguration{
 			Name:        "foo",
 			Description: "bar",
@@ -98,7 +97,7 @@ func TestTCPStartStop(t *testing.T) {
 			OneOff:      false,
 		},
 	)
-	err := healthcheck.Start()
+	err := healthcheck.Start(make(chan *Result, 10))
 	if err != nil {
 		t.Errorf("Fail to start the healthcheck\n%v", err)
 	}

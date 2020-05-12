@@ -77,8 +77,9 @@ func (h *HTTPHealthcheck) Initialize() error {
 
 // Start an Healthcheck, which will be periodically executed after a
 //  given interval of time
-func (h *HTTPHealthcheck) Start() error {
+func (h *HTTPHealthcheck) Start(chanResult chan *Result) error {
 	h.LogInfo("Starting healthcheck")
+	h.ChanResult = chanResult
 	h.Tick = time.NewTicker(time.Duration(h.Config.Interval))
 	h.t.Go(func() error {
 		for {
@@ -177,10 +178,9 @@ func (h *HTTPHealthcheck) Execute() error {
 }
 
 // NewHTTPHealthcheck creates a HTTP healthcheck from a logger and a configuration
-func NewHTTPHealthcheck(logger *zap.Logger, chanResult chan *Result, config *HTTPHealthcheckConfiguration) HTTPHealthcheck {
+func NewHTTPHealthcheck(logger *zap.Logger, config *HTTPHealthcheckConfiguration) HTTPHealthcheck {
 	return HTTPHealthcheck{
-		ChanResult: chanResult,
-		Logger:     logger,
-		Config:     config,
+		Logger: logger,
+		Config: config,
 	}
 }

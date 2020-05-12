@@ -8,24 +8,24 @@ import (
 	"go.uber.org/zap"
 )
 
-// Healthcheck is the face for an healthcheck
-type Healthcheck interface {
-	Initialize() error
-	Name() string
-	Start() error
-	Stop() error
-	Execute() error
-	LogDebug(message string)
-	LogInfo(message string)
-	LogError(err error, message string)
-}
-
 // Result represents the result of an healthcheck
 type Result struct {
 	Name      string
 	Success   bool
 	Timestamp time.Time
 	message   string
+}
+
+// Healthcheck is the face for an healthcheck
+type Healthcheck interface {
+	Initialize() error
+	Name() string
+	Start(chanResult chan *Result) error
+	Stop() error
+	Execute() error
+	LogDebug(message string)
+	LogInfo(message string)
+	LogError(err error, message string)
 }
 
 // Component is the component which will manage healthchecks
@@ -119,7 +119,7 @@ func (c *Component) AddCheck(healthcheck Healthcheck) error {
 	if err != nil {
 		return errors.Wrapf(err, "Fail to stop existing healthcheck %s", healthcheck.Name())
 	}
-	err = healthcheck.Start()
+	err = healthcheck.Start(c.ChanResult)
 	if err != nil {
 		return errors.Wrapf(err, "Fail to start healthcheck %s", healthcheck.Name())
 	}

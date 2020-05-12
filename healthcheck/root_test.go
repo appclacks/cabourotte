@@ -34,7 +34,6 @@ func TestAddRemoveCheck(t *testing.T) {
 	}
 	healthcheck := NewTCPHealthcheck(
 		logger,
-		component.ChanResult,
 		&TCPHealthcheckConfiguration{
 			Name:        "foo",
 			Description: "bar",
@@ -54,7 +53,6 @@ func TestAddRemoveCheck(t *testing.T) {
 	}
 	newHealthcheck := NewTCPHealthcheck(
 		logger,
-		component.ChanResult,
 		&TCPHealthcheckConfiguration{
 			Name:        "foo",
 			Description: "bar",

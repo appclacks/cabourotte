@@ -42,8 +42,9 @@ func (h *DNSHealthcheck) Name() string {
 
 // Start an Healthcheck, which will be periodically executed after a
 // given interval of time
-func (h *DNSHealthcheck) Start() error {
+func (h *DNSHealthcheck) Start(chanResult chan *Result) error {
 	h.LogInfo("Starting healthcheck")
+	h.ChanResult = chanResult
 	h.Tick = time.NewTicker(time.Duration(h.Config.Interval))
 	h.t.Go(func() error {
 		for {
@@ -103,10 +104,9 @@ func (h *DNSHealthcheck) Execute() error {
 }
 
 // NewDNSHealthcheck creates a DNS healthcheck from a logger and a configuration
-func NewDNSHealthcheck(logger *zap.Logger, chanResult chan *Result, config *DNSHealthcheckConfiguration) DNSHealthcheck {
+func NewDNSHealthcheck(logger *zap.Logger, config *DNSHealthcheckConfiguration) DNSHealthcheck {
 	return DNSHealthcheck{
-		ChanResult: chanResult,
-		Logger:     logger,
-		Config:     config,
+		Logger: logger,
+		Config: config,
 	}
 }
