@@ -56,11 +56,11 @@ func NewResult(healthcheck Healthcheck, err error) *Result {
 }
 
 // New creates a new Healthcheck component
-func New(logger *zap.Logger) (*Component, error) {
+func New(logger *zap.Logger, chanResult chan *Result) (*Component, error) {
 	component := Component{
 		Logger:       logger,
 		Healthchecks: make(map[string]Healthcheck),
-		ChanResult:   make(chan *Result, 1000),
+		ChanResult:   chanResult,
 	}
 
 	return &component, nil
