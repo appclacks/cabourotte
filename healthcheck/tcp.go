@@ -26,9 +26,10 @@ type TCPHealthcheckConfiguration struct {
 
 // TCPHealthcheck defines a TCP healthcheck
 type TCPHealthcheck struct {
-	Logger *zap.Logger
-	Config *TCPHealthcheckConfiguration
-	URL    string
+	Logger     *zap.Logger
+	Config     *TCPHealthcheckConfiguration
+	ChanResult chan *Result
+	URL        string
 
 	Tick *time.Ticker
 	t    tomb.Tomb
@@ -40,8 +41,8 @@ func (h *TCPHealthcheck) buildURL() {
 	h.URL = net.JoinHostPort(h.Config.Target, fmt.Sprintf("%d", h.Config.Port))
 }
 
-// Identifier returns the healthcheck identifier.
-func (h *TCPHealthcheck) Identifier() string {
+// Name returns the healthcheck identifier.
+func (h *TCPHealthcheck) Name() string {
 	return h.Config.Name
 }
 
@@ -60,7 +61,9 @@ func (h *TCPHealthcheck) Start() error {
 		for {
 			select {
 			case <-h.Tick.C:
-				h.Execute()
+				err := h.Execute()
+				result := NewResult(h, err)
+				h.ChanResult <- result
 			case <-h.t.Dying():
 				return nil
 			}
@@ -123,9 +126,10 @@ func (h *TCPHealthcheck) Execute() error {
 }
 
 // NewTCPHealthcheck creates a TCP healthcheck from a logger and a configuration
-func NewTCPHealthcheck(logger *zap.Logger, config *TCPHealthcheckConfiguration) TCPHealthcheck {
+func NewTCPHealthcheck(logger *zap.Logger, chanResult chan *Result, config *TCPHealthcheckConfiguration) TCPHealthcheck {
 	return TCPHealthcheck{
-		Logger: logger,
-		Config: config,
+		ChanResult: chanResult,
+		Logger:     logger,
+		Config:     config,
 	}
 }

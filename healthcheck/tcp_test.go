@@ -87,6 +87,7 @@ func TestTCPStartStop(t *testing.T) {
 	logger := zap.NewExample()
 	healthcheck := NewTCPHealthcheck(
 		logger,
+		make(chan *Result, 10),
 		&TCPHealthcheckConfiguration{
 			Name:        "foo",
 			Description: "bar",

@@ -2,6 +2,7 @@ package healthcheck
 
 import (
 	"sync"
+	"time"
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -10,7 +11,7 @@ import (
 // Healthcheck is the face for an healthcheck
 type Healthcheck interface {
 	Initialize() error
-	Identifier() string
+	Name() string
 	Start() error
 	Stop() error
 	Execute() error
@@ -19,11 +20,39 @@ type Healthcheck interface {
 	LogError(err error, message string)
 }
 
+// Result represents the result of an healthcheck
+type Result struct {
+	Name      string
+	Success   bool
+	Timestamp time.Time
+	message   string
+}
+
 // Component is the component which will manage healthchecks
 type Component struct {
 	Logger       *zap.Logger
 	Healthchecks map[string]Healthcheck
 	lock         sync.RWMutex
+
+	ChanResult chan *Result
+}
+
+// NewResult build a a new result for an healthcheck
+func NewResult(healthcheck Healthcheck, err error) *Result {
+	now := time.Now()
+	result := Result{
+		Name:      healthcheck.Name(),
+		Timestamp: now,
+	}
+	if err != nil {
+		result.Success = false
+		result.message = err.Error()
+	} else {
+		result.Success = true
+		result.message = "success"
+	}
+	return &result
+
 }
 
 // New creates a new Healthcheck component
@@ -31,6 +60,7 @@ func New(logger *zap.Logger) (*Component, error) {
 	component := Component{
 		Logger:       logger,
 		Healthchecks: make(map[string]Healthcheck),
+		ChanResult:   make(chan *Result, 1000),
 	}
 
 	return &component, nil
@@ -67,7 +97,7 @@ func (c *Component) removeCheck(identifier string) error {
 		existingCheck.LogInfo("Stopping healthcheck")
 		err := existingCheck.Stop()
 		if err != nil {
-			return errors.Wrapf(err, "Fail to stop healthcheck %s", existingCheck.Identifier())
+			return errors.Wrapf(err, "Fail to stop healthcheck %s", existingCheck.Name())
 		}
 		delete(c.Healthchecks, identifier)
 	}
@@ -78,22 +108,22 @@ func (c *Component) removeCheck(identifier string) error {
 func (c *Component) AddCheck(healthcheck Healthcheck) error {
 	err := healthcheck.Initialize()
 	if err != nil {
-		return errors.Wrapf(err, "Fail to initialize healthcheck %s", healthcheck.Identifier())
+		return errors.Wrapf(err, "Fail to initialize healthcheck %s", healthcheck.Name())
 	}
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
 	// verifies if the healthcheck already exists, and removes it if needed.
 	// Updating an healthcheck is removing the old one and adding the new one.
-	err = c.removeCheck(healthcheck.Identifier())
+	err = c.removeCheck(healthcheck.Name())
 	if err != nil {
-		return errors.Wrapf(err, "Fail to stop existing healthcheck %s", healthcheck.Identifier())
+		return errors.Wrapf(err, "Fail to stop existing healthcheck %s", healthcheck.Name())
 	}
 	err = healthcheck.Start()
 	if err != nil {
-		return errors.Wrapf(err, "Fail to start healthcheck %s", healthcheck.Identifier())
+		return errors.Wrapf(err, "Fail to start healthcheck %s", healthcheck.Name())
 	}
-	c.Healthchecks[healthcheck.Identifier()] = healthcheck
+	c.Healthchecks[healthcheck.Name()] = healthcheck
 	return nil
 }
 

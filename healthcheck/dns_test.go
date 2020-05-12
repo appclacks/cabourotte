@@ -40,6 +40,7 @@ func TestDNSStartStop(t *testing.T) {
 	logger := zap.NewExample()
 	healthcheck := NewDNSHealthcheck(
 		logger,
+		make(chan *Result, 10),
 		&DNSHealthcheckConfiguration{
 			Name:        "foo",
 			Description: "bar",

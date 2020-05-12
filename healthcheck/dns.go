@@ -21,9 +21,10 @@ type DNSHealthcheckConfiguration struct {
 
 // DNSHealthcheck defines an HTTP healthcheck
 type DNSHealthcheck struct {
-	Logger *zap.Logger
-	Config *DNSHealthcheckConfiguration
-	URL    string
+	Logger     *zap.Logger
+	ChanResult chan *Result
+	Config     *DNSHealthcheckConfiguration
+	URL        string
 
 	Tick *time.Ticker
 	t    tomb.Tomb
@@ -34,8 +35,8 @@ func (h *DNSHealthcheck) Initialize() error {
 	return nil
 }
 
-// Identifier returns the healthcheck identifier.
-func (h *DNSHealthcheck) Identifier() string {
+// Name returns the healthcheck identifier.
+func (h *DNSHealthcheck) Name() string {
 	return h.Config.Name
 }
 
@@ -48,7 +49,9 @@ func (h *DNSHealthcheck) Start() error {
 		for {
 			select {
 			case <-h.Tick.C:
-				h.Execute()
+				err := h.Execute()
+				result := NewResult(h, err)
+				h.ChanResult <- result
 			case <-h.t.Dying():
 				return nil
 			}
@@ -100,9 +103,10 @@ func (h *DNSHealthcheck) Execute() error {
 }
 
 // NewDNSHealthcheck creates a DNS healthcheck from a logger and a configuration
-func NewDNSHealthcheck(logger *zap.Logger, config *DNSHealthcheckConfiguration) DNSHealthcheck {
+func NewDNSHealthcheck(logger *zap.Logger, chanResult chan *Result, config *DNSHealthcheckConfiguration) DNSHealthcheck {
 	return DNSHealthcheck{
-		Logger: logger,
-		Config: config,
+		ChanResult: chanResult,
+		Logger:     logger,
+		Config:     config,
 	}
 }

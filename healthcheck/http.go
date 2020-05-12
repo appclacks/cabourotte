@@ -41,9 +41,10 @@ type HTTPHealthcheckConfiguration struct {
 
 // HTTPHealthcheck defines an HTTP healthcheck
 type HTTPHealthcheck struct {
-	Logger *zap.Logger
-	Config *HTTPHealthcheckConfiguration
-	URL    string
+	Logger     *zap.Logger
+	Config     *HTTPHealthcheckConfiguration
+	ChanResult chan *Result
+	URL        string
 
 	Tick *time.Ticker
 	t    tomb.Tomb
@@ -63,8 +64,8 @@ func (h *HTTPHealthcheck) buildURL() {
 		h.Config.Path)
 }
 
-// Identifier returns the healthcheck identifier.
-func (h *HTTPHealthcheck) Identifier() string {
+// Name returns the healthcheck identifier.
+func (h *HTTPHealthcheck) Name() string {
 	return h.Config.Name
 }
 
@@ -83,7 +84,9 @@ func (h *HTTPHealthcheck) Start() error {
 		for {
 			select {
 			case <-h.Tick.C:
-				h.Execute()
+				err := h.Execute()
+				result := NewResult(h, err)
+				h.ChanResult <- result
 			case <-h.t.Dying():
 				return nil
 			}
@@ -174,9 +177,10 @@ func (h *HTTPHealthcheck) Execute() error {
 }
 
 // NewHTTPHealthcheck creates a HTTP healthcheck from a logger and a configuration
-func NewHTTPHealthcheck(logger *zap.Logger, config *HTTPHealthcheckConfiguration) HTTPHealthcheck {
+func NewHTTPHealthcheck(logger *zap.Logger, chanResult chan *Result, config *HTTPHealthcheckConfiguration) HTTPHealthcheck {
 	return HTTPHealthcheck{
-		Logger: logger,
-		Config: config,
+		ChanResult: chanResult,
+		Logger:     logger,
+		Config:     config,
 	}
 }

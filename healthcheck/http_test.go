@@ -204,6 +204,7 @@ func TestHTTPStartStop(t *testing.T) {
 	logger := zap.NewExample()
 	healthcheck := NewHTTPHealthcheck(
 		logger,
+		make(chan *Result, 100),
 		&HTTPHealthcheckConfiguration{
 			Name:        "foo",
 			Description: "bar",
