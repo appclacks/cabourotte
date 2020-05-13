@@ -41,7 +41,7 @@ func TestTCPExecuteSuccess(t *testing.T) {
 		Config: &TCPHealthcheckConfiguration{
 			Port:    uint(port),
 			Target:  "127.0.0.1",
-			Timeout: time.Second * 2,
+			Timeout: Duration(time.Second * 2),
 		},
 	}
 	h.buildURL()
@@ -73,7 +73,7 @@ func TestTCPv6ExecuteSuccess(t *testing.T) {
 		Config: &TCPHealthcheckConfiguration{
 			Port:    uint(port),
 			Target:  "::1",
-			Timeout: time.Second * 2,
+			Timeout: Duration(time.Second * 2),
 		},
 	}
 	h.buildURL()
@@ -92,8 +92,8 @@ func TestTCPStartStop(t *testing.T) {
 			Description: "bar",
 			Target:      "127.0.0.1",
 			Port:        9000,
-			Timeout:     time.Second * 3,
-			Interval:    time.Second * 5,
+			Timeout:     Duration(time.Second * 3),
+			Interval:    Duration(time.Second * 5),
 			OneOff:      false,
 		},
 	)

@@ -36,12 +36,15 @@ func New(logger *zap.Logger, config *Configuration, healthcheck *healthcheck.Com
 func (c *Component) Start() error {
 	c.Logger.Info("Starting the HTTP server component")
 	address := fmt.Sprintf("%s:%d", c.Config.Host, c.Config.Port)
+	c.handlers()
 	go func() {
 		err := c.Server.Start(address)
 		if err != nil {
 			c.Logger.Info("Stopping the HTTP server")
 		}
 	}()
+	// TODO remove this
+	time.Sleep(100 * time.Millisecond)
 	return nil
 }
 

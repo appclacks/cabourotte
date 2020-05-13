@@ -14,14 +14,18 @@ type Configuration struct {
 
 // UnmarshalYAML parses the configuration of the http component from YAML.
 func (c *Configuration) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	config := Configuration{}
-	if err := unmarshal(&config); err != nil {
+	type rawConfiguration Configuration
+	raw := rawConfiguration{}
+	if err := unmarshal(&raw); err != nil {
 		return errors.Wrap(err, "Unable to read http configuration")
 	}
-	ip := net.ParseIP(config.Host)
+	ip := net.ParseIP(raw.Host)
 	if ip == nil {
 		return errors.New("Invalid IP address for the HTTP server")
 	}
-	*c = Configuration(config)
+	if raw.Port == 0 {
+		return errors.New("Invalid Port for the HTTP server")
+	}
+	*c = Configuration(raw)
 	return nil
 }

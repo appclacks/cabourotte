@@ -24,6 +24,28 @@ const (
 	HTTPS
 )
 
+// UnmarshalText unmarshal a duration
+func (p *Protocol) UnmarshalText(text []byte) error {
+	if len(text) < 2 {
+		return errors.New(fmt.Sprintf("Invalid protocol %s", text))
+	}
+	t := text[1 : len(text)-1]
+	s := string(t)
+	if s == "http" {
+		*p = HTTP
+	} else if s == "https" {
+		*p = HTTPS
+	} else {
+		return errors.New(fmt.Sprintf("Invalid protocol %s", s))
+	}
+	return nil
+}
+
+// UnmarshalJSON marshal to json a duration
+func (d *Protocol) UnmarshalJSON(text []byte) error {
+	return d.UnmarshalText(text)
+}
+
 // HTTPHealthcheckConfiguration defines an HTTP healthcheck configuration
 type HTTPHealthcheckConfiguration struct {
 	Name        string
@@ -34,8 +56,8 @@ type HTTPHealthcheckConfiguration struct {
 	Port     uint
 	Protocol Protocol
 	Path     string
-	Timeout  time.Duration
-	Interval time.Duration
+	Timeout  Duration
+	Interval Duration
 	OneOff   bool
 }
 
@@ -156,7 +178,7 @@ func (h *HTTPHealthcheck) Execute() error {
 			return http.ErrUseLastResponse
 		},
 	}
-	timeoutCtx, cancel := context.WithTimeout(ctx, h.Config.Timeout)
+	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(h.Config.Timeout))
 	defer cancel()
 	req = req.WithContext(timeoutCtx)
 	response, err := client.Do(req)

@@ -23,6 +23,7 @@ func (c *Component) addCheck(ec echo.Context, healthcheck healthcheck.Healthchec
 // todo: handler one-off tasks
 func (c *Component) handlers() {
 	c.Server.POST("/healthcheck/dns", func(ec echo.Context) error {
+		c.Logger.Info("Adding new dns healthcheck")
 		var config healthcheck.DNSHealthcheckConfiguration
 		if err := ec.Bind(&config); err != nil {
 			msg := fmt.Sprintf("Fail to create the dns healthcheck. Invalid JSON: %s", err.Error())

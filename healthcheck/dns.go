@@ -15,7 +15,7 @@ type DNSHealthcheckConfiguration struct {
 	Name        string
 	Description string
 	Domain      string
-	Interval    time.Duration
+	Interval    Duration
 	OneOff      bool
 }
 

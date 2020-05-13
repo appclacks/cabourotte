@@ -44,7 +44,7 @@ func TestDNSStartStop(t *testing.T) {
 			Name:        "foo",
 			Description: "bar",
 			Domain:      "mcorbin.fr",
-			Interval:    time.Second * 5,
+			Interval:    Duration(time.Second * 5),
 			OneOff:      false,
 		},
 	)

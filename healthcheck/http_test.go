@@ -76,7 +76,7 @@ func TestHTTPExecuteSuccess(t *testing.T) {
 			Target:      "127.0.0.1",
 			Protocol:    HTTP,
 			Path:        "/",
-			Timeout:     time.Second * 2,
+			Timeout:     Duration(time.Second * 2),
 		},
 	}
 	h.buildURL()
@@ -117,7 +117,7 @@ func TestHTTPv6ExecuteSuccess(t *testing.T) {
 			Target:      "::1",
 			Protocol:    HTTP,
 			Path:        "/",
-			Timeout:     time.Second * 2,
+			Timeout:     Duration(time.Second * 2),
 		},
 	}
 	h.buildURL()
@@ -151,7 +151,7 @@ func TestHTTPExecuteFailure(t *testing.T) {
 			Target:      "127.0.0.1",
 			Protocol:    HTTP,
 			Path:        "/",
-			Timeout:     time.Second * 2,
+			Timeout:     Duration(time.Second * 2),
 		},
 	}
 	h.buildURL()
@@ -172,7 +172,7 @@ func TestHTTPBuildURL(t *testing.T) {
 			Target:      "127.0.0.1",
 			Protocol:    HTTP,
 			Path:        "/",
-			Timeout:     time.Second * 2,
+			Timeout:     Duration(time.Second * 2),
 		},
 	}
 	h.buildURL()
@@ -190,7 +190,7 @@ func TestHTTPSBuildURL(t *testing.T) {
 			Target:      "127.0.0.1",
 			Protocol:    HTTPS,
 			Path:        "/foo",
-			Timeout:     time.Second * 2,
+			Timeout:     Duration(time.Second * 2),
 		},
 	}
 	h.buildURL()
@@ -211,8 +211,8 @@ func TestHTTPStartStop(t *testing.T) {
 			Path:        "/",
 			Protocol:    HTTP,
 			Port:        9000,
-			Timeout:     time.Second * 3,
-			Interval:    time.Second * 5,
+			Timeout:     Duration(time.Second * 3),
+			Interval:    Duration(time.Second * 5),
 			OneOff:      false,
 		},
 	)

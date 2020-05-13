@@ -19,8 +19,8 @@ type TCPHealthcheckConfiguration struct {
 	// can be an IP or a domain
 	Target   string
 	Port     uint
-	Timeout  time.Duration
-	Interval time.Duration
+	Timeout  Duration
+	Interval Duration
 	OneOff   bool
 }
 
@@ -113,7 +113,7 @@ func (h *TCPHealthcheck) Execute() error {
 	h.LogDebug("start executing healthcheck")
 	ctx := h.t.Context(nil)
 	dialer := net.Dialer{}
-	timeoutCtx, cancel := context.WithTimeout(ctx, h.Config.Timeout)
+	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(h.Config.Timeout))
 	defer cancel()
 	conn, err := dialer.DialContext(timeoutCtx, "tcp", h.URL)
 	if err != nil {

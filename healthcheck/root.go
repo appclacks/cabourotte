@@ -1,12 +1,35 @@
 package healthcheck
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
+
+// Duration an alias for the duration type
+type Duration time.Duration
+
+// UnmarshalText unmarshal a duration
+func (d *Duration) UnmarshalText(text []byte) error {
+	if len(text) < 2 {
+		return errors.New(fmt.Sprintf("%s is not a duration", text))
+	}
+	t := text[1 : len(text)-1]
+	dur, err := time.ParseDuration(string(t))
+	if err != nil {
+		return errors.Wrapf(err, "%s is not a duration", text)
+	}
+	*d = Duration(dur)
+	return nil
+}
+
+// UnmarshalJSON marshal to json a duration
+func (d *Duration) UnmarshalJSON(text []byte) error {
+	return d.UnmarshalText(text)
+}
 
 // Result represents the result of an healthcheck
 type Result struct {

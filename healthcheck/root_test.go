@@ -39,8 +39,8 @@ func TestAddRemoveCheck(t *testing.T) {
 			Description: "bar",
 			Target:      "127.0.0.1",
 			Port:        9000,
-			Timeout:     time.Second * 3,
-			Interval:    time.Second * 5,
+			Timeout:     Duration(time.Second * 3),
+			Interval:    Duration(time.Second * 5),
 			OneOff:      false,
 		},
 	)
@@ -58,8 +58,8 @@ func TestAddRemoveCheck(t *testing.T) {
 			Description: "bar",
 			Target:      "127.0.0.1",
 			Port:        9000,
-			Timeout:     time.Second * 3,
-			Interval:    time.Second * 5,
+			Timeout:     Duration(time.Second * 3),
+			Interval:    Duration(time.Second * 5),
 			OneOff:      false,
 		},
 	)
