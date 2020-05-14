@@ -52,7 +52,7 @@ func TestHandlers(t *testing.T) {
 		if err != nil {
 			t.Errorf("HTTP request failed\n%v", err)
 		}
-		if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode != http.StatusCreated {
 			t.Errorf("HTTP request failed, status %d", resp.StatusCode)
 		}
 	}

@@ -1,6 +1,7 @@
 package healthcheck
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
@@ -29,6 +30,12 @@ func (d *Duration) UnmarshalText(text []byte) error {
 // UnmarshalJSON marshal to json a duration
 func (d *Duration) UnmarshalJSON(text []byte) error {
 	return d.UnmarshalText(text)
+}
+
+// MarshalJSON marshal to json a duration
+func (d Duration) MarshalJSON() ([]byte, error) {
+	duration := time.Duration(d)
+	return json.Marshal(duration.String())
 }
 
 // Result represents the result of an healthcheck

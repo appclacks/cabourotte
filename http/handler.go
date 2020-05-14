@@ -9,14 +9,19 @@ import (
 	"cabourotte/healthcheck"
 )
 
+// BasicResponse a type for HTTP responses
+type BasicResponse struct {
+	message string
+}
+
 func (c *Component) addCheck(ec echo.Context, healthcheck healthcheck.Healthcheck) error {
 	err := c.healthcheck.AddCheck(healthcheck)
 	if err != nil {
 		msg := fmt.Sprintf("Fail to start the healthcheck: %s", err.Error())
 		c.Logger.Error(msg)
-		return ec.JSON(http.StatusInternalServerError, msg)
+		return ec.JSON(http.StatusInternalServerError, &BasicResponse{message: msg})
 	}
-	return nil
+	return ec.JSON(http.StatusCreated, &BasicResponse{message: "Healthcheck successfully added"})
 }
 
 // handlers configures the handlers for the http server component
@@ -32,7 +37,6 @@ func (c *Component) handlers() {
 		}
 		healthcheck := healthcheck.NewDNSHealthcheck(c.Logger, &config)
 		return c.addCheck(ec, healthcheck)
-
 	})
 	c.Server.POST("/healthcheck/tcp", func(ec echo.Context) error {
 		var config healthcheck.TCPHealthcheckConfiguration
@@ -43,7 +47,6 @@ func (c *Component) handlers() {
 		}
 		healthcheck := healthcheck.NewTCPHealthcheck(c.Logger, &config)
 		return c.addCheck(ec, healthcheck)
-		return nil
 	})
 	c.Server.POST("/healthcheck/http", func(ec echo.Context) error {
 		var config healthcheck.HTTPHealthcheckConfiguration
@@ -54,7 +57,6 @@ func (c *Component) handlers() {
 		}
 		healthcheck := healthcheck.NewHTTPHealthcheck(c.Logger, &config)
 		return c.addCheck(ec, healthcheck)
-		return nil
 	})
 	c.Server.GET("/healthcheck", func(ec echo.Context) error {
 		return nil

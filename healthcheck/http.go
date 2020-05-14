@@ -2,6 +2,7 @@ package healthcheck
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -41,9 +42,19 @@ func (p *Protocol) UnmarshalText(text []byte) error {
 	return nil
 }
 
-// UnmarshalJSON marshal to json a duration
-func (d *Protocol) UnmarshalJSON(text []byte) error {
-	return d.UnmarshalText(text)
+// UnmarshalJSON marshal to json a protocol
+func (p *Protocol) UnmarshalJSON(text []byte) error {
+	return p.UnmarshalText(text)
+}
+
+// MarshalJSON marshal to json a protocol
+func (p Protocol) MarshalJSON() ([]byte, error) {
+	if p == HTTP {
+		return json.Marshal("http")
+	} else if p == HTTPS {
+		return json.Marshal("https")
+	}
+	return nil, errors.New(fmt.Sprintf("Unknown protocol %d", p))
 }
 
 // HTTPHealthcheckConfiguration defines an HTTP healthcheck configuration
