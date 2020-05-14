@@ -2,6 +2,7 @@ package healthcheck
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"time"
@@ -132,4 +133,9 @@ func NewTCPHealthcheck(logger *zap.Logger, config *TCPHealthcheckConfiguration) 
 		Logger: logger,
 		Config: config,
 	}
+}
+
+// MarshalJSON marshal to json a dns healthcheck
+func (h TCPHealthcheck) MarshalJSON() ([]byte, error) {
+	return json.Marshal(h.Config)
 }

@@ -51,6 +51,13 @@ func TestAddRemoveCheck(t *testing.T) {
 	if len(component.Healthchecks) != 1 {
 		t.Errorf("The healthcheck was not added")
 	}
+	listResult := component.ListChecks()
+	if len(listResult) != 1 {
+		t.Errorf("The healthcheck is not in the healthcheck list")
+	}
+	if listResult[0].Name() != "foo" {
+		t.Errorf("The healthcheck name is not accurate")
+	}
 	newHealthcheck := NewTCPHealthcheck(
 		logger,
 		&TCPHealthcheckConfiguration{

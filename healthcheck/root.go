@@ -163,3 +163,14 @@ func (c *Component) RemoveCheck(identifier string) error {
 	defer c.lock.Unlock()
 	return c.removeCheck(identifier)
 }
+
+// ListChecks returns the healthchecks currently configured
+func (c *Component) ListChecks() []Healthcheck {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	result := make([]Healthcheck, 0, len(c.Healthchecks))
+	for _, value := range c.Healthchecks {
+		result = append(result, value)
+	}
+	return result
+}

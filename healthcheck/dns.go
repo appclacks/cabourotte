@@ -1,6 +1,7 @@
 package healthcheck
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/pkg/errors"
@@ -109,4 +110,9 @@ func NewDNSHealthcheck(logger *zap.Logger, config *DNSHealthcheckConfiguration) 
 		Logger: logger,
 		Config: config,
 	}
+}
+
+// MarshalJSON marshal to json a dns healthcheck
+func (h DNSHealthcheck) MarshalJSON() ([]byte, error) {
+	return json.Marshal(h.Config)
 }
