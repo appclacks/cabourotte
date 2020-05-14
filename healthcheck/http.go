@@ -59,17 +59,17 @@ func (p Protocol) MarshalJSON() ([]byte, error) {
 
 // HTTPHealthcheckConfiguration defines an HTTP healthcheck configuration
 type HTTPHealthcheckConfiguration struct {
-	Name        string
-	ValidStatus []uint
-	Description string
+	Name        string `json:"name"`
+	ValidStatus []uint `json:"valid-status"`
+	Description string `json:"description"`
 	// can be an IP or a domain
-	Target   string
-	Port     uint
-	Protocol Protocol
-	Path     string
-	Timeout  Duration
-	Interval Duration
-	OneOff   bool
+	Target   string   `json:"description"`
+	Port     uint     `json:"port"`
+	Protocol Protocol `json:"protocol"`
+	Path     string   `json:"path"`
+	Timeout  Duration `json:"timeout"`
+	Interval Duration `json:"interval"`
+	OneOff   bool     `json:"one-off"`
 }
 
 // HTTPHealthcheck defines an HTTP healthcheck
@@ -131,7 +131,6 @@ func (h *HTTPHealthcheck) Start(chanResult chan *Result) error {
 
 // Stop an Healthcheck
 func (h *HTTPHealthcheck) Stop() error {
-	h.LogInfo("Stopping healthcheck")
 	h.Tick.Stop()
 	h.t.Kill(nil)
 	h.t.Wait()

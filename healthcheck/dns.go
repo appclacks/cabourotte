@@ -13,11 +13,11 @@ import (
 
 // DNSHealthcheckConfiguration defines a DNS healthcheck configuration
 type DNSHealthcheckConfiguration struct {
-	Name        string
-	Description string
-	Domain      string
-	Interval    Duration
-	OneOff      bool
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Domain      string   `json:"domain"`
+	Interval    Duration `json:"interval"`
+	OneOff      bool     `json:"one-off"`
 }
 
 // DNSHealthcheck defines an HTTP healthcheck
@@ -86,7 +86,6 @@ func (h *DNSHealthcheck) LogInfo(message string) {
 
 // Stop an Healthcheck
 func (h *DNSHealthcheck) Stop() error {
-	h.LogInfo("Stopping healthcheck")
 	h.Tick.Stop()
 	h.t.Kill(nil)
 	h.t.Wait()

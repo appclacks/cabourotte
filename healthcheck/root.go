@@ -136,6 +136,7 @@ func (c *Component) removeCheck(identifier string) error {
 
 // AddCheck add an healthcheck to the component and starts it.
 func (c *Component) AddCheck(healthcheck Healthcheck) error {
+	healthcheck.LogInfo("Adding healthcheck")
 	err := healthcheck.Initialize()
 	if err != nil {
 		return errors.Wrapf(err, "Fail to initialize healthcheck %s", healthcheck.Name())
@@ -157,11 +158,12 @@ func (c *Component) AddCheck(healthcheck Healthcheck) error {
 	return nil
 }
 
-// RemoveCheck Removes an healthchec
-func (c *Component) RemoveCheck(identifier string) error {
+// RemoveCheck Removes an healthcheck
+func (c *Component) RemoveCheck(name string) error {
+	c.Logger.Info(fmt.Sprintf("Removing healthcheck %s", name))
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	return c.removeCheck(identifier)
+	return c.removeCheck(name)
 }
 
 // ListChecks returns the healthchecks currently configured

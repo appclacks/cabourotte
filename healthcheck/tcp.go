@@ -15,14 +15,14 @@ import (
 
 // TCPHealthcheckConfiguration defines a TCP healthcheck configuration
 type TCPHealthcheckConfiguration struct {
-	Name        string
-	Description string
+	Name        string `json:"name"`
+	Description string `json:"description"`
 	// can be an IP or a domain
-	Target   string
-	Port     uint
-	Timeout  Duration
-	Interval Duration
-	OneOff   bool
+	Target   string   `json:"target"`
+	Port     uint     `json:"port"`
+	Timeout  Duration `json:"timeout"`
+	Interval Duration `json:"interval"`
+	OneOff   bool     `json:"one-off"`
 }
 
 // TCPHealthcheck defines a TCP healthcheck
@@ -76,7 +76,6 @@ func (h *TCPHealthcheck) Start(chanResult chan *Result) error {
 
 // Stop an Healthcheck
 func (h *TCPHealthcheck) Stop() error {
-	h.LogInfo("Stopping healthcheck")
 	h.Tick.Stop()
 	h.t.Kill(nil)
 	h.t.Wait()
