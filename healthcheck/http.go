@@ -129,6 +129,12 @@ func (h *HTTPHealthcheck) Start(chanResult chan *Result) error {
 	return nil
 }
 
+// OneOff returns true if the healthcheck if a one-off check
+func (h *HTTPHealthcheck) OneOff() bool {
+	return h.Config.OneOff
+
+}
+
 // Stop an Healthcheck
 func (h *HTTPHealthcheck) Stop() error {
 	h.Tick.Stop()

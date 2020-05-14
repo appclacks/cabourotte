@@ -55,6 +55,7 @@ type Healthcheck interface {
 	Execute() error
 	LogDebug(message string)
 	LogInfo(message string)
+	OneOff() bool
 	LogError(err error, message string)
 }
 

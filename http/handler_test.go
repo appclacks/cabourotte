@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -32,15 +34,15 @@ func TestHandlers(t *testing.T) {
 	}{
 		{
 			endpoint: "/healthcheck/dns",
-			payload:  `{"name":"foo","description":"bar","domain":"mcorbin.fr","interval":"10m","oneoff":false}`,
+			payload:  `{"name":"foo","description":"bar","domain":"mcorbin.fr","interval":"10m","one-off":false}`,
 		},
 		{
 			endpoint: "/healthcheck/tcp",
-			payload:  `{"name":"bar","description":"bar","domain":"mcorbin.fr","interval":"10m","oneoff":false,"target":"mcorbin.fr","port":9999,"timeout":"10s"}`,
+			payload:  `{"name":"bar","description":"bar","domain":"mcorbin.fr","interval":"10m","one-off":false,"target":"mcorbin.fr","port":9999,"timeout":"10s"}`,
 		},
 		{
 			endpoint: "/healthcheck/http",
-			payload:  `{"name":"baz","description":"bar","domain":"mcorbin.fr","interval":"10m","oneoff":false,"target":"mcorbin.fr","port":9999,"timeout":"10s","protocol":"http","valid-status":[200]}`,
+			payload:  `{"name":"baz","description":"bar","domain":"mcorbin.fr","interval":"10m","one-off":false,"target":"mcorbin.fr","port":9999,"timeout":"10s","protocol":"http","valid-status":[200]}`,
 		},
 	}
 	client := &http.Client{}
@@ -113,5 +115,57 @@ func TestHandlers(t *testing.T) {
 	err = component.Stop()
 	if err != nil {
 		t.Errorf("Fail to stop the component\n%v", err)
+	}
+}
+
+func TestOneOffCheck(t *testing.T) {
+	count := 0
+	healthcheck, err := healthcheck.New(zap.NewExample(), make(chan *healthcheck.Result, 10))
+	if err != nil {
+		t.Errorf("Fail to create the healthcheck component\n%v", err)
+	}
+	component, err := New(zap.NewExample(), &Configuration{Host: "127.0.0.1", Port: 2000}, healthcheck)
+	if err != nil {
+		t.Errorf("Fail to create the component\n%v", err)
+	}
+	err = component.Start()
+	if err != nil {
+		t.Errorf("Fail to start the component\n%v", err)
+	}
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		count++
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer ts.Close()
+
+	port, err := strconv.ParseUint(strings.Split(ts.URL, ":")[2], 10, 16)
+	if err != nil {
+		t.Errorf("error getting HTTP server port :\n%v", err)
+	}
+	client := &http.Client{}
+	reqBody := fmt.Sprintf(`{"name":"baz","description":"bar","domain":"mcorbin.fr","interval":"10m","one-off":true,"target":"mcorbin.fr","port":%d,"timeout":"10s","protocol":"http","valid-status":[200]}`, port)
+	req, err := http.NewRequest("POST", "http://127.0.0.1:2000/healthcheck/http", bytes.NewBuffer([]byte(reqBody)))
+	req.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		t.Errorf("Fail to build the HTTP request\n%v", err)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Errorf("HTTP request failed\n%v", err)
+	}
+	if resp.StatusCode != http.StatusCreated {
+		t.Errorf("HTTP request failed, status %d", resp.StatusCode)
+	}
+	if count != 1 {
+		t.Errorf("The target server was not reached: %d", count)
+	}
+	defer resp.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Fail to read the body\n%v", err)
+	}
+	body := string(bodyBytes)
+	if !strings.Contains(body, "One-off healthcheck baz successfully executed") {
+		t.Errorf("Invalid body %s", body)
 	}
 }

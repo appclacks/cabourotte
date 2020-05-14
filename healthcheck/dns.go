@@ -41,6 +41,12 @@ func (h *DNSHealthcheck) Name() string {
 	return h.Config.Name
 }
 
+// OneOff returns true if the healthcheck if a one-off check
+func (h *DNSHealthcheck) OneOff() bool {
+	return h.Config.OneOff
+
+}
+
 // Start an Healthcheck, which will be periodically executed after a
 // given interval of time
 func (h *DNSHealthcheck) Start(chanResult chan *Result) error {
