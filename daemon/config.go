@@ -1,4 +1,4 @@
-package reloader
+package daemon
 
 import (
 	"github.com/pkg/errors"

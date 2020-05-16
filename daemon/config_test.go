@@ -1,4 +1,4 @@
-package reloader
+package daemon
 
 import (
 	"reflect"
