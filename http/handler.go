@@ -64,6 +64,12 @@ func (c *Component) handlers() {
 			c.Logger.Error(msg)
 			return ec.JSON(http.StatusBadRequest, &BasicResponse{Message: msg})
 		}
+		err := healthcheck.ValidateDNSConfig(&config)
+		if err != nil {
+			msg := fmt.Sprintf("Invalid healthcheck configuration: %s", err.Error())
+			c.Logger.Error(msg)
+			return ec.JSON(http.StatusBadRequest, &BasicResponse{Message: msg})
+		}
 		healthcheck := healthcheck.NewDNSHealthcheck(c.Logger, &config)
 		return c.handleCheck(ec, healthcheck)
 	})
@@ -75,6 +81,12 @@ func (c *Component) handlers() {
 			c.Logger.Error(msg)
 			return ec.JSON(http.StatusBadRequest, &BasicResponse{Message: msg})
 		}
+		err := healthcheck.ValidateTCPConfig(&config)
+		if err != nil {
+			msg := fmt.Sprintf("Invalid healthcheck configuration: %s", err.Error())
+			c.Logger.Error(msg)
+			return ec.JSON(http.StatusBadRequest, &BasicResponse{Message: msg})
+		}
 		healthcheck := healthcheck.NewTCPHealthcheck(c.Logger, &config)
 		return c.handleCheck(ec, healthcheck)
 	})
@@ -83,6 +95,12 @@ func (c *Component) handlers() {
 		var config healthcheck.HTTPHealthcheckConfiguration
 		if err := ec.Bind(&config); err != nil {
 			msg := fmt.Sprintf("Fail to create the HTTP healthcheck. Invalid JSON: %s", err.Error())
+			c.Logger.Error(msg)
+			return ec.JSON(http.StatusBadRequest, &BasicResponse{Message: msg})
+		}
+		err := healthcheck.ValidateHTTPConfig(&config)
+		if err != nil {
+			msg := fmt.Sprintf("Invalid healthcheck configuration: %s", err.Error())
 			c.Logger.Error(msg)
 			return ec.JSON(http.StatusBadRequest, &BasicResponse{Message: msg})
 		}

@@ -79,7 +79,7 @@ type HTTPHealthcheckConfiguration struct {
 	ValidStatus []uint `json:"valid-status" yaml:"valid_status"`
 	Description string `json:"description"`
 	// can be an IP or a domain
-	Target   string   `json:"description"`
+	Target   string   `json:"target"`
 	Port     uint     `json:"port"`
 	Protocol Protocol `json:"protocol"`
 	Path     string   `json:"path"`
@@ -97,7 +97,7 @@ func ValidateHTTPConfig(config *HTTPHealthcheckConfiguration) error {
 		return errors.New("At least one valid status code should be provided")
 	}
 	if config.Target == "" {
-		return errors.New("The healthcheck target")
+		return errors.New("The healthcheck target is missing")
 	}
 	if config.Port == 0 {
 		return errors.New("The healthcheck port is missing")

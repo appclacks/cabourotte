@@ -143,7 +143,7 @@ func TestOneOffCheck(t *testing.T) {
 		t.Errorf("error getting HTTP server port :\n%v", err)
 	}
 	client := &http.Client{}
-	reqBody := fmt.Sprintf(`{"name":"baz","description":"bar","domain":"mcorbin.fr","interval":"10m","one-off":true,"target":"mcorbin.fr","port":%d,"timeout":"10s","protocol":"http","valid-status":[200]}`, port)
+	reqBody := fmt.Sprintf(`{"name":"baz","description":"bar","interval":"10m","one-off":true,"target":"127.0.0.1","port":%d,"timeout":"10s","protocol":"http","valid-status":[200]}`, port)
 	req, err := http.NewRequest("POST", "http://127.0.0.1:2000/healthcheck/http", bytes.NewBuffer([]byte(reqBody)))
 	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
