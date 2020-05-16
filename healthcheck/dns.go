@@ -31,6 +31,20 @@ type DNSHealthcheck struct {
 	t    tomb.Tomb
 }
 
+// ValidateDNSConfig validates the healthcheck configuration
+func ValidateDNSConfig(config *DNSHealthcheckConfiguration) error {
+	if config.Name == "" {
+		return errors.New("The healthcheck name is missing")
+	}
+	if config.Domain == "" {
+		return errors.New("The healthcheck domain is missing")
+	}
+	if config.Interval < 5 {
+		return errors.New("The healthcheck interval should be greater than 5")
+	}
+	return nil
+}
+
 // Initialize the healthcheck.
 func (h *DNSHealthcheck) Initialize() error {
 	return nil

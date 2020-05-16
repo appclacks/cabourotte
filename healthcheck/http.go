@@ -25,6 +25,22 @@ const (
 	HTTPS
 )
 
+// UnmarshalYAML read a protocol fom yaml
+func (p *Protocol) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var raw string
+	if err := unmarshal(&raw); err != nil {
+		return errors.Wrap(err, "Unable to read the healthcheck protocol")
+	}
+	if raw == "http" {
+		*p = HTTP
+	} else if raw == "https" {
+		*p = HTTPS
+	} else {
+		return errors.New(fmt.Sprintf("Invalid protocol %s", raw))
+	}
+	return nil
+}
+
 // UnmarshalText unmarshal a duration
 func (p *Protocol) UnmarshalText(text []byte) error {
 	if len(text) < 2 {
@@ -60,7 +76,7 @@ func (p Protocol) MarshalJSON() ([]byte, error) {
 // HTTPHealthcheckConfiguration defines an HTTP healthcheck configuration
 type HTTPHealthcheckConfiguration struct {
 	Name        string `json:"name"`
-	ValidStatus []uint `json:"valid-status"`
+	ValidStatus []uint `json:"valid-status" yaml:"valid_status"`
 	Description string `json:"description"`
 	// can be an IP or a domain
 	Target   string   `json:"description"`
@@ -70,6 +86,32 @@ type HTTPHealthcheckConfiguration struct {
 	Timeout  Duration `json:"timeout"`
 	Interval Duration `json:"interval"`
 	OneOff   bool     `json:"one-off"`
+}
+
+// ValidateHTTPConfig validates the healthcheck configuration
+func ValidateHTTPConfig(config *HTTPHealthcheckConfiguration) error {
+	if config.Name == "" {
+		return errors.New("The healthcheck name is missing")
+	}
+	if len(config.ValidStatus) == 0 {
+		return errors.New("At least one valid status code should be provided")
+	}
+	if config.Target == "" {
+		return errors.New("The healthcheck target")
+	}
+	if config.Port == 0 {
+		return errors.New("The healthcheck port is missing")
+	}
+	if config.Timeout == 0 {
+		return errors.New("The healthcheck timeout is missing")
+	}
+	if config.Interval < 5 {
+		return errors.New("The healthcheck interval should be greater than 5")
+	}
+	if config.Interval < config.Timeout {
+		return errors.New("The healthcheck interval should be greater than the timeout")
+	}
+	return nil
 }
 
 // HTTPHealthcheck defines an HTTP healthcheck

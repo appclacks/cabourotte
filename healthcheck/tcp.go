@@ -25,6 +25,29 @@ type TCPHealthcheckConfiguration struct {
 	OneOff   bool     `json:"one-off"`
 }
 
+// ValidateTCPConfig validates the healthcheck configuration
+func ValidateTCPConfig(config *TCPHealthcheckConfiguration) error {
+	if config.Name == "" {
+		return errors.New("The healthcheck name is missing")
+	}
+	if config.Target == "" {
+		return errors.New("The healthcheck target is missing")
+	}
+	if config.Port == 0 {
+		return errors.New("The healthcheck port is missing")
+	}
+	if config.Timeout == 0 {
+		return errors.New("The healthcheck timeout is missing")
+	}
+	if config.Interval < 5 {
+		return errors.New("The healthcheck interval should be greater than 5")
+	}
+	if config.Interval < config.Timeout {
+		return errors.New("The healthcheck interval should be greater than the timeout")
+	}
+	return nil
+}
+
 // TCPHealthcheck defines a TCP healthcheck
 type TCPHealthcheck struct {
 	Logger     *zap.Logger

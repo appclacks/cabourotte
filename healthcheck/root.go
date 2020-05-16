@@ -27,6 +27,16 @@ func (d *Duration) UnmarshalText(text []byte) error {
 	return nil
 }
 
+// UnmarshalYAML read a duration fom yaml
+func (d *Duration) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var raw time.Duration
+	if err := unmarshal(&raw); err != nil {
+		return errors.Wrap(err, "Unable to read Cabourotte configuration")
+	}
+	*d = Duration(raw)
+	return nil
+}
+
 // UnmarshalJSON marshal to json a duration
 func (d *Duration) UnmarshalJSON(text []byte) error {
 	return d.UnmarshalText(text)
