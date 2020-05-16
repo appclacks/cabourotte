@@ -134,3 +134,35 @@ http_checks:
 		}
 	}
 }
+
+func TestInvalidConfig(t *testing.T) {
+	cases := []string{
+		`
+http:
+  host: ""
+  port: 2000
+`,
+		`
+http:
+  port: 2000
+`,
+		`
+http:
+  host: 127.0.0.1
+`,
+		`
+http:
+  host: 127.0.0.1
+  port: 0
+
+`,
+	}
+	for _, c := range cases {
+		var result Configuration
+		err := yaml.Unmarshal([]byte(c), &result)
+
+		if err == nil {
+			t.Errorf("Was expected an error when decoding the configuration: \n%s", c)
+		}
+	}
+}
