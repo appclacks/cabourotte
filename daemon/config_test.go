@@ -154,7 +154,16 @@ http:
 http:
   host: 127.0.0.1
   port: 0
-
+`,
+		`
+http:
+  host: 127.0.0.1
+  port: 200
+dns_checks:
+  - name: foo
+    description: bar
+    domain: ""
+    interval: 10s
 `,
 	}
 	for _, c := range cases {

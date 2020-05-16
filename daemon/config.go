@@ -22,6 +22,24 @@ func (configuration *Configuration) UnmarshalYAML(unmarshal func(interface{}) er
 	if err := unmarshal(&raw); err != nil {
 		return errors.Wrap(err, "Unable to read Cabourotte configuration")
 	}
+	for _, check := range raw.DNSChecks {
+		err := healthcheck.ValidateDNSConfig(&check)
+		if err != nil {
+			return errors.Wrap(err, "Invalid healthcheck configuration")
+		}
+	}
+	for _, check := range raw.TCPChecks {
+		err := healthcheck.ValidateTCPConfig(&check)
+		if err != nil {
+			return errors.Wrap(err, "Invalid healthcheck configuration")
+		}
+	}
+	for _, check := range raw.HTTPChecks {
+		err := healthcheck.ValidateHTTPConfig(&check)
+		if err != nil {
+			return errors.Wrap(err, "Invalid healthcheck configuration")
+		}
+	}
 	*configuration = Configuration(raw)
 	return nil
 }
