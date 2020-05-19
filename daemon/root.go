@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 
+	"cabourotte/exporter"
 	"cabourotte/healthcheck"
 	"cabourotte/http"
 )
@@ -19,7 +20,9 @@ type Component struct {
 	Logger      *zap.Logger
 	HTTP        *http.Component
 	Healthcheck *healthcheck.Component
+	Exporter    *exporter.Component
 	lock        sync.RWMutex
+	ChanResult  chan *healthcheck.Result
 }
 
 // New creates a new daemon component
@@ -42,10 +45,17 @@ func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "Fail to start the HTTP server")
 	}
+	exporterComponent := exporter.New(logger, chanResult, &config.Exporters)
+	err = exporterComponent.Start()
+	if err != nil {
+		return nil, errors.Wrapf(err, "Fail to start the exporter component")
+	}
 	component := Component{
+		ChanResult:  chanResult,
 		Config:      config,
 		HTTP:        http,
 		Logger:      logger,
+		Exporter:    exporterComponent,
 		Healthcheck: checkComponent,
 	}
 	// start all checks
@@ -223,5 +233,16 @@ func (c *Component) Reload(config *Configuration) error {
 		}
 		c.HTTP = http
 	}
+	// Stop all exporters, recreate the component
+	err := c.Exporter.Stop()
+	if err != nil {
+		return errors.Wrapf(err, "Fail to stop the exporter component")
+	}
+	exporterComponent := exporter.New(c.Logger, c.ChanResult, &config.Exporters)
+	err = exporterComponent.Start()
+	if err != nil {
+		return errors.Wrapf(err, "Fail to start the exporter component")
+	}
+	c.Exporter = exporterComponent
 	return nil
 }
