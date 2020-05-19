@@ -48,10 +48,10 @@ func TestHandlers(t *testing.T) {
 	client := &http.Client{}
 	for _, c := range cases {
 		req, err := http.NewRequest("POST", fmt.Sprintf("http://127.0.0.1:2000%s", c.endpoint), bytes.NewBuffer([]byte(c.payload)))
-		req.Header.Set("Content-Type", "application/json")
 		if err != nil {
 			t.Errorf("Fail to build the HTTP request\n%v", err)
 		}
+		req.Header.Set("Content-Type", "application/json")
 		resp, err := client.Do(req)
 		if err != nil {
 			t.Errorf("HTTP request failed\n%v", err)

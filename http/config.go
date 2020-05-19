@@ -17,7 +17,7 @@ func (c *Configuration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	type rawConfiguration Configuration
 	raw := rawConfiguration{}
 	if err := unmarshal(&raw); err != nil {
-		return errors.Wrap(err, "Unable to read http configuration")
+		return errors.Wrap(err, "Unable to read HTTP configuration")
 	}
 	ip := net.ParseIP(raw.Host)
 	if ip == nil {

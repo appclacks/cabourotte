@@ -50,10 +50,10 @@ func (d Duration) MarshalJSON() ([]byte, error) {
 
 // Result represents the result of an healthcheck
 type Result struct {
-	Name      string
-	Success   bool
-	Timestamp time.Time
-	message   string
+	Name      string    `json:"name"`
+	Success   bool      `json:"success"`
+	Timestamp time.Time `json:"timestamp"`
+	Message   string    `json:"message"`
 }
 
 // Healthcheck is the face for an healthcheck
@@ -87,10 +87,10 @@ func NewResult(healthcheck Healthcheck, err error) *Result {
 	}
 	if err != nil {
 		result.Success = false
-		result.message = err.Error()
+		result.Message = err.Error()
 	} else {
 		result.Success = true
-		result.message = "success"
+		result.Message = "success"
 	}
 	return &result
 
