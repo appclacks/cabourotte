@@ -3,6 +3,7 @@ package daemon
 import (
 	"github.com/pkg/errors"
 
+	"cabourotte/exporter"
 	"cabourotte/healthcheck"
 	"cabourotte/http"
 )
@@ -13,6 +14,7 @@ type Configuration struct {
 	DNSChecks  []healthcheck.DNSHealthcheckConfiguration  `yaml:"dns_checks"`
 	TCPChecks  []healthcheck.TCPHealthcheckConfiguration  `yaml:"tcp_checks"`
 	HTTPChecks []healthcheck.HTTPHealthcheckConfiguration `yaml:"http_checks"`
+	Exporters  exporter.Configuration
 }
 
 // UnmarshalYAML Parse a configuration from YAML.

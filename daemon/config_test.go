@@ -7,6 +7,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
+	"cabourotte/exporter"
 	"cabourotte/healthcheck"
 	"cabourotte/http"
 )
@@ -84,11 +85,25 @@ http_checks:
     valid_status:
       - 200
       - 201
+exporters:
+  http:
+    - host: "127.0.0.1"
+      port: 2000
+      protocol: https
 `,
 			want: Configuration{
 				HTTP: http.Configuration{
 					Host: "127.0.0.1",
 					Port: 2000,
+				},
+				Exporters: exporter.Configuration{
+					HTTP: []exporter.HTTPConfiguration{
+						exporter.HTTPConfiguration{
+							Host:     "127.0.0.1",
+							Port:     2000,
+							Protocol: healthcheck.HTTPS,
+						},
+					},
 				},
 				DNSChecks: []healthcheck.DNSHealthcheckConfiguration{
 					healthcheck.DNSHealthcheckConfiguration{
