@@ -1,7 +1,6 @@
 package healthcheck
 
 import (
-	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
@@ -9,44 +8,6 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
-
-// Duration an alias for the duration type
-type Duration time.Duration
-
-// UnmarshalText unmarshal a duration
-func (d *Duration) UnmarshalText(text []byte) error {
-	if len(text) < 2 {
-		return errors.New(fmt.Sprintf("%s is not a duration", text))
-	}
-	t := text[1 : len(text)-1]
-	dur, err := time.ParseDuration(string(t))
-	if err != nil {
-		return errors.Wrapf(err, "%s is not a duration", text)
-	}
-	*d = Duration(dur)
-	return nil
-}
-
-// UnmarshalYAML read a duration fom yaml
-func (d *Duration) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var raw time.Duration
-	if err := unmarshal(&raw); err != nil {
-		return errors.Wrap(err, "Unable to read Cabourotte configuration")
-	}
-	*d = Duration(raw)
-	return nil
-}
-
-// UnmarshalJSON marshal to json a duration
-func (d *Duration) UnmarshalJSON(text []byte) error {
-	return d.UnmarshalText(text)
-}
-
-// MarshalJSON marshal to json a duration
-func (d Duration) MarshalJSON() ([]byte, error) {
-	duration := time.Duration(d)
-	return json.Marshal(duration.String())
-}
 
 // Result represents the result of an healthcheck
 type Result struct {
