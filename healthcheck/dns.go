@@ -132,6 +132,6 @@ func NewDNSHealthcheck(logger *zap.Logger, config *DNSHealthcheckConfiguration) 
 }
 
 // MarshalJSON marshal to json a dns healthcheck
-func (h DNSHealthcheck) MarshalJSON() ([]byte, error) {
+func (h *DNSHealthcheck) MarshalJSON() ([]byte, error) {
 	return json.Marshal(h.Config)
 }

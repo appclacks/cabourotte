@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -14,9 +15,12 @@ import (
 )
 
 func TestStartStop(t *testing.T) {
+	mutex := &sync.RWMutex{}
 	count := 0
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mutex.Lock()
 		count++
+		mutex.Unlock()
 		w.WriteHeader(http.StatusOK)
 	}))
 	defer ts.Close()
@@ -50,10 +54,12 @@ func TestStartStop(t *testing.T) {
 	success := false
 	for i := 0; i < 10; i++ {
 		time.Sleep(time.Millisecond * 100)
+		mutex.RLock()
 		if count == 1 {
 			success = true
 			break
 		}
+		mutex.RUnlock()
 	}
 	if !success {
 		t.Errorf("The request counter is invalid")

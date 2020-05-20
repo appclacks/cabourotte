@@ -164,6 +164,6 @@ func NewTCPHealthcheck(logger *zap.Logger, config *TCPHealthcheckConfiguration) 
 }
 
 // MarshalJSON marshal to json a dns healthcheck
-func (h TCPHealthcheck) MarshalJSON() ([]byte, error) {
+func (h *TCPHealthcheck) MarshalJSON() ([]byte, error) {
 	return json.Marshal(h.Config)
 }

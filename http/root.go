@@ -43,8 +43,8 @@ func (c *Component) Start() error {
 			c.Logger.Info("Stopping the HTTP server")
 		}
 	}()
-	// TODO remove this
-	time.Sleep(100 * time.Millisecond)
+	// todo: remove this, causes issues in tests
+	time.Sleep(300 * time.Millisecond)
 	return nil
 }
 
