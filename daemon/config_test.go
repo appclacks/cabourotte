@@ -24,6 +24,7 @@ http:
   port: 2000
 `,
 			want: Configuration{
+				ResultBuffer: DefaultBufferSize,
 				HTTP: http.Configuration{
 					Host: "127.0.0.1",
 					Port: 2000,
@@ -42,6 +43,7 @@ dns_checks:
     interval: 10s
 `,
 			want: Configuration{
+				ResultBuffer: DefaultBufferSize,
 				HTTP: http.Configuration{
 					Host: "127.0.0.1",
 					Port: 2000,
@@ -85,6 +87,7 @@ http_checks:
     valid_status:
       - 200
       - 201
+result_buffer: 1000
 exporters:
   http:
     - host: "127.0.0.1"
@@ -92,6 +95,7 @@ exporters:
       protocol: https
 `,
 			want: Configuration{
+				ResultBuffer: 1000,
 				HTTP: http.Configuration{
 					Host: "127.0.0.1",
 					Port: 2000,

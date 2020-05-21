@@ -28,7 +28,7 @@ type Component struct {
 // New creates a new daemon component
 func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 	logger.Info("Starting the Cabourotte daemon")
-	chanResult := make(chan *healthcheck.Result, 10)
+	chanResult := make(chan *healthcheck.Result, config.ResultBuffer)
 	checkComponent, err := healthcheck.New(logger, chanResult)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Fail to create the healthcheck component")
