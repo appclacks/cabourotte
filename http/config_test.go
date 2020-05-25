@@ -21,6 +21,20 @@ port: 2000
 				Port: 2000,
 			},
 		},
+		{
+			in: `
+host: "127.0.0.1"
+port: 2000
+key: /tmp/foo
+cert: /tmp/bar
+`,
+			want: Configuration{
+				Host: "127.0.0.1",
+				Port: 2000,
+				Key:  "/tmp/foo",
+				Cert: "/tmp/bar",
+			},
+		},
 	}
 	for _, c := range cases {
 		var result Configuration
@@ -55,6 +69,20 @@ port: 2000
 		{
 			in: `
 host: ""
+`,
+		},
+		{
+			in: `
+host: "127.0.0.1"
+port: 2000
+key: "/tmp/foo"
+`,
+		},
+		{
+			in: `
+host: "127.0.0.1"
+port: 2000
+cert: "/tmp/foo"
 `,
 		},
 	}

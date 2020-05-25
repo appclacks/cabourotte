@@ -38,7 +38,11 @@ func (c *Component) Start() error {
 	c.Logger.Info(fmt.Sprintf("Starting the HTTP server component on %s", address))
 	c.handlers()
 	go func() {
-		c.Server.Start(address)
+		if c.Config.Cert != "" {
+			c.Server.StartTLS(address, c.Config.Cert, c.Config.Key)
+		} else {
+			c.Server.Start(address)
+		}
 	}()
 	// todo: remove this, causes issues in tests
 	time.Sleep(300 * time.Millisecond)
