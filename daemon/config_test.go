@@ -184,6 +184,28 @@ dns_checks:
     domain: ""
     interval: 10s
 `,
+		`
+http:
+  host: "127.0.0.1"
+  port: 2000
+dns_checks:
+  - name: foo
+    description: bar
+    domain: mcorbin.fr
+    interval: 1s
+`,
+		`
+http:
+  host: "127.0.0.1"
+  port: 2000
+tcp_checks:
+  - name: foo
+    description: bar
+    target: 127.0.0.1
+    port: 2000
+    interval: 10s
+    timeout: 20s
+`,
 	}
 	for _, c := range cases {
 		var result Configuration

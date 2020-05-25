@@ -47,8 +47,8 @@ func ValidateHTTPConfig(config *HTTPHealthcheckConfiguration) error {
 	if config.Timeout == 0 {
 		return errors.New("The healthcheck timeout is missing")
 	}
-	if config.Interval < 5 {
-		return errors.New("The healthcheck interval should be greater than 5")
+	if config.Interval < Duration(2*time.Second) {
+		return errors.New("The healthcheck interval should be greater than 2 second")
 	}
 	if config.Interval < config.Timeout {
 		return errors.New("The healthcheck interval should be greater than the timeout")

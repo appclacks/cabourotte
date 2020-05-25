@@ -39,8 +39,8 @@ func ValidateDNSConfig(config *DNSHealthcheckConfiguration) error {
 	if config.Domain == "" {
 		return errors.New("The healthcheck domain is missing")
 	}
-	if config.Interval < 5 {
-		return errors.New("The healthcheck interval should be greater than 5")
+	if config.Interval < Duration(2*time.Second) {
+		return errors.New("The healthcheck interval should be greater than 2 second")
 	}
 	return nil
 }
