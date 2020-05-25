@@ -47,6 +47,18 @@ func (c *Component) Start() error {
 		for {
 			select {
 			case message := <-c.ChanResult:
+				if message.Success {
+					c.Logger.Info("Healthcheck successful",
+						zap.String("name", message.Name),
+						zap.String("date", message.Timestamp.String()),
+					)
+				} else {
+					c.Logger.Info("healthcheck failed",
+						zap.String("name", message.Name),
+						zap.String("extra", message.Message),
+						zap.String("date", message.Timestamp.String()),
+					)
+				}
 				for _, exporter := range c.Exporters {
 					exporter.Push(message)
 				}

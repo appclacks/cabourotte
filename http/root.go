@@ -34,14 +34,11 @@ func New(logger *zap.Logger, config *Configuration, healthcheck *healthcheck.Com
 
 // Start starts the http server
 func (c *Component) Start() error {
-	c.Logger.Info("Starting the HTTP server component")
 	address := fmt.Sprintf("%s:%d", c.Config.Host, c.Config.Port)
+	c.Logger.Info(fmt.Sprintf("Starting the HTTP server component on %s", address))
 	c.handlers()
 	go func() {
-		err := c.Server.Start(address)
-		if err != nil {
-			c.Logger.Info("Stopping the HTTP server")
-		}
+		c.Server.Start(address)
 	}()
 	// todo: remove this, causes issues in tests
 	time.Sleep(300 * time.Millisecond)

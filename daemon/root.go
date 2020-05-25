@@ -25,7 +25,7 @@ type Component struct {
 	ChanResult  chan *healthcheck.Result
 }
 
-// New creates a new daemon component
+// New creates and start a new daemon component
 func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 	logger.Info("Starting the Cabourotte daemon")
 	chanResult := make(chan *healthcheck.Result, config.ResultBuffer)
@@ -138,6 +138,9 @@ func (c *Component) Reload(config *Configuration) error {
 			dnsChecksToRemove = append(dnsChecksToRemove, currentCheck.Name)
 		}
 	}
+	for _, check := range dnsChecksToRemove {
+		c.Healthcheck.RemoveCheck(check)
+	}
 	for _, newCheck := range config.DNSChecks {
 		if !strContains(dnsChecksToKeep, newCheck.Name) {
 			check := healthcheck.NewDNSHealthcheck(c.Logger, &newCheck)
@@ -146,9 +149,6 @@ func (c *Component) Reload(config *Configuration) error {
 				return errors.Wrapf(err, "Fail to add healthcheck %s", check.Name())
 			}
 		}
-	}
-	for _, check := range dnsChecksToRemove {
-		c.Healthcheck.RemoveCheck(check)
 	}
 	// TCP healthchecks management, <3 golang abstractions
 	var tcpChecksToRemove []string
@@ -171,6 +171,9 @@ func (c *Component) Reload(config *Configuration) error {
 			tcpChecksToRemove = append(tcpChecksToRemove, currentCheck.Name)
 		}
 	}
+	for _, check := range tcpChecksToRemove {
+		c.Healthcheck.RemoveCheck(check)
+	}
 	for _, newCheck := range config.TCPChecks {
 		if !strContains(tcpChecksToKeep, newCheck.Name) {
 			check := healthcheck.NewTCPHealthcheck(c.Logger, &newCheck)
@@ -179,9 +182,6 @@ func (c *Component) Reload(config *Configuration) error {
 				return errors.Wrapf(err, "Fail to add healthcheck %s", check.Name())
 			}
 		}
-	}
-	for _, check := range tcpChecksToRemove {
-		c.Healthcheck.RemoveCheck(check)
 	}
 	// HTTP healthchecks management
 	var httpChecksToRemove []string
@@ -205,6 +205,9 @@ func (c *Component) Reload(config *Configuration) error {
 			httpChecksToRemove = append(httpChecksToRemove, currentCheck.Name)
 		}
 	}
+	for _, check := range httpChecksToRemove {
+		c.Healthcheck.RemoveCheck(check)
+	}
 	for _, newCheck := range config.HTTPChecks {
 		if !strContains(httpChecksToKeep, newCheck.Name) {
 			check := healthcheck.NewHTTPHealthcheck(c.Logger, &newCheck)
@@ -213,9 +216,6 @@ func (c *Component) Reload(config *Configuration) error {
 				return errors.Wrapf(err, "Fail to add healthcheck %s", check.Name())
 			}
 		}
-	}
-	for _, check := range httpChecksToRemove {
-		c.Healthcheck.RemoveCheck(check)
 	}
 	// compare the server config to see if we need to recreate it
 	if !reflect.DeepEqual(c.Config.HTTP, config) {

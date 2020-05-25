@@ -18,6 +18,7 @@ type Configuration struct {
 	Exporters    exporter.Configuration
 }
 
+// DefaultBufferSize the default siez for the buffer containing healthchecks results
 const DefaultBufferSize = 5000
 
 // UnmarshalYAML Parse a configuration from YAML.

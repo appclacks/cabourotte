@@ -1,11 +1,9 @@
 package main
 
 import (
-	"cabourotte/healthcheck"
-	"fmt"
+	"cabourotte/cmd"
 )
 
 func main() {
-	i := healthcheck.Protocol(1)
-	fmt.Printf("%d", i)
+	cmd.Main()
 }

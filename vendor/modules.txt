@@ -1,3 +1,5 @@
+# github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d
+github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/labstack/echo v3.3.10+incompatible
 github.com/labstack/echo
 # github.com/labstack/gommon v0.3.0
@@ -9,6 +11,12 @@ github.com/mattn/go-colorable
 github.com/mattn/go-isatty
 # github.com/pkg/errors v0.9.1
 github.com/pkg/errors
+# github.com/russross/blackfriday/v2 v2.0.1
+github.com/russross/blackfriday/v2
+# github.com/shurcooL/sanitized_anchor_name v1.0.0
+github.com/shurcooL/sanitized_anchor_name
+# github.com/urfave/cli/v2 v2.2.0
+github.com/urfave/cli/v2
 # github.com/valyala/bytebufferpool v1.0.0
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.0.1
