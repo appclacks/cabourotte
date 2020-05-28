@@ -26,3 +26,22 @@ func TestStartStop(t *testing.T) {
 		t.Errorf("Fail to stop the component\n%v", err)
 	}
 }
+
+func TestStartStopTLS(t *testing.T) {
+	healthcheck, err := healthcheck.New(zap.NewExample(), make(chan *healthcheck.Result, 10))
+	if err != nil {
+		t.Errorf("Fail to create the healthcheck component\n%v", err)
+	}
+	component, err := New(zap.NewExample(), &Configuration{Host: "127.0.0.1", Port: 2000, Key: "../tests/key.pem", Cert: "../test/cert.pem", Cacert: "../test/cert.pem"}, healthcheck)
+	if err != nil {
+		t.Errorf("Fail to create the component\n%v", err)
+	}
+	err = component.Start()
+	if err != nil {
+		t.Errorf("Fail to start the component\n%v", err)
+	}
+	err = component.Stop()
+	if err != nil {
+		t.Errorf("Fail to stop the component\n%v", err)
+	}
+}

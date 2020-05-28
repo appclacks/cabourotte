@@ -8,10 +8,11 @@ import (
 
 // Configuration the HTTP server configuration
 type Configuration struct {
-	Host string
-	Port uint32
-	Cert string
-	Key  string
+	Host   string
+	Port   uint32
+	Key    string
+	Cert   string
+	Cacert string
 }
 
 // UnmarshalYAML parses the configuration of the http component from YAML.
@@ -30,6 +31,10 @@ func (c *Configuration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 	if (raw.Cert != "" && raw.Key == "") || (raw.Cert == "" && raw.Key != "") {
 		return errors.New("The cert and key options should be configured together")
+	}
+	if !((raw.Key != "" && raw.Cert != "" && raw.Cacert != "") ||
+		(raw.Key == "" && raw.Cert == "" && raw.Cacert == "")) {
+		return errors.New("Invalid certificates")
 	}
 	*c = Configuration(raw)
 	return nil

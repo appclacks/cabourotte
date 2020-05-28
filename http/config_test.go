@@ -27,12 +27,14 @@ host: "127.0.0.1"
 port: 2000
 key: /tmp/foo
 cert: /tmp/bar
+cacert: /tmp/baz
 `,
 			want: Configuration{
-				Host: "127.0.0.1",
-				Port: 2000,
-				Key:  "/tmp/foo",
-				Cert: "/tmp/bar",
+				Host:   "127.0.0.1",
+				Port:   2000,
+				Key:    "/tmp/foo",
+				Cert:   "/tmp/bar",
+				Cacert: "/tmp/baz",
 			},
 		},
 	}

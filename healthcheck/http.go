@@ -32,7 +32,7 @@ type HTTPHealthcheckConfiguration struct {
 	OneOff   bool     `json:"one-off"`
 	Key      string   `json:"key"`
 	Cert     string   `json:"cert"`
-	Cacert   string   `json:"cert"`
+	Cacert   string   `json:"cacert"`
 }
 
 // ValidateHTTPConfig validates the healthcheck configuration
