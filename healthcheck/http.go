@@ -2,6 +2,8 @@ package healthcheck
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -28,6 +30,9 @@ type HTTPHealthcheckConfiguration struct {
 	Timeout  Duration `json:"timeout"`
 	Interval Duration `json:"interval"`
 	OneOff   bool     `json:"one-off"`
+	Key      string   `json:"key"`
+	Cert     string   `json:"cert"`
+	Cacert   string   `json:"cert"`
 }
 
 // ValidateHTTPConfig validates the healthcheck configuration
@@ -53,6 +58,10 @@ func ValidateHTTPConfig(config *HTTPHealthcheckConfiguration) error {
 	if config.Interval < config.Timeout {
 		return errors.New("The healthcheck interval should be greater than the timeout")
 	}
+	if !((config.Key != "" && config.Cert != "" && config.Cacert != "") ||
+		(config.Key == "" && config.Cert == "" && config.Cacert == "")) {
+		return errors.New("Invalid certificates")
+	}
 	return nil
 }
 
@@ -63,8 +72,9 @@ type HTTPHealthcheck struct {
 	ChanResult chan *Result
 	URL        string
 
-	Tick *time.Ticker
-	t    tomb.Tomb
+	Tick      *time.Ticker
+	t         tomb.Tomb
+	transport *http.Transport
 }
 
 // buildURL build the target URL for the HTTP healthcheck, depending of its
@@ -89,6 +99,27 @@ func (h *HTTPHealthcheck) Name() string {
 // Initialize the healthcheck.
 func (h *HTTPHealthcheck) Initialize() error {
 	h.buildURL()
+	// tls is enabled
+	if h.Config.Key != "" {
+		cert, err := tls.LoadX509KeyPair(h.Config.Cert, h.Config.Key)
+		if err != nil {
+			return errors.Wrapf(err, "Fail to load certificates")
+		}
+		caCert, err := ioutil.ReadFile(h.Config.Cacert)
+		if err != nil {
+			return errors.Wrapf(err, "Fail to load the ca certificate")
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		h.transport = &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs:      caCertPool,
+				Certificates: []tls.Certificate{cert},
+			},
+		}
+	} else {
+		h.transport = &http.Transport{}
+	}
 	return nil
 }
 
@@ -174,6 +205,7 @@ func (h *HTTPHealthcheck) Execute() error {
 	}
 	req.Header.Set("User-Agent", "Cabourotte")
 	client := &http.Client{
+		Transport: h.transport,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},

@@ -79,7 +79,7 @@ func TestHTTPExecuteSuccess(t *testing.T) {
 			Timeout:     Duration(time.Second * 2),
 		},
 	}
-	h.buildURL()
+	h.Initialize()
 	err = h.Execute()
 	if err != nil {
 		t.Errorf("healthcheck error :\n%v", err)
@@ -120,7 +120,7 @@ func TestHTTPv6ExecuteSuccess(t *testing.T) {
 			Timeout:     Duration(time.Second * 2),
 		},
 	}
-	h.buildURL()
+	h.Initialize()
 	err = h.Execute()
 	if err != nil {
 		t.Errorf("healthcheck error :\n%v", err)
@@ -154,7 +154,7 @@ func TestHTTPExecuteFailure(t *testing.T) {
 			Timeout:     Duration(time.Second * 2),
 		},
 	}
-	h.buildURL()
+	h.Initialize()
 	err = h.Execute()
 	if err == nil {
 		t.Errorf("Was expecting an error :\n%v", err)
