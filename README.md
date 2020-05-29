@@ -65,7 +65,7 @@ You should now see your healthchecks being executed:
 
 ## HTTP Server configuration
 
-```
+```yaml
 # The HTTP server host
 host: "127.0.0.1"
 # The HTTP server port
@@ -84,7 +84,7 @@ Cabourotte supports multiple healthchecks types. The healthchecks names should b
 
 ### HTTP
 
-```
+```yaml
  The healthcheck name
 name: "mcorbin-http-check"
 # The healthcheck description
@@ -115,7 +115,7 @@ key: "/tmp/foo.key"
 
 ### TCP
 
-```
+```yaml
  The healthcheck name
 name: "mcorbin-http-check"
 # The healthcheck description
@@ -132,7 +132,7 @@ interval: 10s
 
 ### DNS
 
-```
+```yaml
 # The healthcheck name
 name: "mcorbin-http-check"
 # The healthcheck description
@@ -153,7 +153,7 @@ Cabourotte can also export healthchecks results to other systems using exporters
 
 The HTTP exporter will send healthchecks results to an HTTP server as json
 
-```
+```yaml
 # The exporter endpoint
 host: "127.0.0.1"
 # The exporter port
@@ -166,7 +166,7 @@ protocol: "https"
 
 The HTTP endpoint will receive payloads containing the healthchecks results, for example:
 
-```
+```json
 [
   {
     "name": "mcorbin-http-check",
