@@ -6,7 +6,7 @@ The healthchecks definitions can be defined in a configuration file, or dynamica
 
 It's also possible to execute `one-off` healthchecks through the API. This type of healthcheck is only executed once, and the HTTP response will contain the healthcheck result.
 
-Healthchecks results can also be exported to other systems by configuring exporters
+Healthchecks results can also be exported to other systems by configuring exporters. The latest result for each healthcheck is also stored in memory for 2 minutes, and can be retrieved through the API.
 
 ## Quickstart
 
@@ -202,6 +202,24 @@ curl -H "Content-Type: application/json" 127.0.0.1:9013/healthcheck/dns -d '{"na
 
 {"message":"One-off healthcheck mcorbin-dns-check successfully executed"}
 
+```
+
+### Get healthchecks results
+
+You can retrieve the current healthchecks results saved into the memory store by sending requests to the `/result` endpoint:
+
+```
+curl 127.0.0.1:9013/healthcheck
+
+[{"name":"mcorbin-dns-check","success":true,"timestamp":"2020-05-30T18:51:01.472044448+02:00","message":"success"},{"name":"mcorbin-tcp-check","success":true,"timestamp":"2020-05-30T18:51:01.502173876+02:00","message":"success"}]
+```
+
+You can also retrieve the result for a specific healthcheck:
+
+```
+curl 127.0.0.1:9013/result/mcorbin-dns-check
+
+{"name":"mcorbin-dns-check","success":true,"timestamp":"2020-05-30T18:52:31.472050312+02:00","message":"success"}
 ```
 
 ## Hot reload
