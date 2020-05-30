@@ -1,8 +1,8 @@
 # Cabourotte
 
-This daemon can be configured to periodically perform various kind of healthchecks, and report failures.
+This daemon can be configured to periodically perform various kind of healthchecks and report failures.
 
-The healthchecks definitions can be defined in a configuration file, or dynamically managed through an API.
+The healthchecks can be defined in a configuration file, or dynamically managed through an API.
 
 It's also possible to execute `one-off` healthchecks through the API. This type of healthcheck is only executed once, and the HTTP response will contain the healthcheck result.
 
@@ -196,8 +196,6 @@ Dynamically add an healthcheck. A POST request to `/healthcheck/dns`, `/healthch
 The `one-off` parameter can be set to `true` if you want a healthcheck which will be only executed once.
 
 ```
-curl 127.0.0.1:9013/healthcheck
-
 curl -H "Content-Type: application/json" 127.0.0.1:9013/healthcheck/dns -d '{"name":"mcorbin-dns-check","description":"dns healthcheck example","domain":"mcorbin.fr","interval":"5s","one-off":true}'
 
 {"message":"One-off healthcheck mcorbin-dns-check successfully executed"}
