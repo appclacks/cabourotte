@@ -124,6 +124,19 @@ func (c *Component) handlers() {
 		return ec.JSON(http.StatusOK, &BasicResponse{Message: fmt.Sprintf("Successfully deleted healthcheck %s", name)})
 	})
 
+	c.Server.GET("/result", func(ec echo.Context) error {
+		return ec.JSON(http.StatusOK, c.MemoryStore.List())
+	})
+	c.Server.GET("/result/:name", func(ec echo.Context) error {
+		name := ec.Param("name")
+		result, err := c.MemoryStore.Get(name)
+		if err != nil {
+			return ec.JSON(http.StatusNotFound, &BasicResponse{Message: err.Error()})
+		}
+		return ec.JSON(http.StatusOK, result)
+
+	})
+
 	c.Server.GET("/health", func(ec echo.Context) error {
 		return ec.JSON(http.StatusOK, "ok")
 	})

@@ -1,6 +1,7 @@
 package memorystore
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -62,7 +63,7 @@ func (m *MemoryStore) Add(result *healthcheck.Result) {
 	m.Results[result.Name] = result
 }
 
-// purge the expired results
+// Purge the expired results
 func (m *MemoryStore) Purge() {
 	m.lock.Lock()
 	defer m.lock.Unlock()
@@ -76,6 +77,7 @@ func (m *MemoryStore) Purge() {
 	}
 }
 
+// List returns the current value of the results
 func (m *MemoryStore) List() []healthcheck.Result {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
@@ -84,4 +86,14 @@ func (m *MemoryStore) List() []healthcheck.Result {
 		result = append(result, *value)
 	}
 	return result
+}
+
+// Get returns the current value for a healthcheck
+func (m *MemoryStore) Get(name string) (healthcheck.Result, error) {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+	if result, ok := m.Results[name]; ok {
+		return *result, nil
+	}
+	return healthcheck.Result{}, fmt.Errorf("Result not found for healthcheck %s", name)
 }
