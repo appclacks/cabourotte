@@ -6,14 +6,16 @@ import (
 	"go.uber.org/zap"
 
 	"cabourotte/healthcheck"
+	"cabourotte/memorystore"
 )
 
 func TestStartStop(t *testing.T) {
-	healthcheck, err := healthcheck.New(zap.NewExample(), make(chan *healthcheck.Result, 10))
+	logger := zap.NewExample()
+	healthcheck, err := healthcheck.New(logger, make(chan *healthcheck.Result, 10))
 	if err != nil {
 		t.Errorf("Fail to create the healthcheck component\n%v", err)
 	}
-	component, err := New(zap.NewExample(), &Configuration{Host: "127.0.0.1", Port: 2000}, healthcheck)
+	component, err := New(logger, memorystore.NewMemoryStore(logger), &Configuration{Host: "127.0.0.1", Port: 2000}, healthcheck)
 	if err != nil {
 		t.Errorf("Fail to create the component\n%v", err)
 	}
@@ -28,11 +30,12 @@ func TestStartStop(t *testing.T) {
 }
 
 func TestStartStopTLS(t *testing.T) {
-	healthcheck, err := healthcheck.New(zap.NewExample(), make(chan *healthcheck.Result, 10))
+	logger := zap.NewExample()
+	healthcheck, err := healthcheck.New(logger, make(chan *healthcheck.Result, 10))
 	if err != nil {
 		t.Errorf("Fail to create the healthcheck component\n%v", err)
 	}
-	component, err := New(zap.NewExample(), &Configuration{Host: "127.0.0.1", Port: 2000, Key: "../tests/key.pem", Cert: "../test/cert.pem", Cacert: "../test/cert.pem"}, healthcheck)
+	component, err := New(logger, memorystore.NewMemoryStore(logger), &Configuration{Host: "127.0.0.1", Port: 2000, Key: "../tests/key.pem", Cert: "../test/cert.pem", Cacert: "../test/cert.pem"}, healthcheck)
 	if err != nil {
 		t.Errorf("Fail to create the component\n%v", err)
 	}

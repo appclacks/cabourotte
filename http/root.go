@@ -13,10 +13,12 @@ import (
 	"go.uber.org/zap"
 
 	"cabourotte/healthcheck"
+	"cabourotte/memorystore"
 )
 
 // Component the http server component
 type Component struct {
+	MemoryStore *memorystore.MemoryStore
 	Config      *Configuration
 	Logger      *zap.Logger
 	healthcheck *healthcheck.Component
@@ -24,7 +26,7 @@ type Component struct {
 }
 
 // New creates a new HTTP component
-func New(logger *zap.Logger, config *Configuration, healthcheck *healthcheck.Component) (*Component, error) {
+func New(logger *zap.Logger, memstore *memorystore.MemoryStore, config *Configuration, healthcheck *healthcheck.Component) (*Component, error) {
 	e := echo.New()
 	e.HideBanner = true
 	if config.Cert != "" {
@@ -46,6 +48,7 @@ func New(logger *zap.Logger, config *Configuration, healthcheck *healthcheck.Com
 	}
 
 	component := Component{
+		MemoryStore: memstore,
 		Config:      config,
 		Server:      e,
 		Logger:      logger,

@@ -35,11 +35,13 @@ func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "Fail to create the healthcheck component")
 	}
+	memstore := memorystore.NewMemoryStore(logger)
+	memstore.Start()
 	err = checkComponent.Start()
 	if err != nil {
 		return nil, errors.Wrapf(err, "Fail to start the healthcheck component")
 	}
-	http, err := http.New(logger, &config.HTTP, checkComponent)
+	http, err := http.New(logger, memstore, &config.HTTP, checkComponent)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Fail to create the HTTP server")
 	}
@@ -47,7 +49,6 @@ func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "Fail to start the HTTP server")
 	}
-	memstore := memorystore.NewMemoryStore(logger)
 	exporterComponent := exporter.New(logger, memstore, chanResult, &config.Exporters)
 	err = exporterComponent.Start()
 	if err != nil {
@@ -227,7 +228,7 @@ func (c *Component) Reload(config *Configuration) error {
 		if err != nil {
 			return errors.Wrapf(err, "Fail to stop the HTTP server")
 		}
-		http, err := http.New(c.Logger, &config.HTTP, c.Healthcheck)
+		http, err := http.New(c.Logger, c.MemoryStore, &config.HTTP, c.Healthcheck)
 		if err != nil {
 			return errors.Wrapf(err, "Fail to create the HTTP server")
 		}
