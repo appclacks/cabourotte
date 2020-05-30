@@ -1,4 +1,4 @@
-package exporter
+package memorystore
 
 import (
 	"sync"
@@ -39,7 +39,7 @@ func (m *MemoryStore) Start() {
 		for {
 			select {
 			case <-m.Tick.C:
-				m.purge()
+				m.Purge()
 			case <-m.t.Dying():
 				return nil
 			}
@@ -56,14 +56,14 @@ func (m *MemoryStore) Stop() error {
 }
 
 // Add a new Result to the store
-func (m *MemoryStore) add(result *healthcheck.Result) {
+func (m *MemoryStore) Add(result *healthcheck.Result) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	m.Results[result.Name] = result
 }
 
 // purge the expired results
-func (m *MemoryStore) purge() {
+func (m *MemoryStore) Purge() {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	now := time.Now()
@@ -76,7 +76,7 @@ func (m *MemoryStore) purge() {
 	}
 }
 
-func (m *MemoryStore) list() []healthcheck.Result {
+func (m *MemoryStore) List() []healthcheck.Result {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
 	result := make([]healthcheck.Result, 0, len(m.Results))

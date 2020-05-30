@@ -1,4 +1,4 @@
-package exporter
+package memorystore
 
 import (
 	"testing"
@@ -17,8 +17,8 @@ func TestMemoryExporter(t *testing.T) {
 		Timestamp: time.Now(),
 		Message:   "message",
 	}
-	store.add(result)
-	resultList := store.list()
+	store.Add(result)
+	resultList := store.List()
 	if resultList[0] != *result {
 		t.Errorf("Invalid result content")
 	}
@@ -31,13 +31,13 @@ func TestMemoryExporter(t *testing.T) {
 		Timestamp: time.Now().Add(time.Minute * time.Duration(-5)),
 		Message:   "message",
 	}
-	store.add(expiredResult)
-	resultList = store.list()
+	store.Add(expiredResult)
+	resultList = store.List()
 	if len(resultList) != 2 {
 		t.Errorf("Invalid result list size: %d", len(resultList))
 	}
-	store.purge()
-	resultList = store.list()
+	store.Purge()
+	resultList = store.List()
 	if resultList[0] != *result {
 		t.Errorf("Invalid result content")
 	}

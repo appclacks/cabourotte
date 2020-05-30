@@ -1,12 +1,12 @@
 package exporter
 
 import (
-	"cabourotte/healthcheck"
-
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
-
 	"gopkg.in/tomb.v2"
+
+	"cabourotte/healthcheck"
+	"cabourotte/memorystore"
 )
 
 // Exporter the exporter interface
@@ -22,19 +22,19 @@ type Component struct {
 	Config      *Configuration
 	ChanResult  chan *healthcheck.Result
 	Exporters   []Exporter
-	MemoryStore *MemoryStore
+	MemoryStore *memorystore.MemoryStore
 
 	t tomb.Tomb
 }
 
 // New creates a new exporter component
-func New(logger *zap.Logger, chanResult chan *healthcheck.Result, config *Configuration) *Component {
+func New(logger *zap.Logger, store *memorystore.MemoryStore, chanResult chan *healthcheck.Result, config *Configuration) *Component {
 	var exporters []Exporter
 	for _, httpConfig := range config.HTTP {
 		exporters = append(exporters, NewHTTPExporter(logger, &httpConfig))
 	}
 	return &Component{
-		MemoryStore: NewMemoryStore(logger),
+		MemoryStore: store,
 		Logger:      logger,
 		Config:      config,
 		ChanResult:  chanResult,
@@ -50,7 +50,7 @@ func (c *Component) Start() error {
 		for {
 			select {
 			case message := <-c.ChanResult:
-				c.MemoryStore.add(message)
+				c.MemoryStore.Add(message)
 				if message.Success {
 					c.Logger.Info("Healthcheck successful",
 						zap.String("name", message.Name),
@@ -79,7 +79,6 @@ func (c *Component) Start() error {
 func (c *Component) Stop() error {
 	c.t.Kill(nil)
 	c.t.Wait()
-	c.MemoryStore.Stop()
 	for _, e := range c.Exporters {
 		err := e.Stop()
 		if err != nil {
@@ -87,9 +86,4 @@ func (c *Component) Stop() error {
 		}
 	}
 	return nil
-}
-
-// ListMemStore returns the content of the memory test
-func (c *Component) ListMemStore() []healthcheck.Result {
-	return c.MemoryStore.list()
 }

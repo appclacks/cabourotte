@@ -17,7 +17,7 @@ type DNSHealthcheckConfiguration struct {
 	Description string   `json:"description"`
 	Domain      string   `json:"domain"`
 	Interval    Duration `json:"interval"`
-	OneOff      bool     `json:"one-off"`
+	OneOff      bool     `json:"one-off,"`
 }
 
 // DNSHealthcheck defines an HTTP healthcheck

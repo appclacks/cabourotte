@@ -11,12 +11,14 @@ import (
 	"cabourotte/exporter"
 	"cabourotte/healthcheck"
 	"cabourotte/http"
+	"cabourotte/memorystore"
 )
 
 // Component is the component which will manage the HTTP server and the program
 // configuration
 type Component struct {
 	Config      *Configuration
+	MemoryStore *memorystore.MemoryStore
 	Logger      *zap.Logger
 	HTTP        *http.Component
 	Healthcheck *healthcheck.Component
@@ -45,12 +47,14 @@ func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "Fail to start the HTTP server")
 	}
-	exporterComponent := exporter.New(logger, chanResult, &config.Exporters)
+	memstore := memorystore.NewMemoryStore(logger)
+	exporterComponent := exporter.New(logger, memstore, chanResult, &config.Exporters)
 	err = exporterComponent.Start()
 	if err != nil {
 		return nil, errors.Wrapf(err, "Fail to start the exporter component")
 	}
 	component := Component{
+		MemoryStore: memstore,
 		ChanResult:  chanResult,
 		Config:      config,
 		HTTP:        http,
@@ -238,7 +242,7 @@ func (c *Component) Reload(config *Configuration) error {
 	if err != nil {
 		return errors.Wrapf(err, "Fail to stop the exporter component")
 	}
-	exporterComponent := exporter.New(c.Logger, c.ChanResult, &config.Exporters)
+	exporterComponent := exporter.New(c.Logger, c.MemoryStore, c.ChanResult, &config.Exporters)
 	err = exporterComponent.Start()
 	if err != nil {
 		return errors.Wrapf(err, "Fail to start the exporter component")

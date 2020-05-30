@@ -29,10 +29,10 @@ type HTTPHealthcheckConfiguration struct {
 	Path     string   `json:"path"`
 	Timeout  Duration `json:"timeout"`
 	Interval Duration `json:"interval"`
-	OneOff   bool     `json:"one-off"`
-	Key      string   `json:"key"`
-	Cert     string   `json:"cert"`
-	Cacert   string   `json:"cacert"`
+	OneOff   bool     `json:"one-off,"`
+	Key      string   `json:"key,omitempty"`
+	Cert     string   `json:"cert,omitempty"`
+	Cacert   string   `json:"cacert,omitempty"`
 }
 
 // ValidateHTTPConfig validates the healthcheck configuration

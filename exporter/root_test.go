@@ -12,6 +12,7 @@ import (
 	"go.uber.org/zap"
 
 	"cabourotte/healthcheck"
+	"cabourotte/memorystore"
 )
 
 func TestStartStop(t *testing.T) {
@@ -30,8 +31,10 @@ func TestStartStop(t *testing.T) {
 		t.Errorf("Error getting HTTP server port :\n%v", err)
 	}
 	chanResult := make(chan *healthcheck.Result, 10)
+	logger := zap.NewExample()
 	component := New(
-		zap.NewExample(),
+		logger,
+		memorystore.NewMemoryStore(logger),
 		chanResult,
 		&Configuration{
 			HTTP: []HTTPConfiguration{
