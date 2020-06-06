@@ -14,6 +14,7 @@ import (
 
 	"cabourotte/healthcheck"
 	"cabourotte/memorystore"
+	"cabourotte/prometheus"
 )
 
 // Component the http server component
@@ -23,10 +24,11 @@ type Component struct {
 	Logger      *zap.Logger
 	healthcheck *healthcheck.Component
 	Server      *echo.Echo
+	Prometheus  *prometheus.Prometheus
 }
 
 // New creates a new HTTP component
-func New(logger *zap.Logger, memstore *memorystore.MemoryStore, config *Configuration, healthcheck *healthcheck.Component) (*Component, error) {
+func New(logger *zap.Logger, memstore *memorystore.MemoryStore, prom *prometheus.Prometheus, config *Configuration, healthcheck *healthcheck.Component) (*Component, error) {
 	e := echo.New()
 	e.HideBanner = true
 	if config.Cert != "" {
@@ -53,6 +55,7 @@ func New(logger *zap.Logger, memstore *memorystore.MemoryStore, config *Configur
 		Server:      e,
 		Logger:      logger,
 		healthcheck: healthcheck,
+		Prometheus:  prom,
 	}
 	return &component, nil
 }

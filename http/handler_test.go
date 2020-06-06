@@ -14,16 +14,18 @@ import (
 
 	"cabourotte/healthcheck"
 	"cabourotte/memorystore"
+	"cabourotte/prometheus"
 )
 
 func TestHandlers(t *testing.T) {
+	prom := prometheus.New()
 	logger := zap.NewExample()
 	memstore := memorystore.NewMemoryStore(logger)
 	healthcheck, err := healthcheck.New(zap.NewExample(), make(chan *healthcheck.Result, 10))
 	if err != nil {
 		t.Errorf("Fail to create the healthcheck component\n%v", err)
 	}
-	component, err := New(logger, memstore, &Configuration{Host: "127.0.0.1", Port: 2000}, healthcheck)
+	component, err := New(logger, memstore, prom, &Configuration{Host: "127.0.0.1", Port: 2000}, healthcheck)
 	if err != nil {
 		t.Errorf("Fail to create the component\n%v", err)
 	}
@@ -124,11 +126,12 @@ func TestHandlers(t *testing.T) {
 func TestOneOffCheck(t *testing.T) {
 	count := 0
 	logger := zap.NewExample()
+	prom := prometheus.New()
 	healthcheck, err := healthcheck.New(logger, make(chan *healthcheck.Result, 10))
 	if err != nil {
 		t.Errorf("Fail to create the healthcheck component\n%v", err)
 	}
-	component, err := New(zap.NewExample(), memorystore.NewMemoryStore(logger), &Configuration{Host: "127.0.0.1", Port: 2000}, healthcheck)
+	component, err := New(zap.NewExample(), memorystore.NewMemoryStore(logger), prom, &Configuration{Host: "127.0.0.1", Port: 2000}, healthcheck)
 	if err != nil {
 		t.Errorf("Fail to create the component\n%v", err)
 	}

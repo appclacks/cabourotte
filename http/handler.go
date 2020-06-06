@@ -145,4 +145,6 @@ func (c *Component) handlers() {
 		return ec.JSON(http.StatusOK, "ok")
 	})
 
+	c.Server.GET("/metrics", echo.WrapHandler(c.Prometheus.Handler()))
+
 }

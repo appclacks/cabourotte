@@ -12,6 +12,7 @@ import (
 	"cabourotte/healthcheck"
 	"cabourotte/http"
 	"cabourotte/memorystore"
+	"cabourotte/prometheus"
 )
 
 // Component is the component which will manage the HTTP server and the program
@@ -23,6 +24,7 @@ type Component struct {
 	HTTP        *http.Component
 	Healthcheck *healthcheck.Component
 	Exporter    *exporter.Component
+	Prometheus  *prometheus.Prometheus
 	lock        sync.RWMutex
 	ChanResult  chan *healthcheck.Result
 }
@@ -41,7 +43,8 @@ func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "Fail to start the healthcheck component")
 	}
-	http, err := http.New(logger, memstore, &config.HTTP, checkComponent)
+	prom := prometheus.New()
+	http, err := http.New(logger, memstore, prom, &config.HTTP, checkComponent)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Fail to create the HTTP server")
 	}
@@ -58,6 +61,7 @@ func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 		MemoryStore: memstore,
 		ChanResult:  chanResult,
 		Config:      config,
+		Prometheus:  prom,
 		HTTP:        http,
 		Logger:      logger,
 		Exporter:    exporterComponent,
@@ -228,7 +232,7 @@ func (c *Component) Reload(config *Configuration) error {
 		if err != nil {
 			return errors.Wrapf(err, "Fail to stop the HTTP server")
 		}
-		http, err := http.New(c.Logger, c.MemoryStore, &config.HTTP, c.Healthcheck)
+		http, err := http.New(c.Logger, c.MemoryStore, c.Prometheus, &config.HTTP, c.Healthcheck)
 		if err != nil {
 			return errors.Wrapf(err, "Fail to create the HTTP server")
 		}
