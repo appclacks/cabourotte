@@ -92,6 +92,7 @@ exporters:
   http:
     - host: "127.0.0.1"
       port: 2000
+      name: foo
       protocol: https
 `,
 			want: Configuration{
@@ -103,6 +104,7 @@ exporters:
 				Exporters: exporter.Configuration{
 					HTTP: []exporter.HTTPConfiguration{
 						exporter.HTTPConfiguration{
+							Name:     "foo",
 							Host:     "127.0.0.1",
 							Port:     2000,
 							Protocol: healthcheck.HTTPS,

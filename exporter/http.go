@@ -59,6 +59,11 @@ func (c *HTTPExporter) Stop() error {
 	return nil
 }
 
+// Name returns then ame of the exporter
+func (c *HTTPExporter) Name() string {
+	return c.Config.Name
+}
+
 // Push pushes events to the HTTP destination
 func (c *HTTPExporter) Push(result *healthcheck.Result) error {
 	var jsonBytes []byte

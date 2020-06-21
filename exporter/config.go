@@ -8,6 +8,7 @@ import (
 
 // HTTPConfiguration The configuration for the HTTP exporter.
 type HTTPConfiguration struct {
+	Name     string
 	Host     string
 	Path     string
 	Port     uint32
@@ -27,10 +28,13 @@ func (c *HTTPConfiguration) UnmarshalYAML(unmarshal func(interface{}) error) err
 		return errors.Wrap(err, "Unable to read HTTP exporter configuration")
 	}
 	if raw.Host == "" {
-		return errors.New("Invalid Host for the HTTP exporter configuration")
+		return errors.New("Invalid host for the HTTP exporter configuration")
+	}
+	if raw.Name == "" {
+		return errors.New("Invalid name for the HTTP exporter configuration")
 	}
 	if raw.Port == 0 {
-		return errors.New("Invalid Port for the HTTP server")
+		return errors.New("Invalid port for the HTTP server")
 	}
 	*c = HTTPConfiguration(raw)
 	return nil

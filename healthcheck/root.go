@@ -124,7 +124,7 @@ func New(logger *zap.Logger, chanResult chan *Result, promComponent *prometheus.
 		1.5, 2, 3, 5}
 	histo := prom.NewHistogramVec(prom.HistogramOpts{
 		Name:    "healthcheck_duration_seconds",
-		Help:    "Time to execute a healthcheck healthcheck.",
+		Help:    "Time to execute a healthcheck.",
 		Buckets: buckets,
 	},
 		[]string{"name", "status"},
@@ -177,6 +177,10 @@ func (c *Component) Stop() error {
 func (c *Component) removeCheck(identifier string) error {
 	if existingWrapper, ok := c.Healthchecks[identifier]; ok {
 		existingWrapper.healthcheck.LogInfo("Stopping healthcheck")
+		c.resultCounter.Delete(prom.Labels{"name": identifier, "status": "failure"})
+		c.resultCounter.Delete(prom.Labels{"name": identifier, "status": "success"})
+		c.resultHistogram.Delete(prom.Labels{"name": identifier, "status": "failure"})
+		c.resultHistogram.Delete(prom.Labels{"name": identifier, "status": "success"})
 		err := existingWrapper.Stop()
 		if err != nil {
 			return errors.Wrapf(err, "Fail to stop healthcheck %s", existingWrapper.healthcheck.Name())

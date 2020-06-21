@@ -13,6 +13,7 @@ import (
 
 	"cabourotte/healthcheck"
 	"cabourotte/memorystore"
+	"cabourotte/prometheus"
 )
 
 func TestStartStop(t *testing.T) {
@@ -32,10 +33,11 @@ func TestStartStop(t *testing.T) {
 	}
 	chanResult := make(chan *healthcheck.Result, 10)
 	logger := zap.NewExample()
-	component := New(
+	component, err := New(
 		logger,
 		memorystore.NewMemoryStore(logger),
 		chanResult,
+		prometheus.New(),
 		&Configuration{
 			HTTP: []HTTPConfiguration{
 				HTTPConfiguration{
@@ -45,6 +47,9 @@ func TestStartStop(t *testing.T) {
 				},
 			}})
 	err = component.Start()
+	if err != nil {
+		t.Errorf("Error creating the component :\n%v", err)
+	}
 	if err != nil {
 		t.Errorf("Error starting the component :\n%v", err)
 	}

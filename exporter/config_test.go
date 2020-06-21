@@ -18,8 +18,10 @@ func TestUnmarshalConfig(t *testing.T) {
 host: "127.0.0.1"
 port: 2000
 protocol: https
+name: foo
 `,
 			want: HTTPConfiguration{
+				Name:     "foo",
 				Host:     "127.0.0.1",
 				Port:     2000,
 				Protocol: healthcheck.HTTPS,
@@ -30,8 +32,10 @@ protocol: https
 host: "127.0.0.2"
 port: 2003
 protocol: http
+name: foo
 `,
 			want: HTTPConfiguration{
+				Name:     "foo",
 				Host:     "127.0.0.2",
 				Port:     2003,
 				Protocol: healthcheck.HTTP,
@@ -61,6 +65,11 @@ protocol: lol
 host: "127.0.0.1"
 port: 0
 protocol: http
+`,
+		`
+host: "127.0.0.1"
+port: 0
+protocol: tcp
 `,
 
 		`

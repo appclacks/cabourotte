@@ -52,7 +52,10 @@ func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "Fail to start the HTTP server")
 	}
-	exporterComponent := exporter.New(logger, memstore, chanResult, &config.Exporters)
+	exporterComponent, err := exporter.New(logger, memstore, chanResult, prom, &config.Exporters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Fail to create the exporter component")
+	}
 	err = exporterComponent.Start()
 	if err != nil {
 		return nil, errors.Wrapf(err, "Fail to start the exporter component")
@@ -247,7 +250,10 @@ func (c *Component) Reload(config *Configuration) error {
 	if err != nil {
 		return errors.Wrapf(err, "Fail to stop the exporter component")
 	}
-	exporterComponent := exporter.New(c.Logger, c.MemoryStore, c.ChanResult, &config.Exporters)
+	exporterComponent, err := exporter.New(c.Logger, c.MemoryStore, c.ChanResult, c.Prometheus, &config.Exporters)
+	if err != nil {
+		return errors.Wrapf(err, "Fail to create the exporter component")
+	}
 	err = exporterComponent.Start()
 	if err != nil {
 		return errors.Wrapf(err, "Fail to start the exporter component")
