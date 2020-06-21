@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo"
+	prom "github.com/prometheus/client_golang/prometheus"
 
 	"cabourotte/healthcheck"
 )
@@ -58,6 +59,7 @@ func (c *Component) handleCheck(ec echo.Context, healthcheck healthcheck.Healthc
 func (c *Component) handlers() {
 
 	c.Server.POST("/healthcheck/dns", func(ec echo.Context) error {
+		c.requestCounter.With(prom.Labels{"method": "post", "path": "/healthcheck/dns"}).Inc()
 		var config healthcheck.DNSHealthcheckConfiguration
 		if err := ec.Bind(&config); err != nil {
 			msg := fmt.Sprintf("Fail to create the dns healthcheck. Invalid JSON: %s", err.Error())
@@ -75,6 +77,7 @@ func (c *Component) handlers() {
 	})
 
 	c.Server.POST("/healthcheck/tcp", func(ec echo.Context) error {
+		c.requestCounter.With(prom.Labels{"method": "post", "path": "/healthcheck/tcp"}).Inc()
 		var config healthcheck.TCPHealthcheckConfiguration
 		if err := ec.Bind(&config); err != nil {
 			msg := fmt.Sprintf("Fail to create the TCP healthcheck. Invalid JSON: %s", err.Error())
@@ -92,6 +95,7 @@ func (c *Component) handlers() {
 	})
 
 	c.Server.POST("/healthcheck/http", func(ec echo.Context) error {
+		c.requestCounter.With(prom.Labels{"method": "post", "path": "/healthcheck/http"}).Inc()
 		var config healthcheck.HTTPHealthcheckConfiguration
 		if err := ec.Bind(&config); err != nil {
 			msg := fmt.Sprintf("Fail to create the HTTP healthcheck. Invalid JSON: %s", err.Error())
@@ -109,10 +113,12 @@ func (c *Component) handlers() {
 	})
 
 	c.Server.GET("/healthcheck", func(ec echo.Context) error {
+		c.requestCounter.With(prom.Labels{"method": "get", "path": "/healthcheck"}).Inc()
 		return ec.JSON(http.StatusOK, c.healthcheck.ListChecks())
 	})
 
 	c.Server.DELETE("/healthcheck/:name", func(ec echo.Context) error {
+		c.requestCounter.With(prom.Labels{"method": "delete", "path": "/healthcheck/:name"}).Inc()
 		name := ec.Param("name")
 		c.Logger.Info(fmt.Sprintf("Deleting healthcheck %s", name))
 		err := c.healthcheck.RemoveCheck(name)
@@ -125,9 +131,11 @@ func (c *Component) handlers() {
 	})
 
 	c.Server.GET("/result", func(ec echo.Context) error {
+		c.requestCounter.With(prom.Labels{"method": "get", "path": "/result"}).Inc()
 		return ec.JSON(http.StatusOK, c.MemoryStore.List())
 	})
 	c.Server.GET("/result/:name", func(ec echo.Context) error {
+		c.requestCounter.With(prom.Labels{"method": "get", "path": "/result/:name"}).Inc()
 		name := ec.Param("name")
 		result, err := c.MemoryStore.Get(name)
 		if err != nil {
