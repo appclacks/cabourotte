@@ -50,10 +50,9 @@ func ValidateTCPConfig(config *TCPHealthcheckConfiguration) error {
 
 // TCPHealthcheck defines a TCP healthcheck
 type TCPHealthcheck struct {
-	Logger     *zap.Logger
-	Config     *TCPHealthcheckConfiguration
-	ChanResult chan *Result
-	URL        string
+	Logger *zap.Logger
+	Config *TCPHealthcheckConfiguration
+	URL    string
 
 	Tick *time.Ticker
 	t    tomb.Tomb
@@ -76,39 +75,14 @@ func (h *TCPHealthcheck) Initialize() error {
 	return nil
 }
 
-// Start an Healthcheck, which will be periodically executed after a
-// given interval of time
-func (h *TCPHealthcheck) Start(chanResult chan *Result) error {
-	h.LogInfo("Starting healthcheck")
-	h.ChanResult = chanResult
-	h.Tick = time.NewTicker(time.Duration(h.Config.Interval))
-	h.t.Go(func() error {
-		for {
-			select {
-			case <-h.Tick.C:
-				err := h.Execute()
-				result := NewResult(h, err)
-				h.ChanResult <- result
-			case <-h.t.Dying():
-				return nil
-			}
-		}
-	})
-	return nil
+// Interval Get the interval.
+func (h *TCPHealthcheck) Interval() Duration {
+	return h.Config.Interval
 }
 
 // OneOff returns true if the healthcheck if a one-off check
 func (h *TCPHealthcheck) OneOff() bool {
 	return h.Config.OneOff
-
-}
-
-// Stop an Healthcheck
-func (h *TCPHealthcheck) Stop() error {
-	h.Tick.Stop()
-	h.t.Kill(nil)
-	h.t.Wait()
-	return nil
 
 }
 

@@ -22,10 +22,9 @@ type DNSHealthcheckConfiguration struct {
 
 // DNSHealthcheck defines an HTTP healthcheck
 type DNSHealthcheck struct {
-	Logger     *zap.Logger
-	ChanResult chan *Result
-	Config     *DNSHealthcheckConfiguration
-	URL        string
+	Logger *zap.Logger
+	Config *DNSHealthcheckConfiguration
+	URL    string
 
 	Tick *time.Ticker
 	t    tomb.Tomb
@@ -50,6 +49,11 @@ func (h *DNSHealthcheck) Initialize() error {
 	return nil
 }
 
+// Interval Get the interval.
+func (h *DNSHealthcheck) Interval() Duration {
+	return h.Config.Interval
+}
+
 // Name returns the healthcheck identifier.
 func (h *DNSHealthcheck) Name() string {
 	return h.Config.Name
@@ -59,27 +63,6 @@ func (h *DNSHealthcheck) Name() string {
 func (h *DNSHealthcheck) OneOff() bool {
 	return h.Config.OneOff
 
-}
-
-// Start an Healthcheck, which will be periodically executed after a
-// given interval of time
-func (h *DNSHealthcheck) Start(chanResult chan *Result) error {
-	h.LogInfo("Starting healthcheck")
-	h.ChanResult = chanResult
-	h.Tick = time.NewTicker(time.Duration(h.Config.Interval))
-	h.t.Go(func() error {
-		for {
-			select {
-			case <-h.Tick.C:
-				err := h.Execute()
-				result := NewResult(h, err)
-				h.ChanResult <- result
-			case <-h.t.Dying():
-				return nil
-			}
-		}
-	})
-	return nil
 }
 
 // LogError logs an error with context
@@ -102,15 +85,6 @@ func (h *DNSHealthcheck) LogInfo(message string) {
 	h.Logger.Info(message,
 		zap.String("domain", h.Config.Domain),
 		zap.String("name", h.Config.Name))
-}
-
-// Stop an Healthcheck
-func (h *DNSHealthcheck) Stop() error {
-	h.Tick.Stop()
-	h.t.Kill(nil)
-	h.t.Wait()
-	return nil
-
 }
 
 // Execute executes an healthcheck on the given domain

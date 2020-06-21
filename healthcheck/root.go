@@ -7,6 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
+	"gopkg.in/tomb.v2"
 )
 
 // Result represents the result of an healthcheck
@@ -17,23 +18,63 @@ type Result struct {
 	Message   string    `json:"message"`
 }
 
+// Wrapper Wrap an healthcheck
+type Wrapper struct {
+	healthcheck Healthcheck
+	Tick        *time.Ticker
+	t           tomb.Tomb
+}
+
+// NewWrapper creates a new wrapper struct
+func NewWrapper(healthcheck Healthcheck) *Wrapper {
+	return &Wrapper{
+		healthcheck: healthcheck,
+	}
+}
+
+// Start an healthcheck wrapper
+func (w *Wrapper) Start(chanResult chan *Result) {
+	w.healthcheck.LogInfo("Starting healthcheck")
+	w.Tick = time.NewTicker(time.Duration(w.healthcheck.Interval()))
+	w.t.Go(func() error {
+		for {
+			select {
+			case <-w.Tick.C:
+				err := w.healthcheck.Execute()
+				result := NewResult(w.healthcheck, err)
+				chanResult <- result
+			case <-w.t.Dying():
+				return nil
+			}
+		}
+	})
+}
+
+// Stop an Healthcheck wrapper
+func (w *Wrapper) Stop() error {
+	w.Tick.Stop()
+	w.t.Kill(nil)
+	w.t.Wait()
+	return nil
+
+}
+
 // Healthcheck is the face for an healthcheck
 type Healthcheck interface {
 	Initialize() error
 	Name() string
-	Start(chanResult chan *Result) error
-	Stop() error
 	Execute() error
 	LogDebug(message string)
 	LogInfo(message string)
 	OneOff() bool
+	Interval() Duration
 	LogError(err error, message string)
 }
 
 // Component is the component which will manage healthchecks
 type Component struct {
 	Logger       *zap.Logger
-	Healthchecks map[string]Healthcheck
+	Healthchecks map[string]*Wrapper
 	lock         sync.RWMutex
 
 	ChanResult chan *Result
@@ -54,14 +95,13 @@ func NewResult(healthcheck Healthcheck, err error) *Result {
 		result.Message = "success"
 	}
 	return &result
-
 }
 
 // New creates a new Healthcheck component
 func New(logger *zap.Logger, chanResult chan *Result) (*Component, error) {
 	component := Component{
 		Logger:       logger,
-		Healthchecks: make(map[string]Healthcheck),
+		Healthchecks: make(map[string]*Wrapper),
 		ChanResult:   chanResult,
 	}
 
@@ -81,11 +121,11 @@ func (c *Component) Stop() error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	c.Logger.Info("Stopping the healthcheck component")
-	for _, healthcheck := range c.Healthchecks {
-		healthcheck.LogDebug("stopping healthcheck")
-		err := healthcheck.Stop()
+	for _, wrapper := range c.Healthchecks {
+		wrapper.healthcheck.LogDebug("stopping healthcheck")
+		err := wrapper.Stop()
 		if err != nil {
-			healthcheck.LogError(err, "Fail to stop the healthcheck")
+			wrapper.healthcheck.LogError(err, "Fail to stop the healthcheck")
 			return errors.Wrap(err, "Fail to stop the healthcheck component")
 		}
 	}
@@ -95,11 +135,11 @@ func (c *Component) Stop() error {
 // removeCheck removes an healthcheck from the component.
 // The function is *not* thread-safe.
 func (c *Component) removeCheck(identifier string) error {
-	if existingCheck, ok := c.Healthchecks[identifier]; ok {
-		existingCheck.LogInfo("Stopping healthcheck")
-		err := existingCheck.Stop()
+	if existingWrapper, ok := c.Healthchecks[identifier]; ok {
+		existingWrapper.healthcheck.LogInfo("Stopping healthcheck")
+		err := existingWrapper.Stop()
 		if err != nil {
-			return errors.Wrapf(err, "Fail to stop healthcheck %s", existingCheck.Name())
+			return errors.Wrapf(err, "Fail to stop healthcheck %s", existingWrapper.healthcheck.Name())
 		}
 		delete(c.Healthchecks, identifier)
 	}
@@ -107,26 +147,24 @@ func (c *Component) removeCheck(identifier string) error {
 }
 
 // AddCheck add an healthcheck to the component and starts it.
-func (c *Component) AddCheck(healthcheck Healthcheck) error {
-	healthcheck.LogInfo("Adding healthcheck")
-	err := healthcheck.Initialize()
+func (c *Component) AddCheck(check Healthcheck) error {
+	wrapper := NewWrapper(check)
+	wrapper.healthcheck.LogInfo("Adding healthcheck")
+	err := wrapper.healthcheck.Initialize()
 	if err != nil {
-		return errors.Wrapf(err, "Fail to initialize healthcheck %s", healthcheck.Name())
+		return errors.Wrapf(err, "Fail to initialize healthcheck %s", wrapper.healthcheck.Name())
 	}
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
 	// verifies if the healthcheck already exists, and removes it if needed.
 	// Updating an healthcheck is removing the old one and adding the new one.
-	err = c.removeCheck(healthcheck.Name())
+	err = c.removeCheck(wrapper.healthcheck.Name())
 	if err != nil {
-		return errors.Wrapf(err, "Fail to stop existing healthcheck %s", healthcheck.Name())
+		return errors.Wrapf(err, "Fail to stop existing healthcheck %s", wrapper.healthcheck.Name())
 	}
-	err = healthcheck.Start(c.ChanResult)
-	if err != nil {
-		return errors.Wrapf(err, "Fail to start healthcheck %s", healthcheck.Name())
-	}
-	c.Healthchecks[healthcheck.Name()] = healthcheck
+	wrapper.Start(c.ChanResult)
+	c.Healthchecks[wrapper.healthcheck.Name()] = wrapper
 	return nil
 }
 
@@ -143,8 +181,8 @@ func (c *Component) ListChecks() []Healthcheck {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 	result := make([]Healthcheck, 0, len(c.Healthchecks))
-	for _, value := range c.Healthchecks {
-		result = append(result, value)
+	for _, wrapper := range c.Healthchecks {
+		result = append(result, wrapper.healthcheck)
 	}
 	return result
 }

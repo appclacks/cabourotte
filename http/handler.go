@@ -15,8 +15,8 @@ type BasicResponse struct {
 }
 
 // addCheck adds a periodic healthcheck to the healthcheck component.
-func (c *Component) addCheck(ec echo.Context, healthcheck healthcheck.Healthcheck) error {
-	err := c.healthcheck.AddCheck(healthcheck)
+func (c *Component) addCheck(ec echo.Context, check healthcheck.Healthcheck) error {
+	err := c.healthcheck.AddCheck(check)
 	if err != nil {
 		msg := fmt.Sprintf("Fail to start the healthcheck: %s", err.Error())
 		c.Logger.Error(msg)

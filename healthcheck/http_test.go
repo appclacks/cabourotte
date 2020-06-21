@@ -216,11 +216,9 @@ func TestHTTPStartStop(t *testing.T) {
 			OneOff:      false,
 		},
 	)
-	err := healthcheck.Start(make(chan *Result, 10))
-	if err != nil {
-		t.Errorf("Fail to start the healthcheck\n%v", err)
-	}
-	err = healthcheck.Stop()
+	wrapper := NewWrapper(healthcheck)
+	wrapper.Start(make(chan *Result, 10))
+	err := wrapper.Stop()
 	if err != nil {
 		t.Errorf("Fail to stop the healthcheck\n%v", err)
 	}
