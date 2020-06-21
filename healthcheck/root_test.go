@@ -5,10 +5,12 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+
+	"cabourotte/prometheus"
 )
 
 func TestStartStop(t *testing.T) {
-	component, err := New(zap.NewExample(), make(chan *Result, 10))
+	component, err := New(zap.NewExample(), make(chan *Result, 10), prometheus.New())
 	if err != nil {
 		t.Errorf("Fail to create the component\n%v", err)
 	}
@@ -24,7 +26,7 @@ func TestStartStop(t *testing.T) {
 
 func TestAddRemoveCheck(t *testing.T) {
 	logger := zap.NewExample()
-	component, err := New(logger, make(chan *Result, 10))
+	component, err := New(logger, make(chan *Result, 10), prometheus.New())
 	if err != nil {
 		t.Errorf("Fail to create the component\n%v", err)
 	}

@@ -6,8 +6,11 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	prom "github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 	"gopkg.in/tomb.v2"
+
+	"cabourotte/prometheus"
 )
 
 // Result represents the result of an healthcheck
@@ -30,24 +33,6 @@ func NewWrapper(healthcheck Healthcheck) *Wrapper {
 	return &Wrapper{
 		healthcheck: healthcheck,
 	}
-}
-
-// Start an healthcheck wrapper
-func (w *Wrapper) Start(chanResult chan *Result) {
-	w.healthcheck.LogInfo("Starting healthcheck")
-	w.Tick = time.NewTicker(time.Duration(w.healthcheck.Interval()))
-	w.t.Go(func() error {
-		for {
-			select {
-			case <-w.Tick.C:
-				err := w.healthcheck.Execute()
-				result := NewResult(w.healthcheck, err)
-				chanResult <- result
-			case <-w.t.Dying():
-				return nil
-			}
-		}
-	})
 }
 
 // Stop an Healthcheck wrapper
@@ -73,11 +58,36 @@ type Healthcheck interface {
 
 // Component is the component which will manage healthchecks
 type Component struct {
-	Logger       *zap.Logger
-	Healthchecks map[string]*Wrapper
-	lock         sync.RWMutex
+	Logger        *zap.Logger
+	Healthchecks  map[string]*Wrapper
+	prometheus    *prometheus.Prometheus
+	resultCounter *prom.CounterVec
+	lock          sync.RWMutex
 
 	ChanResult chan *Result
+}
+
+// Start an healthcheck wrapper
+func (c *Component) startWrapper(w *Wrapper) {
+	w.healthcheck.LogInfo("Starting healthcheck")
+	w.Tick = time.NewTicker(time.Duration(w.healthcheck.Interval()))
+	w.t.Go(func() error {
+		for {
+			select {
+			case <-w.Tick.C:
+				err := w.healthcheck.Execute()
+				result := NewResult(w.healthcheck, err)
+				status := "failure"
+				if result.Success {
+					status = "success"
+				}
+				c.resultCounter.With(prom.Labels{"name": w.healthcheck.Name(), "status": status}).Inc()
+				c.ChanResult <- result
+			case <-w.t.Dying():
+				return nil
+			}
+		}
+	})
 }
 
 // NewResult build a a new result for an healthcheck
@@ -98,11 +108,24 @@ func NewResult(healthcheck Healthcheck, err error) *Result {
 }
 
 // New creates a new Healthcheck component
-func New(logger *zap.Logger, chanResult chan *Result) (*Component, error) {
+func New(logger *zap.Logger, chanResult chan *Result, promComponent *prometheus.Prometheus) (*Component, error) {
+	counter := prom.NewCounterVec(
+		prom.CounterOpts{
+			Name: "healthcheck_result_total",
+			Help: "Count the healthchecks of success or failures for healthchchecks.",
+		},
+		[]string{"name", "status"},
+	)
+	err := promComponent.Register(counter)
+	if err != nil {
+		return nil, errors.Wrapf(err, "fail to register the healthcheck result Prometheus counter")
+	}
 	component := Component{
-		Logger:       logger,
-		Healthchecks: make(map[string]*Wrapper),
-		ChanResult:   chanResult,
+		prometheus:    promComponent,
+		resultCounter: counter,
+		Logger:        logger,
+		Healthchecks:  make(map[string]*Wrapper),
+		ChanResult:    chanResult,
 	}
 
 	return &component, nil
@@ -163,7 +186,7 @@ func (c *Component) AddCheck(check Healthcheck) error {
 	if err != nil {
 		return errors.Wrapf(err, "Fail to stop existing healthcheck %s", wrapper.healthcheck.Name())
 	}
-	wrapper.Start(c.ChanResult)
+	c.startWrapper(wrapper)
 	c.Healthchecks[wrapper.healthcheck.Name()] = wrapper
 	return nil
 }

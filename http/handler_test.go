@@ -21,7 +21,7 @@ func TestHandlers(t *testing.T) {
 	prom := prometheus.New()
 	logger := zap.NewExample()
 	memstore := memorystore.NewMemoryStore(logger)
-	healthcheck, err := healthcheck.New(zap.NewExample(), make(chan *healthcheck.Result, 10))
+	healthcheck, err := healthcheck.New(zap.NewExample(), make(chan *healthcheck.Result, 10), prometheus.New())
 	if err != nil {
 		t.Errorf("Fail to create the healthcheck component\n%v", err)
 	}
@@ -127,7 +127,7 @@ func TestOneOffCheck(t *testing.T) {
 	count := 0
 	logger := zap.NewExample()
 	prom := prometheus.New()
-	healthcheck, err := healthcheck.New(logger, make(chan *healthcheck.Result, 10))
+	healthcheck, err := healthcheck.New(logger, make(chan *healthcheck.Result, 10), prometheus.New())
 	if err != nil {
 		t.Errorf("Fail to create the healthcheck component\n%v", err)
 	}

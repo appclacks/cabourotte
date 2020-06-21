@@ -13,7 +13,7 @@ import (
 func TestStartStop(t *testing.T) {
 	prom := prometheus.New()
 	logger := zap.NewExample()
-	healthcheck, err := healthcheck.New(logger, make(chan *healthcheck.Result, 10))
+	healthcheck, err := healthcheck.New(logger, make(chan *healthcheck.Result, 10), prom)
 	if err != nil {
 		t.Errorf("Fail to create the healthcheck component\n%v", err)
 	}
@@ -34,7 +34,7 @@ func TestStartStop(t *testing.T) {
 func TestStartStopTLS(t *testing.T) {
 	logger := zap.NewExample()
 	prom := prometheus.New()
-	healthcheck, err := healthcheck.New(logger, make(chan *healthcheck.Result, 10))
+	healthcheck, err := healthcheck.New(logger, make(chan *healthcheck.Result, 10), prom)
 	if err != nil {
 		t.Errorf("Fail to create the healthcheck component\n%v", err)
 	}

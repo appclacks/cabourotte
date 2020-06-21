@@ -45,7 +45,6 @@ func New(logger *zap.Logger, store *memorystore.MemoryStore, chanResult chan *he
 // Start starts the exporter component
 func (c *Component) Start() error {
 	c.Logger.Info("Starting the exporters")
-	c.MemoryStore.Start()
 	c.t.Go(func() error {
 		for {
 			select {

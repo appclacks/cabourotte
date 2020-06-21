@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+
+	"cabourotte/prometheus"
 )
 
 func TestTCPBuildURL(t *testing.T) {
@@ -98,8 +100,12 @@ func TestTCPStartStop(t *testing.T) {
 		},
 	)
 	wrapper := NewWrapper(healthcheck)
-	wrapper.Start(make(chan *Result, 10))
-	err := wrapper.Stop()
+	component, err := New(zap.NewExample(), make(chan *Result, 10), prometheus.New())
+	if err != nil {
+		t.Errorf("Fail to create the component\n%v", err)
+	}
+	component.startWrapper(wrapper)
+	err = wrapper.Stop()
 	if err != nil {
 		t.Errorf("Fail to stop the healthcheck\n%v", err)
 	}
