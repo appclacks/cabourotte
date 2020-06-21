@@ -1,6 +1,8 @@
 package exporter
 
 import (
+	"fmt"
+
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"gopkg.in/tomb.v2"
@@ -63,7 +65,10 @@ func (c *Component) Start() error {
 					)
 				}
 				for _, exporter := range c.Exporters {
-					exporter.Push(message)
+					err := exporter.Push(message)
+					if err != nil {
+						c.Logger.Error(fmt.Sprintf("Failed to push healthchecks result: %s", err.Error()))
+					}
 				}
 			case <-c.t.Dying():
 				return nil
