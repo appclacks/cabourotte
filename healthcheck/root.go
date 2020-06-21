@@ -58,11 +58,11 @@ type Healthcheck interface {
 
 // Component is the component which will manage healthchecks
 type Component struct {
-	Logger        *zap.Logger
-	Healthchecks  map[string]*Wrapper
-	prometheus    *prometheus.Prometheus
-	resultCounter *prom.CounterVec
-	lock          sync.RWMutex
+	Logger          *zap.Logger
+	Healthchecks    map[string]*Wrapper
+	resultCounter   *prom.CounterVec
+	resultHistogram *prom.HistogramVec
+	lock            sync.RWMutex
 
 	ChanResult chan *Result
 }
@@ -75,13 +75,16 @@ func (c *Component) startWrapper(w *Wrapper) {
 		for {
 			select {
 			case <-w.Tick.C:
+				start := time.Now()
 				err := w.healthcheck.Execute()
+				duration := time.Since(start)
 				result := NewResult(w.healthcheck, err)
 				status := "failure"
 				if result.Success {
 					status = "success"
 				}
 				c.resultCounter.With(prom.Labels{"name": w.healthcheck.Name(), "status": status}).Inc()
+				c.resultHistogram.With(prom.Labels{"name": w.healthcheck.Name(), "status": status}).Observe(duration.Seconds())
 				c.ChanResult <- result
 			case <-w.t.Dying():
 				return nil
@@ -116,16 +119,30 @@ func New(logger *zap.Logger, chanResult chan *Result, promComponent *prometheus.
 		},
 		[]string{"name", "status"},
 	)
+	buckets := []float64{
+		0.05, 0.1, 0.2, 0.4, 0.8, 1,
+		1.5, 2, 3, 5}
+	histo := prom.NewHistogramVec(prom.HistogramOpts{
+		Name:    "healthcheck_duration_seconds",
+		Help:    "Time to execute a healthcheck healthcheck.",
+		Buckets: buckets,
+	},
+		[]string{"name", "status"},
+	)
 	err := promComponent.Register(counter)
 	if err != nil {
 		return nil, errors.Wrapf(err, "fail to register the healthcheck result Prometheus counter")
 	}
+	err = promComponent.Register(histo)
+	if err != nil {
+		return nil, errors.Wrapf(err, "fail to register the healthcheck result Prometheus histogram")
+	}
 	component := Component{
-		prometheus:    promComponent,
-		resultCounter: counter,
-		Logger:        logger,
-		Healthchecks:  make(map[string]*Wrapper),
-		ChanResult:    chanResult,
+		resultCounter:   counter,
+		resultHistogram: histo,
+		Logger:          logger,
+		Healthchecks:    make(map[string]*Wrapper),
+		ChanResult:      chanResult,
 	}
 
 	return &component, nil
