@@ -15,6 +15,7 @@ import (
 // Healthcheck is the face for an healthcheck
 type Healthcheck interface {
 	Initialize() error
+	GetConfig() interface{}
 	Name() string
 	Execute() error
 	LogDebug(message string)

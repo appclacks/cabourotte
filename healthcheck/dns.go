@@ -54,6 +54,11 @@ func (h *DNSHealthcheck) Interval() Duration {
 	return h.Config.Interval
 }
 
+// GetConfig get the config
+func (h *DNSHealthcheck) GetConfig() interface{} {
+	return h.Config
+}
+
 // Name returns the healthcheck identifier.
 func (h *DNSHealthcheck) Name() string {
 	return h.Config.Name

@@ -80,6 +80,11 @@ func (h *TCPHealthcheck) Interval() Duration {
 	return h.Config.Interval
 }
 
+// GetConfig get the config
+func (h *TCPHealthcheck) GetConfig() interface{} {
+	return h.Config
+}
+
 // OneOff returns true if the healthcheck if a one-off check
 func (h *TCPHealthcheck) OneOff() bool {
 	return h.Config.OneOff

@@ -133,6 +133,11 @@ func (h *HTTPHealthcheck) Interval() Duration {
 	return h.Config.Interval
 }
 
+// GetConfig get the config
+func (h *HTTPHealthcheck) GetConfig() interface{} {
+	return h.Config
+}
+
 // isSuccessful verifies if a healthcheck result is considered valid
 // depending of the healthcheck configuration
 func (h *HTTPHealthcheck) isSuccessful(response *http.Response) bool {

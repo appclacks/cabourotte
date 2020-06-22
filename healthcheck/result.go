@@ -6,10 +6,11 @@ import (
 
 // Result represents the result of an healthcheck
 type Result struct {
-	Name      string    `json:"name"`
-	Success   bool      `json:"success"`
-	Timestamp time.Time `json:"timestamp"`
-	Message   string    `json:"message"`
+	Name      string      `json:"name"`
+	Config    interface{} `json:"configuration"`
+	Success   bool        `json:"success"`
+	Timestamp time.Time   `json:"timestamp"`
+	Message   string      `json:"message"`
 }
 
 // NewResult build a a new result for an healthcheck
@@ -17,6 +18,7 @@ func NewResult(healthcheck Healthcheck, err error) *Result {
 	now := time.Now()
 	result := Result{
 		Name:      healthcheck.Name(),
+		Config:    healthcheck.GetConfig(),
 		Timestamp: now,
 	}
 	if err != nil {
