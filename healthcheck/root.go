@@ -8,41 +8,9 @@ import (
 	"github.com/pkg/errors"
 	prom "github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
-	"gopkg.in/tomb.v2"
 
 	"cabourotte/prometheus"
 )
-
-// Result represents the result of an healthcheck
-type Result struct {
-	Name      string    `json:"name"`
-	Success   bool      `json:"success"`
-	Timestamp time.Time `json:"timestamp"`
-	Message   string    `json:"message"`
-}
-
-// Wrapper Wrap an healthcheck
-type Wrapper struct {
-	healthcheck Healthcheck
-	Tick        *time.Ticker
-	t           tomb.Tomb
-}
-
-// NewWrapper creates a new wrapper struct
-func NewWrapper(healthcheck Healthcheck) *Wrapper {
-	return &Wrapper{
-		healthcheck: healthcheck,
-	}
-}
-
-// Stop an Healthcheck wrapper
-func (w *Wrapper) Stop() error {
-	w.Tick.Stop()
-	w.t.Kill(nil)
-	w.t.Wait()
-	return nil
-
-}
 
 // Healthcheck is the face for an healthcheck
 type Healthcheck interface {
@@ -91,23 +59,6 @@ func (c *Component) startWrapper(w *Wrapper) {
 			}
 		}
 	})
-}
-
-// NewResult build a a new result for an healthcheck
-func NewResult(healthcheck Healthcheck, err error) *Result {
-	now := time.Now()
-	result := Result{
-		Name:      healthcheck.Name(),
-		Timestamp: now,
-	}
-	if err != nil {
-		result.Success = false
-		result.Message = err.Error()
-	} else {
-		result.Success = true
-		result.Message = "success"
-	}
-	return &result
 }
 
 // New creates a new Healthcheck component
