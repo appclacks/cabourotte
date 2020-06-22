@@ -20,13 +20,15 @@ import (
 
 // Component the http server component
 type Component struct {
-	MemoryStore    *memorystore.MemoryStore
-	Config         *Configuration
-	Logger         *zap.Logger
-	healthcheck    *healthcheck.Component
-	Server         *echo.Echo
-	Prometheus     *prometheus.Prometheus
-	requestCounter *prom.CounterVec
+	MemoryStore      *memorystore.MemoryStore
+	Config           *Configuration
+	Logger           *zap.Logger
+	healthcheck      *healthcheck.Component
+	Server           *echo.Echo
+	Prometheus       *prometheus.Prometheus
+	requestCounter   *prom.CounterVec
+	requestHistogram *prom.HistogramVec
+	responseCounter  *prom.CounterVec
 }
 
 // New creates a new HTTP component
@@ -58,14 +60,35 @@ func New(logger *zap.Logger, memstore *memorystore.MemoryStore, promComponent *p
 		},
 		[]string{"method", "path"})
 
+	respCounter := prom.NewCounterVec(
+		prom.CounterOpts{
+			Name: "http_responses_total",
+			Help: "Count the number of HTTP responses.",
+		},
+		[]string{"method", "status", "path"})
+
+	buckets := []float64{
+		0.05, 0.1, 0.2, 0.4, 0.8, 1,
+		1.5, 2, 3, 5}
+
+	reqHistogram := prom.NewHistogramVec(
+		prom.HistogramOpts{
+			Name:    "http_requests_duration_second",
+			Help:    "Time to execute http requests",
+			Buckets: buckets,
+		},
+		[]string{"method", "path"})
+
 	component := Component{
-		MemoryStore:    memstore,
-		Config:         config,
-		Server:         e,
-		Logger:         logger,
-		healthcheck:    healthcheck,
-		Prometheus:     promComponent,
-		requestCounter: reqCounter,
+		MemoryStore:      memstore,
+		Config:           config,
+		Server:           e,
+		Logger:           logger,
+		healthcheck:      healthcheck,
+		Prometheus:       promComponent,
+		requestCounter:   reqCounter,
+		requestHistogram: reqHistogram,
+		responseCounter:  respCounter,
 	}
 	return &component, nil
 }
@@ -79,8 +102,15 @@ func (c *Component) Start() error {
 	if err != nil {
 		return errors.Wrapf(err, "fail to register the Prometheus HTTP request counter")
 	}
+	err = c.Prometheus.Register(c.responseCounter)
+	if err != nil {
+		return errors.Wrapf(err, "fail to register the Prometheus HTTP response counter")
+	}
+	err = c.Prometheus.Register(c.requestHistogram)
+	if err != nil {
+		return errors.Wrapf(err, "fail to register the Prometheus HTTP request histogram")
+	}
 	go func() {
-
 		if c.Config.Cert != "" {
 
 			c.Server.StartTLS(address, c.Config.Cert, c.Config.Key)
@@ -97,6 +127,8 @@ func (c *Component) Start() error {
 func (c *Component) Stop() error {
 	c.Logger.Info("Stopping the HTTP server component")
 	c.Prometheus.Unregister(c.requestCounter)
+	c.Prometheus.Unregister(c.requestHistogram)
+	c.Prometheus.Unregister(c.responseCounter)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	err := c.Server.Shutdown(ctx)
