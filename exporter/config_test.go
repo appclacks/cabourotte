@@ -41,6 +41,26 @@ name: foo
 				Protocol: healthcheck.HTTP,
 			},
 		},
+		{
+			in: `
+host: "127.0.0.2"
+port: 2003
+protocol: http
+name: foo
+key: /tmp/key
+cert: /tmp/cert
+cacert: /tmp/cacert
+`,
+			want: HTTPConfiguration{
+				Name:     "foo",
+				Host:     "127.0.0.2",
+				Port:     2003,
+				Protocol: healthcheck.HTTP,
+				Key:      "/tmp/key",
+				Cert:     "/tmp/cert",
+				Cacert:   "/tmp/cacert",
+			},
+		},
 	}
 	for _, c := range cases {
 		var result HTTPConfiguration
@@ -76,6 +96,19 @@ protocol: tcp
 host: ""
 port: 2003
 protocol: http
+`,
+		`
+host: ""
+port: 2003
+protocol: http
+key: /tmp/key
+`,
+		`
+host: ""
+port: 2003
+protocol: http
+key: /tmp/key
+cert: /tmp/cert
 `,
 	}
 	for _, c := range cases {

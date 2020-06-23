@@ -25,13 +25,16 @@ func TestHTTPExporter(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error getting HTTP server port :\n%v", err)
 	}
-	exporter := NewHTTPExporter(
+	exporter, err := NewHTTPExporter(
 		zap.NewExample(),
 		&HTTPConfiguration{
 			Host:     "127.0.0.1",
 			Port:     uint32(port),
 			Protocol: healthcheck.HTTP,
 		})
+	if err != nil {
+		t.Fatalf("Error creating the http exporter :\n%v", err)
+	}
 	err = exporter.Start()
 	if err != nil {
 		t.Errorf("Fail to start the http exporter:\n%v", err)

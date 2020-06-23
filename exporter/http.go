@@ -2,8 +2,11 @@ package exporter
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"time"
@@ -23,7 +26,7 @@ type HTTPExporter struct {
 }
 
 // NewHTTPExporter creates a new HTTP exporter
-func NewHTTPExporter(logger *zap.Logger, config *HTTPConfiguration) *HTTPExporter {
+func NewHTTPExporter(logger *zap.Logger, config *HTTPConfiguration) (*HTTPExporter, error) {
 	protocol := "http"
 	if config.Protocol == healthcheck.HTTPS {
 		protocol = "https"
@@ -33,18 +36,39 @@ func NewHTTPExporter(logger *zap.Logger, config *HTTPConfiguration) *HTTPExporte
 		protocol,
 		net.JoinHostPort(config.Host, fmt.Sprintf("%d", config.Port)),
 		config.Path)
+	transport := &http.Transport{}
+	if config.Key != "" {
+		cert, err := tls.LoadX509KeyPair(config.Cert, config.Key)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Fail to load certificates")
+		}
+		caCert, err := ioutil.ReadFile(config.Cacert)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Fail to load the ca certificate")
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		transport = &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs:      caCertPool,
+				Certificates: []tls.Certificate{cert},
+			},
+		}
+	}
+
 	exporter := HTTPExporter{
 		Logger: logger,
 		Config: config,
 		URL:    url,
 		Client: &http.Client{
-			Timeout: time.Second * 3,
+			Transport: transport,
+			Timeout:   time.Second * 3,
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
 				return http.ErrUseLastResponse
 			},
 		},
 	}
-	return &exporter
+	return &exporter, nil
 }
 
 // Start starts the HTTP exporter component

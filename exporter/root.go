@@ -42,7 +42,11 @@ type Component struct {
 func New(logger *zap.Logger, store *memorystore.MemoryStore, chanResult chan *healthcheck.Result, promComponent *prometheus.Prometheus, config *Configuration) (*Component, error) {
 	var exporters []Exporter
 	for _, httpConfig := range config.HTTP {
-		exporters = append(exporters, NewHTTPExporter(logger, &httpConfig))
+		exporter, err := NewHTTPExporter(logger, &httpConfig)
+		if err != nil {
+			return nil, errors.Wrapf(err, "fail to create the http exporter")
+		}
+		exporters = append(exporters, exporter)
 	}
 	counter := prom.NewCounterVec(
 		prom.CounterOpts{

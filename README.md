@@ -164,6 +164,12 @@ port: 9000
 path: "/"
 # The exporter protocol
 protocol: "https"
+# A cacert for mTLS (optional)
+cacert: "/tmp/cacert.pem"
+# A cert for mTLS (optional)
+cert: "/tmp/cert.pem"
+# A key for mTLS (optional)
+key: "/tmp/foo.key"
 ```
 
 The HTTP endpoint will receive payloads containing the healthchecks results, for example:
