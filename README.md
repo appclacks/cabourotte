@@ -178,8 +178,23 @@ The HTTP endpoint will receive payloads containing the healthchecks results, for
 [
   {
     "name": "mcorbin-http-check",
+    "configuration": {
+      "name": "mcorbin-http-check",
+      "valid-status": [
+        200,
+        201
+      ],
+      "description": "http healthcheck example",
+      "target": "mcorbin.fr",
+      "port": 443,
+      "protocol": "https",
+      "path": "/",
+      "timeout": "5s",
+      "interval": "10s",
+      "one-off": false
+    },
     "success": true,
-    "timestamp": "2020-05-29T18:45:50.724076768+02:00",
+    "timestamp": "2020-06-23T22:22:21.327587024+02:00",
     "message": "success"
   }
 ]
