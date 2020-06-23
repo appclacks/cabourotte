@@ -154,6 +154,8 @@ Cabourotte can also export healthchecks results to other systems using exporters
 The HTTP exporter will send healthchecks results to an HTTP server as json
 
 ```yaml
+# The exporter name
+name: http-exporter
 # The exporter endpoint
 host: "127.0.0.1"
 # The exporter port
@@ -176,6 +178,8 @@ The HTTP endpoint will receive payloads containing the healthchecks results, for
   }
 ]
 ```
+
+Exporters names should be unique.
 
 ## API
 
