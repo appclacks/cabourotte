@@ -245,6 +245,10 @@ curl 127.0.0.1:9013/result/mcorbin-dns-check
 {"name":"mcorbin-dns-check","success":true,"timestamp":"2020-05-30T18:52:31.472050312+02:00","message":"success"}
 ```
 
+### Health
+
+THe `/health` or `/healthz` endpoints can be used to check is the daemon is running or not.
+
 ## Hot reload
 
 The daemon supports hot reloading of its configuration file. When the daemon is reloaded:
