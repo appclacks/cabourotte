@@ -8,6 +8,8 @@ It's also possible to execute `one-off` healthchecks through the API. This type 
 
 Healthchecks results can also be exported to other systems by configuring exporters. The latest result for each healthcheck is also stored in memory for 2 minutes, and can be retrieved through the API.
 
+The application and healthchecks metrics (numer of successful/failed healthchecks, healthchecks execution time...) are reported on a prometheus endpoint.
+
 ## Quickstart
 
 Configure the HTTP server and your healthchecks using the configuration file:
@@ -247,7 +249,14 @@ curl 127.0.0.1:9013/result/mcorbin-dns-check
 
 ### Health
 
-THe `/health` or `/healthz` endpoints can be used to check is the daemon is running or not.
+The `/health` or `/healthz` endpoints can be used to check is the daemon is running or not.
+
+### Metrics
+
+The `/metrics` endpoint reports (using the Prometheus format):
+
+- Generic metrics about the application and its components.
+- For each healthcheck, the number of failed or successful healthcheck and the time for the healthchecks to be executed (as a prometheus histogram).
 
 ## Hot reload
 
