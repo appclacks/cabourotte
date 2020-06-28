@@ -12,7 +12,12 @@ import (
 	"cabourotte/prometheus"
 )
 
-// Healthcheck is the face for an healthcheck
+// HealthcheckConfiguration is the interface for the healthcheck configuration
+type HealthcheckConfiguration interface {
+	GetName() string
+}
+
+// Healthcheck is the interface for an healthcheck
 type Healthcheck interface {
 	Initialize() error
 	GetConfig() interface{}

@@ -35,6 +35,11 @@ type HTTPHealthcheckConfiguration struct {
 	Cacert   string   `json:"cacert,omitempty"`
 }
 
+// GetName returns the name configured in the configuration
+func (c *HTTPHealthcheckConfiguration) GetName() string {
+	return c.Name
+}
+
 // ValidateHTTPConfig validates the healthcheck configuration
 func ValidateHTTPConfig(config *HTTPHealthcheckConfiguration) error {
 	if config.Name == "" {

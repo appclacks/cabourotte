@@ -30,6 +30,11 @@ type DNSHealthcheck struct {
 	t    tomb.Tomb
 }
 
+// GetName returns the name configured in the configuration
+func (c *DNSHealthcheckConfiguration) GetName() string {
+	return c.Name
+}
+
 // ValidateDNSConfig validates the healthcheck configuration
 func ValidateDNSConfig(config *DNSHealthcheckConfiguration) error {
 	if config.Name == "" {

@@ -106,12 +106,23 @@ func TestReload(t *testing.T) {
 				Interval:    healthcheck.Duration(time.Second * 10),
 				ValidStatus: []uint{200, 201},
 			},
+			healthcheck.HTTPHealthcheckConfiguration{
+				Name:        "bar3",
+				Description: "bar",
+				Path:        "/foo",
+				Target:      "mcorbin.fr",
+				Port:        80,
+				Protocol:    healthcheck.HTTPS,
+				Timeout:     healthcheck.Duration(time.Second * 5),
+				Interval:    healthcheck.Duration(time.Second * 10),
+				ValidStatus: []uint{200, 201},
+			},
 		},
 	})
 	if err != nil {
 		t.Errorf("Fail to reload the component\n%v", err)
 	}
-	if len(component.Healthcheck.ListChecks()) != 2 {
+	if len(component.Healthcheck.ListChecks()) != 3 {
 		t.Errorf("The healthcheck was not added correctly")
 	}
 	err = component.Stop()

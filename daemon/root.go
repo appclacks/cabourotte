@@ -125,21 +125,36 @@ func strContains(s []string, value string) bool {
 // Reload reloads the Cabourotte daemon. This function will remove or keep
 // existing healthchecks depending of the new configuration. New checks will be added.
 // The HTTP server will also be reloaded if its configuration has changed.
-func (c *Component) Reload(config *Configuration) error {
+func (c *Component) Reload(daemonConfig *Configuration) error {
 	c.Logger.Info("Reloading the Cabourotte daemon")
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	// DNS healthchecks management
-	var dnsChecksToRemove []string
-	var dnsChecksToKeep []string
-	for _, currentCheck := range c.Config.DNSChecks {
+	var checksToRemove []string
+	var checksToKeep []string
+	// the new configurations
+	var configurations []healthcheck.HealthcheckConfiguration
+	for i := range daemonConfig.DNSChecks {
+		configurations = append(configurations, &daemonConfig.DNSChecks[i])
+	}
+	for i := range daemonConfig.HTTPChecks {
+		configurations = append(configurations, &daemonConfig.HTTPChecks[i])
+	}
+
+	for i := range daemonConfig.TCPChecks {
+		configurations = append(configurations, &daemonConfig.TCPChecks[i])
+	}
+
+	for _, currentCheck := range c.Healthcheck.ListChecks() {
 		found := false
-		for _, newCheck := range config.DNSChecks {
-			if currentCheck.Name == newCheck.Name {
-				// check found, let's verify if the healthcheck
+		// iterate on the new Configurations
+		for _, config := range configurations {
+			if currentCheck.Name() == config.GetName() {
+				// check found in the new config
+				// let's verify if the healthcheck
 				// configuration is the same
-				if reflect.DeepEqual(currentCheck, newCheck) {
-					dnsChecksToKeep = append(dnsChecksToKeep, currentCheck.Name)
+				if reflect.DeepEqual(currentCheck.GetConfig(), config) {
+					// if it's equal, we want to keep it and not modify it
+					checksToKeep = append(checksToKeep, currentCheck.Name())
 					found = true
 				}
 				break
@@ -147,95 +162,56 @@ func (c *Component) Reload(config *Configuration) error {
 		}
 		// check not found in the new config, it should be removed
 		if !found {
-			dnsChecksToRemove = append(dnsChecksToRemove, currentCheck.Name)
+			checksToRemove = append(checksToRemove, currentCheck.Name())
 		}
 	}
-	for _, check := range dnsChecksToRemove {
+	// remove checks which do not exist anymore
+	for _, check := range checksToRemove {
 		c.Healthcheck.RemoveCheck(check)
 	}
-	for _, newCheck := range config.DNSChecks {
-		if !strContains(dnsChecksToKeep, newCheck.Name) {
-			check := healthcheck.NewDNSHealthcheck(c.Logger, &newCheck)
-			err := c.Healthcheck.AddCheck(check)
-			if err != nil {
-				return errors.Wrapf(err, "Fail to add healthcheck %s", check.Name())
-			}
-		}
-	}
-	// TCP healthchecks management, <3 golang abstractions
-	var tcpChecksToRemove []string
-	var tcpChecksToKeep []string
-	for _, currentCheck := range c.Config.TCPChecks {
-		found := false
-		for _, newCheck := range config.TCPChecks {
-			if currentCheck.Name == newCheck.Name {
-				// check found, let's verify if the healthcheck
-				// configuration is the same
-				if reflect.DeepEqual(currentCheck, newCheck) {
-					tcpChecksToKeep = append(tcpChecksToKeep, currentCheck.Name)
-					found = true
+	// Iterate again on the new configurations
+	for _, config := range configurations {
+		// If the configuration is a new one, or if an healthcheck was updated,
+		// we create an healthcheck from the config.
+		if !strContains(checksToKeep, config.GetName()) {
+			var newCheck healthcheck.Healthcheck
+			switch t := config.(type) {
+			case *healthcheck.HTTPHealthcheckConfiguration:
+				checkConfig, ok := config.(*healthcheck.HTTPHealthcheckConfiguration)
+				if !ok {
+					return fmt.Errorf("Fail to create the HTTP healthcheck configuration for check %s", config.GetName())
 				}
-				break
-			}
-		}
-		// check not found in the new config, it should be removed
-		if !found {
-			tcpChecksToRemove = append(tcpChecksToRemove, currentCheck.Name)
-		}
-	}
-	for _, check := range tcpChecksToRemove {
-		c.Healthcheck.RemoveCheck(check)
-	}
-	for _, newCheck := range config.TCPChecks {
-		if !strContains(tcpChecksToKeep, newCheck.Name) {
-			check := healthcheck.NewTCPHealthcheck(c.Logger, &newCheck)
-			err := c.Healthcheck.AddCheck(check)
-			if err != nil {
-				return errors.Wrapf(err, "Fail to add healthcheck %s", check.Name())
-			}
-		}
-	}
-	// HTTP healthchecks management
-	var httpChecksToRemove []string
-	var httpChecksToKeep []string
-	for _, currentCheck := range c.Config.HTTPChecks {
-		found := false
-		for _, newCheck := range config.HTTPChecks {
-			if currentCheck.Name == newCheck.Name {
-				// check found, let's verify if the healthcheck
-				// configuration is the same
-				if reflect.DeepEqual(currentCheck, newCheck) {
-					httpChecksToKeep = append(httpChecksToKeep, currentCheck.Name)
-					found = true
+				newCheck = healthcheck.NewHTTPHealthcheck(c.Logger, checkConfig)
+
+			case *healthcheck.TCPHealthcheckConfiguration:
+				checkConfig, ok := config.(*healthcheck.TCPHealthcheckConfiguration)
+				if !ok {
+					return fmt.Errorf("Fail to create the TCP healthcheck configuration for check %s", config.GetName())
 				}
-				break
+				newCheck = healthcheck.NewTCPHealthcheck(c.Logger, checkConfig)
+			case *healthcheck.DNSHealthcheckConfiguration:
+				checkConfig, ok := config.(*healthcheck.DNSHealthcheckConfiguration)
+				if !ok {
+					return fmt.Errorf("Fail to create the DNS healthcheck configuration for check %s", config.GetName())
+				}
+				newCheck = healthcheck.NewDNSHealthcheck(c.Logger, checkConfig)
+			default:
+
+				return fmt.Errorf("Invalid healthcheck type during reload: %v", t)
 			}
-		}
-		// check not found in the new config, it should be removed
-		if !found {
-			c.Logger.Debug(fmt.Sprintf("Healthcheck %s will be removed", currentCheck.Name))
-			httpChecksToRemove = append(httpChecksToRemove, currentCheck.Name)
-		}
-	}
-	for _, check := range httpChecksToRemove {
-		c.Healthcheck.RemoveCheck(check)
-	}
-	for _, newCheck := range config.HTTPChecks {
-		if !strContains(httpChecksToKeep, newCheck.Name) {
-			check := healthcheck.NewHTTPHealthcheck(c.Logger, &newCheck)
-			err := c.Healthcheck.AddCheck(check)
+			err := c.Healthcheck.AddCheck(newCheck)
 			if err != nil {
-				return errors.Wrapf(err, "Fail to add healthcheck %s", check.Name())
+				return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Name())
 			}
 		}
 	}
 	// compare the server config to see if we need to recreate it
-	if !reflect.DeepEqual(c.Config.HTTP, config) {
+	if !reflect.DeepEqual(c.Config.HTTP, daemonConfig.HTTP) {
 		err := c.HTTP.Stop()
 		if err != nil {
 			return errors.Wrapf(err, "Fail to stop the HTTP server")
 		}
-		http, err := http.New(c.Logger, c.MemoryStore, c.Prometheus, &config.HTTP, c.Healthcheck)
+		http, err := http.New(c.Logger, c.MemoryStore, c.Prometheus, &daemonConfig.HTTP, c.Healthcheck)
 		if err != nil {
 			return errors.Wrapf(err, "Fail to create the HTTP server")
 		}
@@ -250,7 +226,7 @@ func (c *Component) Reload(config *Configuration) error {
 	if err != nil {
 		return errors.Wrapf(err, "Fail to stop the exporter component")
 	}
-	exporterComponent, err := exporter.New(c.Logger, c.MemoryStore, c.ChanResult, c.Prometheus, &config.Exporters)
+	exporterComponent, err := exporter.New(c.Logger, c.MemoryStore, c.ChanResult, c.Prometheus, &daemonConfig.Exporters)
 	if err != nil {
 		return errors.Wrapf(err, "Fail to create the exporter component")
 	}

@@ -25,6 +25,11 @@ type TCPHealthcheckConfiguration struct {
 	OneOff   bool     `json:"one-off"`
 }
 
+// GetName returns the name configured in the configuration
+func (c *TCPHealthcheckConfiguration) GetName() string {
+	return c.Name
+}
+
 // ValidateTCPConfig validates the healthcheck configuration
 func ValidateTCPConfig(config *TCPHealthcheckConfiguration) error {
 	if config.Name == "" {
