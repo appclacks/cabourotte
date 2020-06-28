@@ -87,7 +87,7 @@ Cabourotte supports multiple healthchecks types. The healthchecks names should b
 ### HTTP
 
 ```yaml
- The healthcheck name
+# The healthcheck name
 name: "mcorbin-http-check"
 # The healthcheck description
 description: "http healthcheck example"
@@ -118,7 +118,7 @@ key: "/tmp/foo.key"
 ### TCP
 
 ```yaml
- The healthcheck name
+# The healthcheck name
 name: "mcorbin-http-check"
 # The healthcheck description
 description: "http healthcheck example"
