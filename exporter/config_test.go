@@ -65,10 +65,10 @@ cacert: /tmp/cacert
 	for _, c := range cases {
 		var result HTTPConfiguration
 		if err := yaml.Unmarshal([]byte(c.in), &result); err != nil {
-			t.Errorf("Unmarshal yaml error:\n%v", err)
+			t.Fatalf("Unmarshal yaml error:\n%v", err)
 		}
 		if result != c.want {
-			t.Errorf("Invalid configuration: \n%s\n%v", c.in, c.want)
+			t.Fatalf("Invalid configuration: \n%s\n%v", c.in, c.want)
 		}
 	}
 }
@@ -114,7 +114,7 @@ cert: /tmp/cert
 	for _, c := range cases {
 		var result HTTPConfiguration
 		if err := yaml.Unmarshal([]byte(c), &result); err == nil {
-			t.Errorf("Was expecting an error for:\n%s", c)
+			t.Fatalf("Was expecting an error for:\n%s", c)
 		}
 	}
 }

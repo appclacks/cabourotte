@@ -22,7 +22,7 @@ func TestisSuccessfulOK(t *testing.T) {
 	}
 	response := http.Response{StatusCode: 200}
 	if !h.isSuccessful(&response) {
-		t.Errorf("Invalid status check")
+		t.Fatalf("Invalid status check")
 	}
 
 	h = HTTPHealthcheck{
@@ -32,7 +32,7 @@ func TestisSuccessfulOK(t *testing.T) {
 	}
 	response = http.Response{StatusCode: 400}
 	if !h.isSuccessful(&response) {
-		t.Errorf("Invalid status check")
+		t.Fatalf("Invalid status check")
 	}
 }
 
@@ -44,7 +44,7 @@ func TestIssuccessfulFailure(t *testing.T) {
 	}
 	response := http.Response{StatusCode: 201}
 	if h.isSuccessful(&response) {
-		t.Errorf("Invalid status check")
+		t.Fatalf("Invalid status check")
 	}
 
 	h = HTTPHealthcheck{
@@ -54,13 +54,17 @@ func TestIssuccessfulFailure(t *testing.T) {
 	}
 	response = http.Response{StatusCode: 500}
 	if h.isSuccessful(&response) {
-		t.Errorf("Invalid status check")
+		t.Fatalf("Invalid status check")
 	}
 }
 
 func TestHTTPExecuteSuccess(t *testing.T) {
 	count := 0
+	headersOK := false
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Foo") == "Bar" && r.Header.Get("User-agent") == "Cabourotte" {
+			headersOK = true
+		}
 		count++
 		w.WriteHeader(http.StatusOK)
 	}))
@@ -68,12 +72,13 @@ func TestHTTPExecuteSuccess(t *testing.T) {
 
 	port, err := strconv.ParseUint(strings.Split(ts.URL, ":")[2], 10, 16)
 	if err != nil {
-		t.Errorf("error getting HTTP server port :\n%v", err)
+		t.Fatalf("error getting HTTP server port :\n%v", err)
 	}
 	h := HTTPHealthcheck{
 		Logger: zap.NewExample(),
 		Config: &HTTPHealthcheckConfiguration{
 			ValidStatus: []uint{200},
+			Headers:     map[string]string{"Foo": "Bar"},
 			Port:        uint(port),
 			Target:      "127.0.0.1",
 			Protocol:    HTTP,
@@ -84,10 +89,13 @@ func TestHTTPExecuteSuccess(t *testing.T) {
 	h.Initialize()
 	err = h.Execute()
 	if err != nil {
-		t.Errorf("healthcheck error :\n%v", err)
+		t.Fatalf("healthcheck error :\n%v", err)
 	}
 	if count != 1 {
-		t.Errorf("The request counter is invalid")
+		t.Fatal("The request counter is invalid")
+	}
+	if !headersOK {
+		t.Fatal("Invalid headers")
 	}
 }
 
@@ -109,7 +117,7 @@ func TestHTTPv6ExecuteSuccess(t *testing.T) {
 	splitted := strings.Split(ts.URL, ":")
 	port, err := strconv.ParseUint(splitted[len(splitted)-1], 10, 16)
 	if err != nil {
-		t.Errorf("error getting HTTP server port :\n%v", err)
+		t.Fatalf("error getting HTTP server port :\n%v", err)
 	}
 	h := HTTPHealthcheck{
 		Logger: zap.NewExample(),
@@ -125,10 +133,10 @@ func TestHTTPv6ExecuteSuccess(t *testing.T) {
 	h.Initialize()
 	err = h.Execute()
 	if err != nil {
-		t.Errorf("healthcheck error :\n%v", err)
+		t.Fatalf("healthcheck error :\n%v", err)
 	}
 	if count != 1 {
-		t.Errorf("The request counter is invalid")
+		t.Fatalf("The request counter is invalid")
 	}
 }
 
@@ -142,7 +150,7 @@ func TestHTTPExecuteFailure(t *testing.T) {
 
 	port, err := strconv.ParseUint(strings.Split(ts.URL, ":")[2], 10, 16)
 	if err != nil {
-		t.Errorf("error getting HTTP server port :\n%v", err)
+		t.Fatalf("error getting HTTP server port :\n%v", err)
 	}
 	h := HTTPHealthcheck{
 		Logger: zap.NewExample(),
@@ -159,10 +167,10 @@ func TestHTTPExecuteFailure(t *testing.T) {
 	h.Initialize()
 	err = h.Execute()
 	if err == nil {
-		t.Errorf("Was expecting an error :\n%v", err)
+		t.Fatalf("Was expecting an error :\n%v", err)
 	}
 	if count != 1 {
-		t.Errorf("The request counter is invalid")
+		t.Fatalf("The request counter is invalid")
 	}
 }
 
@@ -180,7 +188,7 @@ func TestHTTPBuildURL(t *testing.T) {
 	h.buildURL()
 	expectedURL := "http://127.0.0.1:2000/"
 	if h.URL != expectedURL {
-		t.Errorf("Invalid URL\nexpected: %s\nactual: %s", expectedURL, h.URL)
+		t.Fatalf("Invalid URL\nexpected: %s\nactual: %s", expectedURL, h.URL)
 	}
 }
 
@@ -198,7 +206,7 @@ func TestHTTPSBuildURL(t *testing.T) {
 	h.buildURL()
 	expectedURL := "https://127.0.0.1:2000/foo"
 	if h.URL != expectedURL {
-		t.Errorf("Invalid URL\nexpected: %s\nactual: %s", expectedURL, h.URL)
+		t.Fatalf("Invalid URL\nexpected: %s\nactual: %s", expectedURL, h.URL)
 	}
 }
 
@@ -221,11 +229,11 @@ func TestHTTPStartStop(t *testing.T) {
 	wrapper := NewWrapper(healthcheck)
 	component, err := New(zap.NewExample(), make(chan *Result, 10), prometheus.New())
 	if err != nil {
-		t.Errorf("Fail to create the component\n%v", err)
+		t.Fatalf("Fail to create the component\n%v", err)
 	}
 	component.startWrapper(wrapper)
 	err = wrapper.Stop()
 	if err != nil {
-		t.Errorf("Fail to stop the healthcheck\n%v", err)
+		t.Fatalf("Fail to stop the healthcheck\n%v", err)
 	}
 }

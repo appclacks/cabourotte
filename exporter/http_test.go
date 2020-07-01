@@ -23,7 +23,7 @@ func TestHTTPExporter(t *testing.T) {
 
 	port, err := strconv.ParseUint(strings.Split(ts.URL, ":")[2], 10, 16)
 	if err != nil {
-		t.Errorf("Error getting HTTP server port :\n%v", err)
+		t.Fatalf("Error getting HTTP server port :\n%v", err)
 	}
 	exporter, err := NewHTTPExporter(
 		zap.NewExample(),
@@ -37,7 +37,7 @@ func TestHTTPExporter(t *testing.T) {
 	}
 	err = exporter.Start()
 	if err != nil {
-		t.Errorf("Fail to start the http exporter:\n%v", err)
+		t.Fatalf("Fail to start the http exporter:\n%v", err)
 	}
 	err = exporter.Push(&healthcheck.Result{
 		Name:      "foo",
@@ -46,13 +46,13 @@ func TestHTTPExporter(t *testing.T) {
 		Message:   "message",
 	})
 	if err != nil {
-		t.Errorf("Fail to push healthcheck result:\n%v", err)
+		t.Fatalf("Fail to push healthcheck result:\n%v", err)
 	}
 	err = exporter.Stop()
 	if err != nil {
-		t.Errorf("Fail to stop the http exporter:\n%v", err)
+		t.Fatalf("Fail to stop the http exporter:\n%v", err)
 	}
 	if count != 1 {
-		t.Errorf("The request counter is invalid")
+		t.Fatalf("The request counter is invalid")
 	}
 }

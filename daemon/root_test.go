@@ -14,15 +14,15 @@ func TestNewStop(t *testing.T) {
 	component, err := New(zap.NewExample(), &Configuration{
 		HTTP: http.Configuration{
 			Host: "127.0.0.1",
-			Port: 2000,
+			Port: 2002,
 		},
 	})
 	if err != nil {
-		t.Errorf("Fail to create the component\n%v", err)
+		t.Fatalf("Fail to create the component\n%v", err)
 	}
 	err = component.Stop()
 	if err != nil {
-		t.Errorf("Fail to start the component\n%v", err)
+		t.Fatalf("Fail to start the component\n%v", err)
 	}
 }
 
@@ -30,7 +30,7 @@ func TestReload(t *testing.T) {
 	component, err := New(zap.NewExample(), &Configuration{
 		HTTP: http.Configuration{
 			Host: "127.0.0.1",
-			Port: 2000,
+			Port: 2002,
 		},
 		HTTPChecks: []healthcheck.HTTPHealthcheckConfiguration{
 			healthcheck.HTTPHealthcheckConfiguration{
@@ -47,17 +47,17 @@ func TestReload(t *testing.T) {
 		},
 	})
 	if err != nil {
-		t.Errorf("Fail to create the component\n%v", err)
+		t.Fatalf("Fail to create the component\n%v", err)
 	}
 
 	if len(component.Healthcheck.ListChecks()) != 1 {
-		t.Errorf("The healthcheck was not added correctly")
+		t.Fatalf("The healthcheck was not added correctly")
 	}
 
 	err = component.Reload(&Configuration{
 		HTTP: http.Configuration{
 			Host: "127.0.0.1",
-			Port: 2000,
+			Port: 2002,
 		},
 		HTTPChecks: []healthcheck.HTTPHealthcheckConfiguration{
 			healthcheck.HTTPHealthcheckConfiguration{
@@ -74,15 +74,15 @@ func TestReload(t *testing.T) {
 		},
 	})
 	if err != nil {
-		t.Errorf("Fail to reload the component\n%v", err)
+		t.Fatalf("Fail to reload the component\n%v", err)
 	}
 	if len(component.Healthcheck.ListChecks()) != 1 {
-		t.Errorf("The healthcheck was not added correctly")
+		t.Fatalf("The healthcheck was not added correctly")
 	}
 	err = component.Reload(&Configuration{
 		HTTP: http.Configuration{
 			Host: "127.0.0.2",
-			Port: 2000,
+			Port: 2002,
 		},
 		TCPChecks: []healthcheck.TCPHealthcheckConfiguration{
 			healthcheck.TCPHealthcheckConfiguration{
@@ -120,13 +120,13 @@ func TestReload(t *testing.T) {
 		},
 	})
 	if err != nil {
-		t.Errorf("Fail to reload the component\n%v", err)
+		t.Fatalf("Fail to reload the component\n%v", err)
 	}
 	if len(component.Healthcheck.ListChecks()) != 3 {
-		t.Errorf("The healthcheck was not added correctly")
+		t.Fatalf("The healthcheck was not added correctly")
 	}
 	err = component.Stop()
 	if err != nil {
-		t.Errorf("Fail to start the component\n%v", err)
+		t.Fatalf("Fail to start the component\n%v", err)
 	}
 }

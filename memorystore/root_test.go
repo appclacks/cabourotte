@@ -20,10 +20,10 @@ func TestMemoryExporter(t *testing.T) {
 	store.Add(result)
 	resultList := store.List()
 	if resultList[0] != *result {
-		t.Errorf("Invalid result content")
+		t.Fatalf("Invalid result content")
 	}
 	if len(resultList) != 1 {
-		t.Errorf("Invalid result list size: %d", len(resultList))
+		t.Fatalf("Invalid result list size: %d", len(resultList))
 	}
 	expiredResult := &healthcheck.Result{
 		Name:      "bar",
@@ -34,14 +34,14 @@ func TestMemoryExporter(t *testing.T) {
 	store.Add(expiredResult)
 	resultList = store.List()
 	if len(resultList) != 2 {
-		t.Errorf("Invalid result list size: %d", len(resultList))
+		t.Fatalf("Invalid result list size: %d", len(resultList))
 	}
 	store.Purge()
 	resultList = store.List()
 	if resultList[0] != *result {
-		t.Errorf("Invalid result content")
+		t.Fatalf("Invalid result content")
 	}
 	if len(resultList) != 1 {
-		t.Errorf("Invalid result list size: %d", len(resultList))
+		t.Fatalf("Invalid result list size: %d", len(resultList))
 	}
 }

@@ -41,7 +41,8 @@ type Component struct {
 // New creates a new exporter component
 func New(logger *zap.Logger, store *memorystore.MemoryStore, chanResult chan *healthcheck.Result, promComponent *prometheus.Prometheus, config *Configuration) (*Component, error) {
 	var exporters []Exporter
-	for _, httpConfig := range config.HTTP {
+	for i := range config.HTTP {
+		httpConfig := config.HTTP[i]
 		exporter, err := NewHTTPExporter(logger, &httpConfig)
 		if err != nil {
 			return nil, errors.Wrapf(err, "fail to create the http exporter")
@@ -123,7 +124,8 @@ func (c *Component) Start() error {
 						zap.String("date", message.Timestamp.String()),
 					)
 				}
-				for _, exporter := range c.Exporters {
+				for i := range c.Exporters {
+					exporter := c.Exporters[i]
 					start := time.Now()
 					err := exporter.Push(message)
 					duration := time.Since(start)
@@ -153,7 +155,8 @@ func (c *Component) Stop() error {
 	c.prometheus.Unregister(c.chanResultGauge)
 	c.prometheus.Unregister(c.exporterCounter)
 	c.prometheus.Unregister(c.exporterHistogram)
-	for _, e := range c.Exporters {
+	for i := range c.Exporters {
+		e := c.Exporters[i]
 		err := e.Stop()
 		if err != nil {
 			return errors.Wrapf(err, "Fail to stop an exporter")

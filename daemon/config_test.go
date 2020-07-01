@@ -148,10 +148,10 @@ exporters:
 	for _, c := range cases {
 		var result Configuration
 		if err := yaml.Unmarshal([]byte(c.in), &result); err != nil {
-			t.Errorf("Unmarshal yaml error:\n%v", err)
+			t.Fatalf("Unmarshal yaml error:\n%v", err)
 		}
 		if !reflect.DeepEqual(result, c.want) {
-			t.Errorf("Invalid configuration: \n%s\n%v\n%v", c.in, c.want, result)
+			t.Fatalf("Invalid configuration: \n%s\n%v\n%v", c.in, c.want, result)
 		}
 	}
 }
@@ -214,7 +214,7 @@ tcp_checks:
 		err := yaml.Unmarshal([]byte(c), &result)
 
 		if err == nil {
-			t.Errorf("Was expected an error when decoding the configuration: \n%s", c)
+			t.Fatalf("Was expected an error when decoding the configuration: \n%s", c)
 		}
 	}
 }

@@ -71,7 +71,8 @@ func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 		Healthcheck: checkComponent,
 	}
 	// start all checks
-	for _, checkConfig := range config.DNSChecks {
+	for i := range config.DNSChecks {
+		checkConfig := config.DNSChecks[i]
 		check := healthcheck.NewDNSHealthcheck(logger, &checkConfig)
 		err := checkComponent.AddCheck(check)
 		if err != nil {
@@ -79,7 +80,8 @@ func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 		}
 	}
 
-	for _, checkConfig := range config.TCPChecks {
+	for i := range config.TCPChecks {
+		checkConfig := config.TCPChecks[i]
 		check := healthcheck.NewTCPHealthcheck(logger, &checkConfig)
 		err := checkComponent.AddCheck(check)
 		if err != nil {
@@ -87,7 +89,8 @@ func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 		}
 	}
 
-	for _, checkConfig := range config.HTTPChecks {
+	for i := range config.HTTPChecks {
+		checkConfig := config.HTTPChecks[i]
 		check := healthcheck.NewHTTPHealthcheck(logger, &checkConfig)
 		err := checkComponent.AddCheck(check)
 		if err != nil {
@@ -144,10 +147,13 @@ func (c *Component) Reload(daemonConfig *Configuration) error {
 		configurations = append(configurations, &daemonConfig.TCPChecks[i])
 	}
 
-	for _, currentCheck := range c.Healthcheck.ListChecks() {
+	checks := c.Healthcheck.ListChecks()
+	for i := range c.Healthcheck.ListChecks() {
+		currentCheck := checks[i]
 		found := false
 		// iterate on the new Configurations
-		for _, config := range configurations {
+		for i := range configurations {
+			config := configurations[i]
 			if currentCheck.Name() == config.GetName() {
 				// check found in the new config
 				// let's verify if the healthcheck
@@ -166,11 +172,13 @@ func (c *Component) Reload(daemonConfig *Configuration) error {
 		}
 	}
 	// remove checks which do not exist anymore
-	for _, check := range checksToRemove {
+	for i := range checksToRemove {
+		check := checksToRemove[i]
 		c.Healthcheck.RemoveCheck(check)
 	}
 	// Iterate again on the new configurations
-	for _, config := range configurations {
+	for i := range configurations {
+		config := configurations[i]
 		// If the configuration is a new one, or if an healthcheck was updated,
 		// we create an healthcheck from the config.
 		if !strContains(checksToKeep, config.GetName()) {

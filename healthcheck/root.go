@@ -182,7 +182,8 @@ func (c *Component) ListChecks() []Healthcheck {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 	result := make([]Healthcheck, 0, len(c.Healthchecks))
-	for _, wrapper := range c.Healthchecks {
+	for i := range c.Healthchecks {
+		wrapper := c.Healthchecks[i]
 		result = append(result, wrapper.healthcheck)
 	}
 	return result

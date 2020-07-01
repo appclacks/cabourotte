@@ -29,7 +29,7 @@ func TestStartStop(t *testing.T) {
 
 	port, err := strconv.ParseUint(strings.Split(ts.URL, ":")[2], 10, 16)
 	if err != nil {
-		t.Errorf("Error getting HTTP server port :\n%v", err)
+		t.Fatalf("Error getting HTTP server port :\n%v", err)
 	}
 	chanResult := make(chan *healthcheck.Result, 10)
 	logger := zap.NewExample()
@@ -48,10 +48,10 @@ func TestStartStop(t *testing.T) {
 			}})
 	err = component.Start()
 	if err != nil {
-		t.Errorf("Error creating the component :\n%v", err)
+		t.Fatalf("Error creating the component :\n%v", err)
 	}
 	if err != nil {
-		t.Errorf("Error starting the component :\n%v", err)
+		t.Fatalf("Error starting the component :\n%v", err)
 	}
 	chanResult <- &healthcheck.Result{
 		Name:      "foo",
@@ -70,10 +70,10 @@ func TestStartStop(t *testing.T) {
 		mutex.RUnlock()
 	}
 	if !success {
-		t.Errorf("The request counter is invalid")
+		t.Fatalf("The request counter is invalid")
 	}
 	err = component.Stop()
 	if err != nil {
-		t.Errorf("Error stopping the component :\n%v", err)
+		t.Fatalf("Error stopping the component :\n%v", err)
 	}
 }

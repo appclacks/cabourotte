@@ -23,16 +23,17 @@ type HTTPHealthcheckConfiguration struct {
 	ValidStatus []uint `json:"valid-status" yaml:"valid_status"`
 	Description string `json:"description"`
 	// can be an IP or a domain
-	Target   string   `json:"target"`
-	Port     uint     `json:"port"`
-	Protocol Protocol `json:"protocol"`
-	Path     string   `json:"path"`
-	Timeout  Duration `json:"timeout"`
-	Interval Duration `json:"interval"`
-	OneOff   bool     `json:"one-off,"`
-	Key      string   `json:"key,omitempty"`
-	Cert     string   `json:"cert,omitempty"`
-	Cacert   string   `json:"cacert,omitempty"`
+	Target   string            `json:"target"`
+	Port     uint              `json:"port"`
+	Headers  map[string]string `json:"headers"`
+	Protocol Protocol          `json:"protocol"`
+	Path     string            `json:"path"`
+	Timeout  Duration          `json:"timeout"`
+	Interval Duration          `json:"interval"`
+	OneOff   bool              `json:"one-off,"`
+	Key      string            `json:"key,omitempty"`
+	Cert     string            `json:"cert,omitempty"`
+	Cacert   string            `json:"cacert,omitempty"`
 }
 
 // GetName returns the name configured in the configuration
@@ -188,6 +189,9 @@ func (h *HTTPHealthcheck) Execute() error {
 		return errors.Wrapf(err, "fail to initialize HTTP request")
 	}
 	req.Header.Set("User-Agent", "Cabourotte")
+	for k, v := range h.Config.Headers {
+		req.Header.Set(k, v)
+	}
 	client := &http.Client{
 		Transport: h.transport,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {

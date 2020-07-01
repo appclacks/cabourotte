@@ -6,6 +6,8 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
+	"net/http"
+	"os"
 	"time"
 
 	"github.com/labstack/echo"
@@ -111,11 +113,15 @@ func (c *Component) Start() error {
 		return errors.Wrapf(err, "fail to register the Prometheus HTTP request histogram")
 	}
 	go func() {
+		var err error
 		if c.Config.Cert != "" {
-
-			c.Server.StartTLS(address, c.Config.Cert, c.Config.Key)
+			err = c.Server.StartTLS(address, c.Config.Cert, c.Config.Key)
 		} else {
-			c.Server.Start(address)
+			err = c.Server.Start(address)
+		}
+		if err != http.ErrServerClosed {
+			c.Logger.Error(fmt.Sprintf("HTTP server error: %s", err.Error()))
+			os.Exit(2)
 		}
 	}()
 	// todo: remove this, causes issues in tests

@@ -20,7 +20,7 @@ func TestDNSExecuteSuccess(t *testing.T) {
 
 	err := h.Execute()
 	if err != nil {
-		t.Errorf("healthcheck error :\n%v", err)
+		t.Fatalf("healthcheck error :\n%v", err)
 	}
 }
 
@@ -34,7 +34,7 @@ func TestDNSExecuteFailure(t *testing.T) {
 
 	err := h.Execute()
 	if err == nil {
-		t.Errorf("Was expecting an error: the domain does not exist")
+		t.Fatalf("Was expecting an error: the domain does not exist")
 	}
 }
 
@@ -53,11 +53,11 @@ func TestDNSStartStop(t *testing.T) {
 	wrapper := NewWrapper(healthcheck)
 	component, err := New(zap.NewExample(), make(chan *Result, 10), prometheus.New())
 	if err != nil {
-		t.Errorf("Fail to create the component\n%v", err)
+		t.Fatalf("Fail to create the component\n%v", err)
 	}
 	component.startWrapper(wrapper)
 	err = wrapper.Stop()
 	if err != nil {
-		t.Errorf("Fail to stop the healthcheck\n%v", err)
+		t.Fatalf("Fail to stop the healthcheck\n%v", err)
 	}
 }

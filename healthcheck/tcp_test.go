@@ -24,7 +24,7 @@ func TestTCPBuildURL(t *testing.T) {
 	h.buildURL()
 	expectedURL := "127.0.0.1:2000"
 	if h.URL != expectedURL {
-		t.Errorf("Invalid URL\nexpected: %s\nactual: %s", expectedURL, h.URL)
+		t.Fatalf("Invalid URL\nexpected: %s\nactual: %s", expectedURL, h.URL)
 	}
 }
 
@@ -36,7 +36,7 @@ func TestTCPExecuteSuccess(t *testing.T) {
 
 	port, err := strconv.ParseUint(strings.Split(ts.URL, ":")[2], 10, 16)
 	if err != nil {
-		t.Errorf("error getting HTTP server port :\n%v", err)
+		t.Fatalf("error getting HTTP server port :\n%v", err)
 	}
 	h := TCPHealthcheck{
 		Logger: zap.NewExample(),
@@ -49,7 +49,7 @@ func TestTCPExecuteSuccess(t *testing.T) {
 	h.buildURL()
 	err = h.Execute()
 	if err != nil {
-		t.Errorf("healthcheck error :\n%v", err)
+		t.Fatalf("healthcheck error :\n%v", err)
 	}
 }
 func TestTCPv6ExecuteSuccess(t *testing.T) {
@@ -68,7 +68,7 @@ func TestTCPv6ExecuteSuccess(t *testing.T) {
 	splitted := strings.Split(ts.URL, ":")
 	port, err := strconv.ParseUint(splitted[len(splitted)-1], 10, 16)
 	if err != nil {
-		t.Errorf("error getting HTTP server port :\n%v", err)
+		t.Fatalf("error getting HTTP server port :\n%v", err)
 	}
 	h := TCPHealthcheck{
 		Logger: zap.NewExample(),
@@ -81,7 +81,7 @@ func TestTCPv6ExecuteSuccess(t *testing.T) {
 	h.buildURL()
 	err = h.Execute()
 	if err != nil {
-		t.Errorf("healthcheck error :\n%v", err)
+		t.Fatalf("healthcheck error :\n%v", err)
 	}
 }
 
@@ -102,11 +102,11 @@ func TestTCPStartStop(t *testing.T) {
 	wrapper := NewWrapper(healthcheck)
 	component, err := New(zap.NewExample(), make(chan *Result, 10), prometheus.New())
 	if err != nil {
-		t.Errorf("Fail to create the component\n%v", err)
+		t.Fatalf("Fail to create the component\n%v", err)
 	}
 	component.startWrapper(wrapper)
 	err = wrapper.Stop()
 	if err != nil {
-		t.Errorf("Fail to stop the healthcheck\n%v", err)
+		t.Fatalf("Fail to stop the healthcheck\n%v", err)
 	}
 }
