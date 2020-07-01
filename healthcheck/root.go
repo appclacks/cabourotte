@@ -118,7 +118,8 @@ func (c *Component) Stop() error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	c.Logger.Info("Stopping the healthcheck component")
-	for _, wrapper := range c.Healthchecks {
+	for i := range c.Healthchecks {
+		wrapper := c.Healthchecks[i]
 		wrapper.healthcheck.LogDebug("stopping healthcheck")
 		err := wrapper.Stop()
 		if err != nil {

@@ -68,7 +68,8 @@ func (m *MemoryStore) Purge() {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	now := time.Now()
-	for _, result := range m.Results {
+	for i := range m.Results {
+		result := m.Results[i]
 		if now.After(result.Timestamp.Add(m.TTL)) {
 			m.Logger.Info("expire healthcheck",
 				zap.String("name", result.Name))
@@ -82,7 +83,8 @@ func (m *MemoryStore) List() []healthcheck.Result {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
 	result := make([]healthcheck.Result, 0, len(m.Results))
-	for _, value := range m.Results {
+	for i := range m.Results {
+		value := m.Results[i]
 		result = append(result, *value)
 	}
 	return result
