@@ -103,6 +103,9 @@ port: 443
 protocol: "https"
 # The HTTP path of the healthcheck
 path: "/"
+# Extra headers to add to the request
+headers:
+  foo: "bar"
 # The healthcheck timeout
 timeout: 5s
 # The healthcheck interval
