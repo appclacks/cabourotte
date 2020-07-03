@@ -1,6 +1,7 @@
 package healthcheck
 
 import (
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -61,9 +62,16 @@ func TestIssuccessfulFailure(t *testing.T) {
 func TestHTTPExecuteSuccess(t *testing.T) {
 	count := 0
 	headersOK := false
+	bodyOK := false
+	expectedBody := "my custom body"
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Foo") == "Bar" && r.Header.Get("User-agent") == "Cabourotte" {
 			headersOK = true
+		}
+		bodyBytes, _ := ioutil.ReadAll(r.Body)
+		body := string(bodyBytes)
+		if body == expectedBody {
+			bodyOK = true
 		}
 		count++
 		w.WriteHeader(http.StatusOK)
@@ -82,6 +90,7 @@ func TestHTTPExecuteSuccess(t *testing.T) {
 			Port:        uint(port),
 			Target:      "127.0.0.1",
 			Protocol:    HTTP,
+			Body:        expectedBody,
 			Path:        "/",
 			Timeout:     Duration(time.Second * 2),
 		},
@@ -96,6 +105,9 @@ func TestHTTPExecuteSuccess(t *testing.T) {
 	}
 	if !headersOK {
 		t.Fatal("Invalid headers")
+	}
+	if !bodyOK {
+		t.Fatal("Invalid body")
 	}
 }
 
