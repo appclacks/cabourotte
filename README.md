@@ -103,13 +103,15 @@ port: 443
 protocol: "https"
 # The HTTP path of the healthcheck
 path: "/"
-# Extra headers to add to the request
+# Extra headers to add to the request (optional)
 headers:
   foo: "bar"
 # The healthcheck timeout
 timeout: 5s
 # The healthcheck interval
 interval: 10s
+# follow redirect (optional, default false)
+redirect: true
 # A cacert for mTLS (optional)
 cacert: "/tmp/cacert.pem"
 # A cert for mTLS (optional)

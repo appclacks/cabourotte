@@ -84,6 +84,9 @@ http_checks:
     timeout: 5s
     path: "/foo"
     protocol: https
+    redirect: true
+    headers:
+      foo: bar
     valid_status:
       - 200
       - 201
@@ -136,6 +139,10 @@ exporters:
 						Path:        "/foo",
 						Target:      "mcorbin.fr",
 						Port:        443,
+						Redirect:    true,
+						Headers: map[string]string{
+							"foo": "bar",
+						},
 						Protocol:    healthcheck.HTTPS,
 						Timeout:     healthcheck.Duration(time.Second * 5),
 						Interval:    healthcheck.Duration(time.Second * 10),

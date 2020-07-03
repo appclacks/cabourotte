@@ -25,6 +25,7 @@ type HTTPHealthcheckConfiguration struct {
 	// can be an IP or a domain
 	Target   string            `json:"target"`
 	Port     uint              `json:"port"`
+	Redirect bool              `json:"redirect"`
 	Headers  map[string]string `json:"headers"`
 	Protocol Protocol          `json:"protocol"`
 	Path     string            `json:"path"`
@@ -192,10 +193,14 @@ func (h *HTTPHealthcheck) Execute() error {
 	for k, v := range h.Config.Headers {
 		req.Header.Set(k, v)
 	}
+	redirect := http.ErrUseLastResponse
+	if h.Config.Redirect {
+		redirect = nil
+	}
 	client := &http.Client{
 		Transport: h.transport,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
+			return redirect
 		},
 	}
 	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(h.Config.Timeout))
