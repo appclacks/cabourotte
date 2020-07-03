@@ -87,6 +87,7 @@ http_checks:
     redirect: true
     headers:
       foo: bar
+    body: foobar
     valid_status:
       - 200
       - 201
@@ -136,6 +137,7 @@ exporters:
 					healthcheck.HTTPHealthcheckConfiguration{
 						Name:        "foo",
 						Description: "bar",
+						Body:        "foobar",
 						Path:        "/foo",
 						Target:      "mcorbin.fr",
 						Port:        443,

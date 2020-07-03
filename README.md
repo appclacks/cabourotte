@@ -112,6 +112,8 @@ timeout: 5s
 interval: 10s
 # follow redirect (optional, default false)
 redirect: true
+# body to pass to the request (optional)
+body: "my request body"
 # A cacert for mTLS (optional)
 cacert: "/tmp/cacert.pem"
 # A cert for mTLS (optional)

@@ -1,6 +1,7 @@
 package healthcheck
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -26,6 +27,7 @@ type HTTPHealthcheckConfiguration struct {
 	Target   string            `json:"target"`
 	Port     uint              `json:"port"`
 	Redirect bool              `json:"redirect"`
+	Body     string            `json:"body"`
 	Headers  map[string]string `json:"headers"`
 	Protocol Protocol          `json:"protocol"`
 	Path     string            `json:"path"`
@@ -185,7 +187,8 @@ func (h *HTTPHealthcheck) LogInfo(message string) {
 func (h *HTTPHealthcheck) Execute() error {
 	h.LogDebug("start executing healthcheck")
 	ctx := h.t.Context(nil)
-	req, err := http.NewRequest("GET", h.URL, nil)
+	body := bytes.NewBuffer([]byte(h.Config.Body))
+	req, err := http.NewRequest("GET", h.URL, body)
 	if err != nil {
 		return errors.Wrapf(err, "fail to initialize HTTP request")
 	}
