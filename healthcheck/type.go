@@ -3,6 +3,7 @@ package healthcheck
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/pkg/errors"
@@ -102,4 +103,30 @@ func (p Protocol) MarshalJSON() ([]byte, error) {
 		return json.Marshal("https")
 	}
 	return nil, errors.New(fmt.Sprintf("Unknown protocol %d", p))
+}
+
+// Regexp alias for regexp.Regexp
+type Regexp regexp.Regexp
+
+// UnmarshalText unmarshal a duration
+func (r *Regexp) UnmarshalText(text []byte) error {
+	s := string(text)
+	reg, err := regexp.Compile(s)
+	if err != nil {
+		return errors.Wrapf(err, "Invalid regexp: %s", s)
+	}
+	*r = Regexp(*reg)
+	return nil
+}
+
+// UnmarshalJSON marshal to json a Regexp
+func (r *Regexp) UnmarshalJSON(text []byte) error {
+	return r.UnmarshalText(text)
+}
+
+// MarshalJSON marshal to json a Regexp
+func (r *Regexp) MarshalJSON() ([]byte, error) {
+	reg := regexp.Regexp(*r)
+	s := reg.String()
+	return json.Marshal(s)
 }

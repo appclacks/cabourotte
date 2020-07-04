@@ -2,6 +2,7 @@ package daemon
 
 import (
 	"reflect"
+	"regexp"
 	"testing"
 	"time"
 
@@ -13,6 +14,8 @@ import (
 )
 
 func TestUnmarshalConfig(t *testing.T) {
+	r := regexp.MustCompile("foo*")
+	regexp := healthcheck.Regexp(*r)
 	cases := []struct {
 		in   string
 		want Configuration
@@ -80,6 +83,8 @@ http_checks:
     description: bar
     target: "mcorbin.fr"
     port: 443
+    body_regexp:
+      - "foo*"
     interval: 10s
     timeout: 5s
     path: "/foo"
@@ -139,6 +144,7 @@ exporters:
 						Description: "bar",
 						Body:        "foobar",
 						Path:        "/foo",
+						BodyRegexp:  []healthcheck.Regexp{regexp},
 						Target:      "mcorbin.fr",
 						Port:        443,
 						Redirect:    true,

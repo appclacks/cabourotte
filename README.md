@@ -106,6 +106,9 @@ path: "/"
 # Extra headers to add to the request (optional)
 headers:
   foo: "bar"
+# A list of regular expression. The response body should match them (optional)
+body_regexp
+  - "foo!"
 # The healthcheck timeout
 timeout: 5s
 # The healthcheck interval

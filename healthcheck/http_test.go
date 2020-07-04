@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -111,6 +112,80 @@ func TestHTTPExecuteSuccess(t *testing.T) {
 	}
 }
 
+func TestHTTPExecuteRegexpSuccess(t *testing.T) {
+	count := 0
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		count++
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("cabourotte !"))
+	}))
+	defer ts.Close()
+
+	port, err := strconv.ParseUint(strings.Split(ts.URL, ":")[2], 10, 16)
+	if err != nil {
+		t.Fatalf("error getting HTTP server port :\n%v", err)
+	}
+	r := regexp.MustCompile("cabourotte*")
+	regexp := Regexp(*r)
+	h := HTTPHealthcheck{
+		Logger: zap.NewExample(),
+		Config: &HTTPHealthcheckConfiguration{
+			ValidStatus: []uint{200},
+			Headers:     map[string]string{"Foo": "Bar"},
+			Port:        uint(port),
+			Target:      "127.0.0.1",
+			BodyRegexp:  []Regexp{regexp},
+			Protocol:    HTTP,
+			Path:        "/",
+			Timeout:     Duration(time.Second * 2),
+		},
+	}
+	h.Initialize()
+	err = h.Execute()
+	if err != nil {
+		t.Fatalf("healthcheck error :\n%v", err)
+	}
+	if count != 1 {
+		t.Fatal("The request counter is invalid")
+	}
+}
+
+func TestHTTPExecuteRegexpFailure(t *testing.T) {
+	count := 0
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		count++
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("cabourotte !"))
+	}))
+	defer ts.Close()
+
+	port, err := strconv.ParseUint(strings.Split(ts.URL, ":")[2], 10, 16)
+	if err != nil {
+		t.Fatalf("error getting HTTP server port :\n%v", err)
+	}
+	r := regexp.MustCompile("trololo*")
+	regexp := Regexp(*r)
+	h := HTTPHealthcheck{
+		Logger: zap.NewExample(),
+		Config: &HTTPHealthcheckConfiguration{
+			ValidStatus: []uint{200},
+			Headers:     map[string]string{"Foo": "Bar"},
+			Port:        uint(port),
+			Target:      "127.0.0.1",
+			BodyRegexp:  []Regexp{regexp},
+			Protocol:    HTTP,
+			Path:        "/",
+			Timeout:     Duration(time.Second * 2),
+		},
+	}
+	h.Initialize()
+	err = h.Execute()
+	if err == nil {
+		t.Fatalf("Was expecting an error")
+	}
+
+}
+
 func TestHTTPv6ExecuteSuccess(t *testing.T) {
 	count := 0
 	l, err := net.Listen("tcp", "[::1]:0")
@@ -179,7 +254,7 @@ func TestHTTPExecuteFailure(t *testing.T) {
 	h.Initialize()
 	err = h.Execute()
 	if err == nil {
-		t.Fatalf("Was expecting an error :\n%v", err)
+		t.Fatalf("Was expecting an error")
 	}
 	if count != 1 {
 		t.Fatalf("The request counter is invalid")

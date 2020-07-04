@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/pkg/errors"
@@ -24,19 +25,20 @@ type HTTPHealthcheckConfiguration struct {
 	ValidStatus []uint `json:"valid-status" yaml:"valid_status"`
 	Description string `json:"description"`
 	// can be an IP or a domain
-	Target   string            `json:"target"`
-	Port     uint              `json:"port"`
-	Redirect bool              `json:"redirect"`
-	Body     string            `json:"body"`
-	Headers  map[string]string `json:"headers"`
-	Protocol Protocol          `json:"protocol"`
-	Path     string            `json:"path"`
-	Timeout  Duration          `json:"timeout"`
-	Interval Duration          `json:"interval"`
-	OneOff   bool              `json:"one-off,"`
-	Key      string            `json:"key,omitempty"`
-	Cert     string            `json:"cert,omitempty"`
-	Cacert   string            `json:"cacert,omitempty"`
+	Target     string            `json:"target"`
+	Port       uint              `json:"port"`
+	Redirect   bool              `json:"redirect"`
+	Body       string            `json:"body"`
+	Headers    map[string]string `json:"headers"`
+	Protocol   Protocol          `json:"protocol"`
+	Path       string            `json:"path"`
+	BodyRegexp []Regexp          `json:"body-regexp" yaml:"body_regexp"`
+	Timeout    Duration          `json:"timeout"`
+	Interval   Duration          `json:"interval"`
+	OneOff     bool              `json:"one-off,"`
+	Key        string            `json:"key,omitempty"`
+	Cert       string            `json:"cert,omitempty"`
+	Cacert     string            `json:"cacert,omitempty"`
 }
 
 // GetName returns the name configured in the configuration
@@ -214,15 +216,21 @@ func (h *HTTPHealthcheck) Execute() error {
 		return errors.Wrapf(err, "HTTP request failed")
 	}
 	defer response.Body.Close()
+	responseBody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return errors.Wrapf(err, "Fail to read request body")
+	}
+	responseBodyStr := string(responseBody)
 	if !h.isSuccessful(response) {
-		body, readErr := ioutil.ReadAll(response.Body)
-		if readErr != nil {
-			return errors.Wrapf(readErr, "Fail to read request body")
-		}
-		bodyStr := string(body)
-		errorMsg := fmt.Sprintf("HTTP request failed: %d %s", response.StatusCode, bodyStr)
+		errorMsg := fmt.Sprintf("HTTP request failed: %d %s", response.StatusCode, responseBodyStr)
 		err = errors.New(errorMsg)
 		return err
+	}
+	for _, regex := range h.Config.BodyRegexp {
+		r := regexp.Regexp(regex)
+		if !r.MatchString(responseBodyStr) {
+			return fmt.Errorf("healthcheck body does not match regex %s: %s", r.String(), responseBodyStr)
+		}
 	}
 	return nil
 }
