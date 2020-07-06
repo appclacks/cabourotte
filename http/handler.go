@@ -114,6 +114,14 @@ func (c *Component) handlers() {
 	c.Server.GET("/healthcheck", func(ec echo.Context) error {
 		return ec.JSON(http.StatusOK, c.healthcheck.ListChecks())
 	})
+	c.Server.GET("/healthcheck/:name", func(ec echo.Context) error {
+		name := ec.Param("name")
+		healthcheck, err := c.healthcheck.GetCheck(name)
+		if err != nil {
+			return ec.JSON(http.StatusNotFound, &BasicResponse{Message: err.Error()})
+		}
+		return ec.JSON(http.StatusOK, healthcheck)
+	})
 
 	c.Server.DELETE("/healthcheck/:name", func(ec echo.Context) error {
 		name := ec.Param("name")

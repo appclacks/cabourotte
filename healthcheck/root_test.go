@@ -101,3 +101,42 @@ func TestAddRemoveCheck(t *testing.T) {
 		t.Fatalf("Fail to stop the component\n%v", err)
 	}
 }
+
+func TestGetCheck(t *testing.T) {
+	logger := zap.NewExample()
+	component, err := New(logger, make(chan *Result, 10), prometheus.New())
+	if err != nil {
+		t.Fatalf("Fail to create the component\n%v", err)
+	}
+	err = component.Start()
+	if err != nil {
+		t.Fatalf("Fail to start the component\n%v", err)
+	}
+	healthcheck := NewTCPHealthcheck(
+		logger,
+		&TCPHealthcheckConfiguration{
+			Name:        "foo",
+			Description: "bar",
+			Target:      "127.0.0.1",
+			Port:        9000,
+			Timeout:     Duration(time.Second * 3),
+			Interval:    Duration(time.Second * 5),
+			OneOff:      false,
+		},
+	)
+	err = component.AddCheck(healthcheck)
+	if err != nil {
+		t.Fatalf("Fail to add the healthcheck\n%v", err)
+	}
+	if len(component.Healthchecks) != 1 {
+		t.Fatalf("The healthcheck was not added")
+	}
+	_, err = component.GetCheck("foo")
+	if err != nil {
+		t.Fatalf("The healthcheck was not found")
+	}
+	_, err = component.GetCheck("notfound")
+	if err == nil {
+		t.Fatalf("The healthcheck should be missing, and so GetCheck returns an error")
+	}
+}

@@ -189,3 +189,13 @@ func (c *Component) ListChecks() []Healthcheck {
 	}
 	return result
 }
+
+// GetCheck returns a check if it exists, otherwise an error.
+func (c *Component) GetCheck(name string) (Healthcheck, error) {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	if existingWrapper, ok := c.Healthchecks[name]; ok {
+		return existingWrapper.healthcheck, nil
+	}
+	return nil, fmt.Errorf("Healthcheck %s not found", name)
+}

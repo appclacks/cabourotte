@@ -28,14 +28,14 @@ type HTTPHealthcheckConfiguration struct {
 	Target     string            `json:"target"`
 	Port       uint              `json:"port"`
 	Redirect   bool              `json:"redirect"`
-	Body       string            `json:"body"`
-	Headers    map[string]string `json:"headers"`
+	Body       string            `json:"body,omitempty"`
+	Headers    map[string]string `json:"headers",omitempty`
 	Protocol   Protocol          `json:"protocol"`
 	Path       string            `json:"path"`
-	BodyRegexp []Regexp          `json:"body-regexp" yaml:"body_regexp"`
+	BodyRegexp []Regexp          `json:"body-regexp" yaml:"body_regexp",omitempty`
 	Timeout    Duration          `json:"timeout"`
 	Interval   Duration          `json:"interval"`
-	OneOff     bool              `json:"one-off,"`
+	OneOff     bool              `json:"one-off"`
 	Key        string            `json:"key,omitempty"`
 	Cert       string            `json:"cert,omitempty"`
 	Cacert     string            `json:"cacert,omitempty"`

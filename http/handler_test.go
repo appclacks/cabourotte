@@ -89,6 +89,37 @@ func TestHandlers(t *testing.T) {
 	if !strings.Contains(body, `"name":"baz"`) {
 		t.Fatalf("Invalid body\n")
 	}
+	// get one healthcheck
+	resp, err = http.Get("http://127.0.0.1:2001/healthcheck/foo")
+	if err != nil {
+		t.Fatalf("Fail to get the healthchecks\n%v", err)
+	}
+	defer resp.Body.Close()
+	bodyBytes, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Fail to read the body\n%v", err)
+	}
+	body = string(bodyBytes)
+	if !strings.Contains(body, `"name":"foo"`) {
+		t.Fatalf("Invalid body\n")
+	}
+	// get one invalid healthcheck
+	resp, err = http.Get("http://127.0.0.1:2001/healthcheck/doesnotexist")
+	if err != nil {
+		t.Fatalf("Fail to get the healthchecks\n%v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("Was expecting a 404 response, got %d", resp.StatusCode)
+	}
+	bodyBytes, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Fail to read the body\n%v", err)
+	}
+	body = string(bodyBytes)
+	if !strings.Contains(body, `not found`) {
+		t.Fatalf("Invalid body\n")
+	}
 	// delete everything
 	checks := []string{"foo", "bar", "baz"}
 	for _, c := range checks {
