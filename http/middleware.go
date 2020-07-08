@@ -25,7 +25,6 @@ func (c *Component) countResponse(next echo.HandlerFunc) echo.HandlerFunc {
 			path = "?"
 		}
 		c.requestHistogram.With(prom.Labels{"method": method, "path": path}).Observe(duration.Seconds())
-		c.requestCounter.With(prom.Labels{"method": method, "path": path}).Inc()
 		c.responseCounter.With(prom.Labels{"method": method, "status": status, "path": path}).Inc()
 		return nil
 	}

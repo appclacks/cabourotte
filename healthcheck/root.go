@@ -34,7 +34,6 @@ type Healthcheck interface {
 type Component struct {
 	Logger          *zap.Logger
 	Healthchecks    map[string]*Wrapper
-	resultCounter   *prom.CounterVec
 	resultHistogram *prom.HistogramVec
 	lock            sync.RWMutex
 
@@ -57,7 +56,6 @@ func (c *Component) startWrapper(w *Wrapper) {
 				if result.Success {
 					status = "success"
 				}
-				c.resultCounter.With(prom.Labels{"name": w.healthcheck.Name(), "status": status}).Inc()
 				c.resultHistogram.With(prom.Labels{"name": w.healthcheck.Name(), "status": status}).Observe(duration.Seconds())
 				c.ChanResult <- result
 			case <-w.t.Dying():
@@ -69,13 +67,6 @@ func (c *Component) startWrapper(w *Wrapper) {
 
 // New creates a new Healthcheck component
 func New(logger *zap.Logger, chanResult chan *Result, promComponent *prometheus.Prometheus) (*Component, error) {
-	counter := prom.NewCounterVec(
-		prom.CounterOpts{
-			Name: "healthcheck_result_total",
-			Help: "Count the healthchecks of success or failures for healthchchecks.",
-		},
-		[]string{"name", "status"},
-	)
 	buckets := []float64{
 		0.05, 0.1, 0.2, 0.4, 0.8, 1,
 		1.5, 2, 3, 5}
@@ -86,16 +77,11 @@ func New(logger *zap.Logger, chanResult chan *Result, promComponent *prometheus.
 	},
 		[]string{"name", "status"},
 	)
-	err := promComponent.Register(counter)
-	if err != nil {
-		return nil, errors.Wrapf(err, "fail to register the healthcheck result Prometheus counter")
-	}
-	err = promComponent.Register(histo)
+	err := promComponent.Register(histo)
 	if err != nil {
 		return nil, errors.Wrapf(err, "fail to register the healthcheck result Prometheus histogram")
 	}
 	component := Component{
-		resultCounter:   counter,
 		resultHistogram: histo,
 		Logger:          logger,
 		Healthchecks:    make(map[string]*Wrapper),
@@ -135,8 +121,6 @@ func (c *Component) Stop() error {
 func (c *Component) removeCheck(identifier string) error {
 	if existingWrapper, ok := c.Healthchecks[identifier]; ok {
 		existingWrapper.healthcheck.LogInfo("Stopping healthcheck")
-		c.resultCounter.Delete(prom.Labels{"name": identifier, "status": "failure"})
-		c.resultCounter.Delete(prom.Labels{"name": identifier, "status": "success"})
 		c.resultHistogram.Delete(prom.Labels{"name": identifier, "status": "failure"})
 		c.resultHistogram.Delete(prom.Labels{"name": identifier, "status": "success"})
 		err := existingWrapper.Stop()

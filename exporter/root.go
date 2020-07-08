@@ -29,7 +29,6 @@ type Component struct {
 	ChanResult        chan *healthcheck.Result
 	Exporters         []Exporter
 	MemoryStore       *memorystore.MemoryStore
-	exporterCounter   *prom.CounterVec
 	exporterHistogram *prom.HistogramVec
 	chanResultGauge   *prom.GaugeVec
 	prometheus        *prometheus.Prometheus
@@ -49,12 +48,6 @@ func New(logger *zap.Logger, store *memorystore.MemoryStore, chanResult chan *he
 		}
 		exporters = append(exporters, exporter)
 	}
-	counter := prom.NewCounterVec(
-		prom.CounterOpts{
-			Name: "exporter_result_total",
-			Help: "Count the healthchecks of success or failures for exporters.",
-		},
-		[]string{"name", "status"})
 	buckets := []float64{
 		0.05, 0.1, 0.2, 0.4, 0.8, 1,
 		1.5, 2, 3, 5}
@@ -68,11 +61,7 @@ func New(logger *zap.Logger, store *memorystore.MemoryStore, chanResult chan *he
 		Name: "result_chan_size",
 		Help: "Size of the result channel.",
 	}, []string{})
-	err := promComponent.Register(counter)
-	if err != nil {
-		return nil, errors.Wrapf(err, "fail to register the exporter Prometheus counter")
-	}
-	err = promComponent.Register(histo)
+	err := promComponent.Register(histo)
 	if err != nil {
 		return nil, errors.Wrapf(err, "fail to register the exporter Prometheus histogram")
 	}
@@ -81,7 +70,6 @@ func New(logger *zap.Logger, store *memorystore.MemoryStore, chanResult chan *he
 		return nil, errors.Wrapf(err, "fail to register the chan result Prometheus gauge")
 	}
 	return &Component{
-		exporterCounter:   counter,
 		exporterHistogram: histo,
 		chanResultGauge:   gauge,
 		MemoryStore:       store,
@@ -135,7 +123,6 @@ func (c *Component) Start() error {
 						c.Logger.Error(fmt.Sprintf("Failed to push healthchecks result for exporter %s: %s", name, err.Error()))
 						status = "failure"
 					}
-					c.exporterCounter.With(prom.Labels{"name": name, "status": status}).Inc()
 					c.exporterHistogram.With(prom.Labels{"name": name, "status": status}).Observe(duration.Seconds())
 
 				}
@@ -153,7 +140,6 @@ func (c *Component) Stop() error {
 	c.t.Kill(nil)
 	c.t.Wait()
 	c.prometheus.Unregister(c.chanResultGauge)
-	c.prometheus.Unregister(c.exporterCounter)
 	c.prometheus.Unregister(c.exporterHistogram)
 	for i := range c.Exporters {
 		e := c.Exporters[i]
