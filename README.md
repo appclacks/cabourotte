@@ -1,6 +1,6 @@
 # Cabourotte
 
-The documentation is available at (https://cabourotte.mcorbin.fr/)[https://cabourotte.mcorbin.fr/]
+The documentation is available at [https://cabourotte.mcorbin.fr/](https://cabourotte.mcorbin.fr/)
 
 IT infrastructures are complex. We have more and more equipments, machines, and services to manage. Infrastructures are also more dynamic, with services which can be scaled up and down depending on usage.
 
