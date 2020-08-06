@@ -3,6 +3,7 @@ package healthcheck
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 	"regexp"
 	"time"
 
@@ -119,7 +120,7 @@ func (r *Regexp) UnmarshalText(text []byte) error {
 	return nil
 }
 
-// UnmarshalJSON marshal to json a Regexp
+// UnmarshalJSON unmarshal to json a Regexp
 func (r *Regexp) UnmarshalJSON(text []byte) error {
 	return r.UnmarshalText(text)
 }
@@ -129,4 +130,29 @@ func (r *Regexp) MarshalJSON() ([]byte, error) {
 	reg := regexp.Regexp(*r)
 	s := reg.String()
 	return json.Marshal(s)
+}
+
+// IP an alias for the IP type
+type IP net.IP
+
+// UnmarshalText unmarshal an IP
+func (i *IP) UnmarshalText(text []byte) error {
+	s := string(text)
+	ip := net.ParseIP(s)
+	if ip == nil {
+		return fmt.Errorf("Invalid IP %s", s)
+	}
+	*i = IP(ip)
+	return nil
+}
+
+// UnmarshalJSON unmarshal to json an IP
+func (i *IP) UnmarshalJSON(text []byte) error {
+	return i.UnmarshalText(text)
+}
+
+// MarshalJSON marshal to json an IP
+func (i *IP) MarshalJSON() ([]byte, error) {
+	ip := net.IP(*i)
+	return json.Marshal(ip.String())
 }

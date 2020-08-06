@@ -2,6 +2,7 @@ package healthcheck
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -15,9 +16,10 @@ import (
 type DNSHealthcheckConfiguration struct {
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
+	ExpectedIPs []IP     `json:"expected-ips" yaml:"expected_ips"`
 	Domain      string   `json:"domain"`
 	Interval    Duration `json:"interval"`
-	OneOff      bool     `json:"one-off,"`
+	OneOff      bool     `json:"one-off"`
 }
 
 // DNSHealthcheck defines an HTTP healthcheck
@@ -72,7 +74,6 @@ func (h *DNSHealthcheck) Name() string {
 // OneOff returns true if the healthcheck if a one-off check
 func (h *DNSHealthcheck) OneOff() bool {
 	return h.Config.OneOff
-
 }
 
 // LogError logs an error with context
@@ -97,12 +98,42 @@ func (h *DNSHealthcheck) LogInfo(message string) {
 		zap.String("name", h.Config.Name))
 }
 
+func verifyIPs(expectedIPs []IP, lookupIPs []net.IP) error {
+	notFound := []string{}
+	for i := range expectedIPs {
+		netIP := net.IP(expectedIPs[i])
+		found := false
+		for j := range lookupIPs {
+			respIP := lookupIPs[j]
+			if netIP.Equal(respIP) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			notFound = append(notFound, netIP.String())
+		}
+	}
+	if len(notFound) != 0 {
+		l := ""
+		for _, notFound := range notFound {
+			l = l + "," + notFound
+		}
+		return fmt.Errorf("Expected IP address not found. IPs found are %s", l)
+	}
+	return nil
+}
+
 // Execute executes an healthcheck on the given domain
 func (h *DNSHealthcheck) Execute() error {
 	h.LogDebug("start executing healthcheck")
-	_, err := net.LookupIP(h.Config.Domain)
+	ips, err := net.LookupIP(h.Config.Domain)
 	if err != nil {
 		return errors.Wrapf(err, "Fail to lookup IP for domain")
+	}
+	err = verifyIPs(h.Config.ExpectedIPs, ips)
+	if err != nil {
+		return err
 	}
 	return nil
 }

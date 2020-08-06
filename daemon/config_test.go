@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"net"
 	"reflect"
 	"regexp"
 	"testing"
@@ -44,6 +45,13 @@ dns_checks:
     description: bar
     domain: mcorbin.fr
     interval: 10s
+  - name: bar
+    description: bar
+    domain: mcorbin.fr
+    expected_ips:
+      - 10.0.0.1
+      - 10.0.0.2
+    interval: 10s
 `,
 			want: Configuration{
 				ResultBuffer: DefaultBufferSize,
@@ -57,6 +65,16 @@ dns_checks:
 						Description: "bar",
 						Domain:      "mcorbin.fr",
 						Interval:    healthcheck.Duration(time.Second * 10),
+					},
+					healthcheck.DNSHealthcheckConfiguration{
+						Name:        "bar",
+						Description: "bar",
+						Domain:      "mcorbin.fr",
+						Interval:    healthcheck.Duration(time.Second * 10),
+						ExpectedIPs: []healthcheck.IP{
+							healthcheck.IP(net.ParseIP("10.0.0.1")),
+							healthcheck.IP(net.ParseIP("10.0.0.2")),
+						},
 					},
 				},
 			},
