@@ -108,6 +108,7 @@ http_checks:
     path: "/foo"
     protocol: https
     redirect: true
+    source_ip: 127.0.0.3
     headers:
       foo: bar
     body: foobar
@@ -163,6 +164,7 @@ exporters:
 						Body:        "foobar",
 						Path:        "/foo",
 						BodyRegexp:  []healthcheck.Regexp{regexp},
+						SourceIP:    healthcheck.IP(net.ParseIP("127.0.0.3")),
 						Target:      "mcorbin.fr",
 						Port:        443,
 						Redirect:    true,

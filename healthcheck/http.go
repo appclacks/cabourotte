@@ -32,6 +32,7 @@ type HTTPHealthcheckConfiguration struct {
 	Headers    map[string]string `json:"headers",omitempty`
 	Protocol   Protocol          `json:"protocol"`
 	Path       string            `json:"path"`
+	SourceIP   IP                `json:"source-ip" yaml:"source_ip"`
 	BodyRegexp []Regexp          `json:"body-regexp" yaml:"body_regexp",omitempty`
 	Timeout    Duration          `json:"timeout"`
 	Interval   Duration          `json:"interval"`
@@ -121,7 +122,19 @@ func (h *HTTPHealthcheck) Initialize() error {
 		}
 		caCertPool := x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM(caCert)
+		dialer := net.Dialer{}
+		if h.Config.SourceIP != nil {
+			srcIP := net.IP(h.Config.SourceIP).String()
+			addr, err := net.ResolveIPAddr("ip", srcIP)
+			if err != nil {
+				errors.Wrapf(err, "Fail to set the source IP %s", srcIP)
+			}
+			dialer = net.Dialer{
+				LocalAddr: addr,
+			}
+		}
 		h.transport = &http.Transport{
+			DialContext: dialer.DialContext,
 			TLSClientConfig: &tls.Config{
 				RootCAs:      caCertPool,
 				Certificates: []tls.Certificate{cert},

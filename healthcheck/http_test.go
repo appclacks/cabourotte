@@ -324,3 +324,63 @@ func TestHTTPStartStop(t *testing.T) {
 		t.Fatalf("Fail to stop the healthcheck\n%v", err)
 	}
 }
+
+func TestHTTPExecuteSourceIP(t *testing.T) {
+	count := 0
+	headersOK := false
+	bodyOK := false
+	sourceIPOK := false
+	expectedBody := "my custom body"
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Foo") == "Bar" && r.Header.Get("User-agent") == "Cabourotte" {
+			headersOK = true
+		}
+		bodyBytes, _ := ioutil.ReadAll(r.Body)
+		body := string(bodyBytes)
+		if body == expectedBody {
+			bodyOK = true
+		}
+		if strings.Split(r.RemoteAddr, ":")[0] == "127.0.0.1" {
+			sourceIPOK = true
+		}
+		count++
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer ts.Close()
+
+	port, err := strconv.ParseUint(strings.Split(ts.URL, ":")[2], 10, 16)
+	if err != nil {
+		t.Fatalf("error getting HTTP server port :\n%v", err)
+	}
+	h := HTTPHealthcheck{
+		Logger: zap.NewExample(),
+		Config: &HTTPHealthcheckConfiguration{
+			SourceIP:    IP(net.IP("127.0.0.1")),
+			ValidStatus: []uint{200},
+			Headers:     map[string]string{"Foo": "Bar"},
+			Port:        uint(port),
+			Target:      "127.0.0.1",
+			Protocol:    HTTP,
+			Body:        expectedBody,
+			Path:        "/",
+			Timeout:     Duration(time.Second * 2),
+		},
+	}
+	h.Initialize()
+	err = h.Execute()
+	if err != nil {
+		t.Fatalf("healthcheck error :\n%v", err)
+	}
+	if count != 1 {
+		t.Fatal("The request counter is invalid")
+	}
+	if !headersOK {
+		t.Fatal("Invalid headers")
+	}
+	if !bodyOK {
+		t.Fatal("Invalid body")
+	}
+	if !sourceIPOK {
+		t.Fatalf("Invalid source IP")
+	}
+}
