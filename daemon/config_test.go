@@ -94,6 +94,7 @@ tcp_checks:
     description: bar
     target: "127.0.0.1"
     port: 8080
+    source_ip: "10.0.0.4"
     interval: 10s
     timeout: 5s
 http_checks:
@@ -153,6 +154,7 @@ exporters:
 						Description: "bar",
 						Target:      "127.0.0.1",
 						Port:        8080,
+						SourceIP:    healthcheck.IP(net.ParseIP("10.0.0.4")),
 						Timeout:     healthcheck.Duration(time.Second * 5),
 						Interval:    healthcheck.Duration(time.Second * 10),
 					},

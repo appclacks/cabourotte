@@ -20,6 +20,7 @@ type TCPHealthcheckConfiguration struct {
 	// can be an IP or a domain
 	Target   string   `json:"target"`
 	Port     uint     `json:"port"`
+	SourceIP IP       `json:"source-ip" yaml:"source_ip"`
 	Timeout  Duration `json:"timeout"`
 	Interval Duration `json:"interval"`
 	OneOff   bool     `json:"one-off"`
@@ -126,6 +127,16 @@ func (h *TCPHealthcheck) Execute() error {
 	h.LogDebug("start executing healthcheck")
 	ctx := h.t.Context(nil)
 	dialer := net.Dialer{}
+	if h.Config.SourceIP != nil {
+		srcIP := net.IP(h.Config.SourceIP).String()
+		addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:0", srcIP))
+		if err != nil {
+			errors.Wrapf(err, "Fail to set the source IP %s", srcIP)
+		}
+		dialer = net.Dialer{
+			LocalAddr: addr,
+		}
+	}
 	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(h.Config.Timeout))
 	defer cancel()
 	conn, err := dialer.DialContext(timeoutCtx, "tcp", h.URL)

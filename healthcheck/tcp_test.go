@@ -52,6 +52,33 @@ func TestTCPExecuteSuccess(t *testing.T) {
 		t.Fatalf("healthcheck error :\n%v", err)
 	}
 }
+
+func TestTCPExecuteSuccessSourceIP(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer ts.Close()
+
+	port, err := strconv.ParseUint(strings.Split(ts.URL, ":")[2], 10, 16)
+	if err != nil {
+		t.Fatalf("error getting HTTP server port :\n%v", err)
+	}
+	h := TCPHealthcheck{
+		Logger: zap.NewExample(),
+		Config: &TCPHealthcheckConfiguration{
+			Port:     uint(port),
+			SourceIP: IP(net.ParseIP("127.0.0.1")),
+			Target:   "127.0.0.1",
+			Timeout:  Duration(time.Second * 2),
+		},
+	}
+	h.buildURL()
+	err = h.Execute()
+	if err != nil {
+		t.Fatalf("healthcheck error :\n%v", err)
+	}
+}
+
 func TestTCPv6ExecuteSuccess(t *testing.T) {
 	l, err := net.Listen("tcp", "[::1]:0")
 	if err != nil {
