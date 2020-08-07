@@ -111,6 +111,17 @@ func (h *HTTPHealthcheck) Name() string {
 func (h *HTTPHealthcheck) Initialize() error {
 	h.buildURL()
 	// tls is enabled
+	dialer := net.Dialer{}
+	if h.Config.SourceIP != nil {
+		srcIP := net.IP(h.Config.SourceIP).String()
+		addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:0", srcIP))
+		if err != nil {
+			errors.Wrapf(err, "Fail to set the source IP %s", srcIP)
+		}
+		dialer = net.Dialer{
+			LocalAddr: addr,
+		}
+	}
 	if h.Config.Key != "" {
 		cert, err := tls.LoadX509KeyPair(h.Config.Cert, h.Config.Key)
 		if err != nil {
@@ -122,17 +133,7 @@ func (h *HTTPHealthcheck) Initialize() error {
 		}
 		caCertPool := x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM(caCert)
-		dialer := net.Dialer{}
-		if h.Config.SourceIP != nil {
-			srcIP := net.IP(h.Config.SourceIP).String()
-			addr, err := net.ResolveIPAddr("ip", srcIP)
-			if err != nil {
-				errors.Wrapf(err, "Fail to set the source IP %s", srcIP)
-			}
-			dialer = net.Dialer{
-				LocalAddr: addr,
-			}
-		}
+
 		h.transport = &http.Transport{
 			DialContext: dialer.DialContext,
 			TLSClientConfig: &tls.Config{
@@ -141,7 +142,8 @@ func (h *HTTPHealthcheck) Initialize() error {
 			},
 		}
 	} else {
-		h.transport = &http.Transport{}
+		h.transport = &http.Transport{
+			DialContext: dialer.DialContext}
 	}
 	return nil
 }
