@@ -15,6 +15,7 @@ type Configuration struct {
 	DNSChecks    []healthcheck.DNSHealthcheckConfiguration  `yaml:"dns_checks"`
 	TCPChecks    []healthcheck.TCPHealthcheckConfiguration  `yaml:"tcp_checks"`
 	HTTPChecks   []healthcheck.HTTPHealthcheckConfiguration `yaml:"http_checks"`
+	TLSChecks    []healthcheck.TLSHealthcheckConfiguration  `yaml:"tls_checks"`
 	Exporters    exporter.Configuration
 }
 
@@ -46,6 +47,13 @@ func (configuration *Configuration) UnmarshalYAML(unmarshal func(interface{}) er
 	for i := range raw.HTTPChecks {
 		check := raw.HTTPChecks[i]
 		err := healthcheck.ValidateHTTPConfig(&check)
+		if err != nil {
+			return errors.Wrap(err, "Invalid healthcheck configuration")
+		}
+	}
+	for i := range raw.TLSChecks {
+		check := raw.TLSChecks[i]
+		err := healthcheck.ValidateTLSConfig(&check)
 		if err != nil {
 			return errors.Wrap(err, "Invalid healthcheck configuration")
 		}

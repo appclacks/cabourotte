@@ -132,7 +132,10 @@ func (h *HTTPHealthcheck) Initialize() error {
 			return errors.Wrapf(err, "Fail to load the ca certificate")
 		}
 		caCertPool := x509.NewCertPool()
-		caCertPool.AppendCertsFromPEM(caCert)
+		result := caCertPool.AppendCertsFromPEM(caCert)
+		if !result {
+			return fmt.Errorf("fail to read ca certificate for healthcheck %s", h.Config.Name)
+		}
 
 		h.transport = &http.Transport{
 			DialContext: dialer.DialContext,

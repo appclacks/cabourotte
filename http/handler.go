@@ -94,6 +94,23 @@ func (c *Component) handlers() {
 		return c.handleCheck(ec, healthcheck)
 	})
 
+	c.Server.POST("/healthcheck/tls", func(ec echo.Context) error {
+		var config healthcheck.TLSHealthcheckConfiguration
+		if err := ec.Bind(&config); err != nil {
+			msg := fmt.Sprintf("Fail to create the TLS healthcheck. Invalid JSON: %s", err.Error())
+			c.Logger.Error(msg)
+			return ec.JSON(http.StatusBadRequest, &BasicResponse{Message: msg})
+		}
+		err := healthcheck.ValidateTLSConfig(&config)
+		if err != nil {
+			msg := fmt.Sprintf("Invalid healthcheck configuration: %s", err.Error())
+			c.Logger.Error(msg)
+			return ec.JSON(http.StatusBadRequest, &BasicResponse{Message: msg})
+		}
+		healthcheck := healthcheck.NewTLSHealthcheck(c.Logger, &config)
+		return c.handleCheck(ec, healthcheck)
+	})
+
 	c.Server.POST("/healthcheck/http", func(ec echo.Context) error {
 		var config healthcheck.HTTPHealthcheckConfiguration
 		if err := ec.Bind(&config); err != nil {

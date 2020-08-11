@@ -89,6 +89,15 @@ func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 		}
 	}
 
+	for i := range config.TLSChecks {
+		checkConfig := config.TLSChecks[i]
+		check := healthcheck.NewTLSHealthcheck(logger, &checkConfig)
+		err := checkComponent.AddCheck(check)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Fail to add healthcheck %s", check.Name())
+		}
+	}
+
 	for i := range config.HTTPChecks {
 		checkConfig := config.HTTPChecks[i]
 		check := healthcheck.NewHTTPHealthcheck(logger, &checkConfig)
