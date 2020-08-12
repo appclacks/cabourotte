@@ -97,6 +97,20 @@ tcp_checks:
     source_ip: "10.0.0.4"
     interval: 10s
     timeout: 5s
+tls_checks:
+  - name: tls
+    description: bar
+    insecure: true
+    target: "127.0.0.1"
+    port: 8080
+    source_ip: "10.0.0.4"
+    cert: /tmp/foo.cert
+    cacert: /tmp/bar.cacert
+    key: /tmp/bar.key
+    server_name: mcorbin.fr
+    expiration_delay: 24h
+    interval: 10s
+    timeout: 5s
 http_checks:
   - name: foo
     description: bar
@@ -157,6 +171,23 @@ exporters:
 						SourceIP:    healthcheck.IP(net.ParseIP("10.0.0.4")),
 						Timeout:     healthcheck.Duration(time.Second * 5),
 						Interval:    healthcheck.Duration(time.Second * 10),
+					},
+				},
+				TLSChecks: []healthcheck.TLSHealthcheckConfiguration{
+					healthcheck.TLSHealthcheckConfiguration{
+						Name:            "tls",
+						Cert:            "/tmp/foo.cert",
+						Cacert:          "/tmp/bar.cacert",
+						Key:             "/tmp/bar.key",
+						ExpirationDelay: healthcheck.Duration(time.Hour * 24),
+						ServerName:      "mcorbin.fr",
+						Insecure:        true,
+						Description:     "bar",
+						Target:          "127.0.0.1",
+						Port:            8080,
+						SourceIP:        healthcheck.IP(net.ParseIP("10.0.0.4")),
+						Timeout:         healthcheck.Duration(time.Second * 5),
+						Interval:        healthcheck.Duration(time.Second * 10),
 					},
 				},
 				HTTPChecks: []healthcheck.HTTPHealthcheckConfiguration{
@@ -244,6 +275,19 @@ tcp_checks:
     port: 2000
     interval: 10s
     timeout: 20s
+`,
+		`
+http:
+  host: "127.0.0.1"
+  port: 2000
+tls_checks:
+  - name: foo
+    description: bar
+    target: 127.0.0.1
+    port: 2000
+    interval: 10s
+    timeout: 5s
+    expiration_delay: foo
 `,
 	}
 	for _, c := range cases {
