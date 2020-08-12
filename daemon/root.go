@@ -156,6 +156,10 @@ func (c *Component) Reload(daemonConfig *Configuration) error {
 		configurations = append(configurations, &daemonConfig.TCPChecks[i])
 	}
 
+	for i := range daemonConfig.TLSChecks {
+		configurations = append(configurations, &daemonConfig.TLSChecks[i])
+	}
+
 	checks := c.Healthcheck.ListChecks()
 	for i := range c.Healthcheck.ListChecks() {
 		currentCheck := checks[i]
@@ -206,6 +210,12 @@ func (c *Component) Reload(daemonConfig *Configuration) error {
 					return fmt.Errorf("Fail to create the TCP healthcheck configuration for check %s", config.GetName())
 				}
 				newCheck = healthcheck.NewTCPHealthcheck(c.Logger, checkConfig)
+			case *healthcheck.TLSHealthcheckConfiguration:
+				checkConfig, ok := config.(*healthcheck.TLSHealthcheckConfiguration)
+				if !ok {
+					return fmt.Errorf("Fail to create the TLS healthcheck configuration for check %s", config.GetName())
+				}
+				newCheck = healthcheck.NewTLSHealthcheck(c.Logger, checkConfig)
 			case *healthcheck.DNSHealthcheckConfiguration:
 				checkConfig, ok := config.(*healthcheck.DNSHealthcheckConfiguration)
 				if !ok {
