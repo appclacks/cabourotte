@@ -49,3 +49,19 @@ func TestTLSExecuteError(t *testing.T) {
 		t.Fatalf("Was expecting an error")
 	}
 }
+
+func TestTLSExecuteErrorNoTarget(t *testing.T) {
+	h := TLSHealthcheck{
+		Logger: zap.NewExample(),
+		Config: &TLSHealthcheckConfiguration{
+			Port:    80,
+			Target:  "doesnotexist.mcorbin.fr",
+			Timeout: Duration(time.Second * 2),
+		},
+	}
+	h.buildURL()
+	err := h.Execute()
+	if err == nil {
+		t.Fatalf("Was expecting an error")
+	}
+}

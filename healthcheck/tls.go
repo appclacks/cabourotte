@@ -181,10 +181,10 @@ func (h *TLSHealthcheck) Execute() error {
 	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(h.Config.Timeout))
 	defer cancel()
 	conn, err := dialer.DialContext(timeoutCtx, "tcp", h.URL)
-	defer conn.Close()
 	if err != nil {
 		return errors.Wrapf(err, "TLS connection failed on %s", h.URL)
 	}
+	defer conn.Close()
 	tlsConn := tls.Client(conn, h.TLSConfig)
 	defer tlsConn.Close()
 	err = tlsConn.Handshake()

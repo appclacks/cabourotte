@@ -137,3 +137,20 @@ func TestTCPStartStop(t *testing.T) {
 		t.Fatalf("Fail to stop the healthcheck\n%v", err)
 	}
 }
+
+func TestTCPExecuteSuccessShoulddFail(t *testing.T) {
+	h := TCPHealthcheck{
+		Logger: zap.NewExample(),
+		Config: &TCPHealthcheckConfiguration{
+			ShouldFail: true,
+			Port:       80,
+			Target:     "doesnotexist.mcorbin.fr",
+			Timeout:    Duration(time.Second * 2),
+		},
+	}
+	h.buildURL()
+	err := h.Execute()
+	if err != nil {
+		t.Fatalf("healthcheck error :\n%v", err)
+	}
+}

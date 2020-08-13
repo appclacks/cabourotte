@@ -18,12 +18,13 @@ type TCPHealthcheckConfiguration struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	// can be an IP or a domain
-	Target   string   `json:"target"`
-	Port     uint     `json:"port"`
-	SourceIP IP       `json:"source-ip" yaml:"source_ip"`
-	Timeout  Duration `json:"timeout"`
-	Interval Duration `json:"interval"`
-	OneOff   bool     `json:"one-off"`
+	Target     string   `json:"target"`
+	Port       uint     `json:"port"`
+	SourceIP   IP       `json:"source-ip" yaml:"source_ip"`
+	Timeout    Duration `json:"timeout"`
+	Interval   Duration `json:"interval"`
+	OneOff     bool     `json:"one-off"`
+	ShouldFail bool     `json:"should-fail" yaml:"should_fail"`
 }
 
 // GetName returns the name configured in the configuration
@@ -140,12 +141,16 @@ func (h *TCPHealthcheck) Execute() error {
 	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(h.Config.Timeout))
 	defer cancel()
 	conn, err := dialer.DialContext(timeoutCtx, "tcp", h.URL)
-	if err != nil {
-		return errors.Wrapf(err, "TCP connection failed on %s", h.URL)
-	}
-	err = conn.Close()
-	if err != nil {
-		return errors.Wrapf(err, "Unable to close TCP connection")
+	if h.Config.ShouldFail {
+		if err == nil {
+			defer conn.Close()
+			return errors.Wrapf(err, "TCP check is successful on %s but an error was expected", h.URL)
+		}
+	} else {
+		if err != nil {
+			return errors.Wrapf(err, "TCP connection failed on %s", h.URL)
+		}
+		defer conn.Close()
 	}
 	return nil
 }
