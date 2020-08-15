@@ -36,6 +36,7 @@ type Component struct {
 func New(logger *zap.Logger, memstore *memorystore.MemoryStore, promComponent *prometheus.Prometheus, config *Configuration, healthcheck *healthcheck.Component) (*Component, error) {
 	e := echo.New()
 	e.HideBanner = true
+	e.HidePort = true
 	if config.Cert != "" {
 		caCert, err := ioutil.ReadFile(config.Cacert)
 		if err != nil {
