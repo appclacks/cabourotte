@@ -89,6 +89,8 @@ dns_checks:
     description: bar
     domain: mcorbin.fr
     interval: 10s
+    labels:
+      environment: prod
 tcp_checks:
   - name: foo
     description: bar
@@ -97,6 +99,8 @@ tcp_checks:
     source_ip: "10.0.0.4"
     interval: 10s
     timeout: 5s
+    labels:
+      environment: prod
 tls_checks:
   - name: tls
     description: bar
@@ -111,6 +115,8 @@ tls_checks:
     expiration_delay: 24h
     interval: 10s
     timeout: 5s
+    labels:
+      environment: prod
 http_checks:
   - name: foo
     description: bar
@@ -130,6 +136,8 @@ http_checks:
     valid_status:
       - 200
       - 201
+    labels:
+      environment: prod
 result_buffer: 1000
 exporters:
   http:
@@ -160,6 +168,9 @@ exporters:
 						Description: "bar",
 						Domain:      "mcorbin.fr",
 						Interval:    healthcheck.Duration(time.Second * 10),
+						Labels: map[string]string{
+							"environment": "prod",
+						},
 					},
 				},
 				TCPChecks: []healthcheck.TCPHealthcheckConfiguration{
@@ -171,6 +182,9 @@ exporters:
 						SourceIP:    healthcheck.IP(net.ParseIP("10.0.0.4")),
 						Timeout:     healthcheck.Duration(time.Second * 5),
 						Interval:    healthcheck.Duration(time.Second * 10),
+						Labels: map[string]string{
+							"environment": "prod",
+						},
 					},
 				},
 				TLSChecks: []healthcheck.TLSHealthcheckConfiguration{
@@ -188,6 +202,9 @@ exporters:
 						SourceIP:        healthcheck.IP(net.ParseIP("10.0.0.4")),
 						Timeout:         healthcheck.Duration(time.Second * 5),
 						Interval:        healthcheck.Duration(time.Second * 10),
+						Labels: map[string]string{
+							"environment": "prod",
+						},
 					},
 				},
 				HTTPChecks: []healthcheck.HTTPHealthcheckConfiguration{
@@ -208,6 +225,9 @@ exporters:
 						Timeout:     healthcheck.Duration(time.Second * 5),
 						Interval:    healthcheck.Duration(time.Second * 10),
 						ValidStatus: []uint{200, 201},
+						Labels: map[string]string{
+							"environment": "prod",
+						},
 					},
 				},
 			},

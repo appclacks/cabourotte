@@ -25,6 +25,7 @@ type TCPHealthcheckConfiguration struct {
 	Interval   Duration `json:"interval"`
 	OneOff     bool     `json:"one-off"`
 	ShouldFail bool     `json:"should-fail" yaml:"should_fail"`
+	Labels     map[string]string
 }
 
 // GetName returns the name configured in the configuration

@@ -33,6 +33,7 @@ type TLSHealthcheckConfiguration struct {
 	ServerName      string   `json:"server-name,omitempty" yaml:"server_name"`
 	Insecure        bool
 	ExpirationDelay Duration `json:"expiration-delay" yaml:"expiration_delay"`
+	Labels          map[string]string
 }
 
 // GetName returns the name configured in the configuration
