@@ -106,7 +106,7 @@ func (c *Component) Start() error {
 						zap.String("date", message.Timestamp.String()),
 					)
 				} else {
-					c.Logger.Info("healthcheck failed",
+					c.Logger.Error("healthcheck failed",
 						zap.String("name", message.Name),
 						zap.String("extra", message.Message),
 						zap.String("date", message.Timestamp.String()),
