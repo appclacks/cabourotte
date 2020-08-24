@@ -145,7 +145,7 @@ func (h *TCPHealthcheck) Execute() error {
 	if h.Config.ShouldFail {
 		if err == nil {
 			defer conn.Close()
-			return errors.Wrapf(err, "TCP check is successful on %s but an error was expected", h.URL)
+			return fmt.Errorf("TCP check is successful on %s but an error was expected", h.URL)
 		}
 	} else {
 		if err != nil {
