@@ -72,6 +72,19 @@ func (h *DNSHealthcheck) Name() string {
 	return h.Config.Name
 }
 
+// Summary returns an healthcheck summary
+func (h *DNSHealthcheck) Summary() string {
+	summary := ""
+	if h.Config.Description != "" {
+		summary = fmt.Sprintf("%s on %s", h.Config.Description, h.Config.Domain)
+
+	} else {
+		summary = fmt.Sprintf("on %s", h.Config.Domain)
+	}
+
+	return summary
+}
+
 // OneOff returns true if the healthcheck if a one-off check
 func (h *DNSHealthcheck) OneOff() bool {
 	return h.Config.OneOff

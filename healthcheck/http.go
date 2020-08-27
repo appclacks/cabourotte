@@ -108,6 +108,19 @@ func (h *HTTPHealthcheck) Name() string {
 	return h.Config.Name
 }
 
+// Summary returns an healthcheck summary
+func (h *HTTPHealthcheck) Summary() string {
+	summary := ""
+	if h.Config.Description != "" {
+		summary = fmt.Sprintf("%s on %s:%d", h.Config.Description, h.Config.Target, h.Config.Port)
+
+	} else {
+		summary = fmt.Sprintf("on %s:%d", h.Config.Target, h.Config.Port)
+	}
+
+	return summary
+}
+
 // Initialize the healthcheck.
 func (h *HTTPHealthcheck) Initialize() error {
 	h.buildURL()

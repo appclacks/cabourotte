@@ -77,6 +77,23 @@ func (h *TCPHealthcheck) Name() string {
 	return h.Config.Name
 }
 
+// Summary returns an healthcheck summary
+func (h *TCPHealthcheck) Summary() string {
+	summary := ""
+	if h.Config.Description != "" {
+		summary = fmt.Sprintf("%s on %s:%d", h.Config.Description, h.Config.Target, h.Config.Port)
+
+	} else {
+		summary = fmt.Sprintf("on %s:%d", h.Config.Target, h.Config.Port)
+	}
+
+	if h.Config.ShouldFail {
+		summary = summary + ". This healthcheck has should-fail=true."
+	}
+
+	return summary
+}
+
 // Initialize the healthcheck.
 func (h *TCPHealthcheck) Initialize() error {
 	h.buildURL()

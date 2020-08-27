@@ -22,6 +22,7 @@ type Healthcheck interface {
 	Initialize() error
 	GetConfig() interface{}
 	Name() string
+	Summary() string
 	Execute() error
 	LogDebug(message string)
 	LogInfo(message string)

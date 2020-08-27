@@ -84,6 +84,19 @@ func (h *TLSHealthcheck) Name() string {
 	return h.Config.Name
 }
 
+// Summary returns an healthcheck summary
+func (h *TLSHealthcheck) Summary() string {
+	summary := ""
+	if h.Config.Description != "" {
+		summary = fmt.Sprintf("%s on %s:%d", h.Config.Description, h.Config.Target, h.Config.Port)
+
+	} else {
+		summary = fmt.Sprintf("on %s:%d", h.Config.Target, h.Config.Port)
+	}
+
+	return summary
+}
+
 // buildURL build the target URL for the TLS healthcheck, depending of its
 // configuration
 func (h *TLSHealthcheck) buildURL() {
