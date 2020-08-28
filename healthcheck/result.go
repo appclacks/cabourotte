@@ -7,7 +7,7 @@ import (
 // Result represents the result of an healthcheck
 type Result struct {
 	Name      string      `json:"name"`
-	Summary   interface{} `json:"configuration"`
+	Summary   interface{} `json:"summary"`
 	Success   bool        `json:"success"`
 	Timestamp time.Time   `json:"timestamp"`
 	Message   string      `json:"message"`
