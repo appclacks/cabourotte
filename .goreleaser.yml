@@ -6,7 +6,23 @@ builds:
       - CGO_ENABLED=0
     flags:
       - -mod=vendor
-
+    goos:
+      - windows
+      - darwin
+      - linux
+      - openbsd
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7
+    ignore:
+      - goos: openbsd
+        goarch: arm
+      - goos: openbsd
+        goarch: arm64
 archives:
   - replacements:
       darwin: Darwin
