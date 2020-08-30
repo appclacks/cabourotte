@@ -19,7 +19,7 @@ func TestMemoryExporter(t *testing.T) {
 	}
 	store.Add(result)
 	resultList := store.List()
-	if resultList[0] != *result {
+	if !resultList[0].Equals(*result) {
 		t.Fatalf("Invalid result content")
 	}
 	if len(resultList) != 1 {
@@ -38,7 +38,7 @@ func TestMemoryExporter(t *testing.T) {
 	}
 	store.Purge()
 	resultList = store.List()
-	if resultList[0] != *result {
+	if !resultList[0].Equals(*result) {
 		t.Fatalf("Invalid result content")
 	}
 	if len(resultList) != 1 {

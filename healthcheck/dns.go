@@ -38,6 +38,11 @@ func (c *DNSHealthcheckConfiguration) GetName() string {
 	return c.Name
 }
 
+// GetLabels returns the labels
+func (c *DNSHealthcheck) GetLabels() map[string]string {
+	return c.Config.Labels
+}
+
 // ValidateDNSConfig validates the healthcheck configuration
 func ValidateDNSConfig(config *DNSHealthcheckConfiguration) error {
 	if config.Name == "" {

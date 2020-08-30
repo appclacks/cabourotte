@@ -21,6 +21,7 @@ type HealthcheckConfiguration interface {
 type Healthcheck interface {
 	Initialize() error
 	GetConfig() interface{}
+	GetLabels() map[string]string
 	Name() string
 	Summary() string
 	Execute() error

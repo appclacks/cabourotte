@@ -48,6 +48,11 @@ func (c *HTTPHealthcheckConfiguration) GetName() string {
 	return c.Name
 }
 
+// GetLabels returns the labels
+func (c *HTTPHealthcheck) GetLabels() map[string]string {
+	return c.Config.Labels
+}
+
 // ValidateHTTPConfig validates the healthcheck configuration
 func ValidateHTTPConfig(config *HTTPHealthcheckConfiguration) error {
 	if config.Name == "" {

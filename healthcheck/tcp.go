@@ -33,6 +33,11 @@ func (c *TCPHealthcheckConfiguration) GetName() string {
 	return c.Name
 }
 
+// GetLabels returns the labels
+func (c *TCPHealthcheck) GetLabels() map[string]string {
+	return c.Config.Labels
+}
+
 // ValidateTCPConfig validates the healthcheck configuration
 func ValidateTCPConfig(config *TCPHealthcheckConfiguration) error {
 	if config.Name == "" {
