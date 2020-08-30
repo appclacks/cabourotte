@@ -80,12 +80,18 @@ func (c *HTTPExporter) Start() error {
 
 // Stop stops the HTTP exporter component
 func (c *HTTPExporter) Stop() error {
+	c.Logger.Info(fmt.Sprintf("Stopping the http exporter %s", c.Config.Name))
 	return nil
 }
 
-// Name returns then ame of the exporter
+// Name returns the name of the exporter
 func (c *HTTPExporter) Name() string {
 	return c.Config.Name
+}
+
+// GetConfig returns the config of the exporter
+func (c *HTTPExporter) GetConfig() interface{} {
+	return c.Config
 }
 
 // Push pushes events to the HTTP destination

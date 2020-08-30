@@ -145,6 +145,7 @@ func (c *Component) Reload(daemonConfig *Configuration) error {
 	var checksToKeep []string
 	// the new configurations
 	var configurations []healthcheck.HealthcheckConfiguration
+	// TODO refactor/simplify this crap
 	for i := range daemonConfig.DNSChecks {
 		configurations = append(configurations, &daemonConfig.DNSChecks[i])
 	}
@@ -248,19 +249,9 @@ func (c *Component) Reload(daemonConfig *Configuration) error {
 		}
 		c.HTTP = http
 	}
-	// Stop all exporters, recreate the component
-	err := c.Exporter.Stop()
+	err := c.Exporter.Reload(&daemonConfig.Exporters)
 	if err != nil {
-		return errors.Wrapf(err, "Fail to stop the exporter component")
+		return errors.Wrapf(err, "Fail to relaod the exporters")
 	}
-	exporterComponent, err := exporter.New(c.Logger, c.MemoryStore, c.ChanResult, c.Prometheus, &daemonConfig.Exporters)
-	if err != nil {
-		return errors.Wrapf(err, "Fail to create the exporter component")
-	}
-	err = exporterComponent.Start()
-	if err != nil {
-		return errors.Wrapf(err, "Fail to start the exporter component")
-	}
-	c.Exporter = exporterComponent
 	return nil
 }
