@@ -18,14 +18,14 @@ type TCPHealthcheckConfiguration struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	// can be an IP or a domain
-	Target     string   `json:"target"`
-	Port       uint     `json:"port"`
-	SourceIP   IP       `json:"source-ip" yaml:"source_ip"`
-	Timeout    Duration `json:"timeout"`
-	Interval   Duration `json:"interval"`
-	OneOff     bool     `json:"one-off"`
-	ShouldFail bool     `json:"should-fail" yaml:"should_fail"`
-	Labels     map[string]string
+	Target     string            `json:"target"`
+	Port       uint              `json:"port"`
+	SourceIP   IP                `json:"source-ip" yaml:"source_ip"`
+	Timeout    Duration          `json:"timeout"`
+	Interval   Duration          `json:"interval"`
+	OneOff     bool              `json:"one-off"`
+	ShouldFail bool              `json:"should-fail" yaml:"should_fail"`
+	Labels     map[string]string `json:"labels,omitempty"`
 }
 
 // GetName returns the name configured in the configuration

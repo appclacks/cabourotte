@@ -40,7 +40,7 @@ type HTTPHealthcheckConfiguration struct {
 	Key        string            `json:"key,omitempty"`
 	Cert       string            `json:"cert,omitempty"`
 	Cacert     string            `json:"cacert,omitempty"`
-	Labels     map[string]string
+	Labels     map[string]string `json:"labels,omitempty"`
 }
 
 // GetName returns the name configured in the configuration

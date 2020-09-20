@@ -32,8 +32,8 @@ type TLSHealthcheckConfiguration struct {
 	Cacert          string   `json:"cacert,omitempty"`
 	ServerName      string   `json:"server-name,omitempty" yaml:"server_name"`
 	Insecure        bool
-	ExpirationDelay Duration `json:"expiration-delay" yaml:"expiration_delay"`
-	Labels          map[string]string
+	ExpirationDelay Duration          `json:"expiration-delay" yaml:"expiration_delay"`
+	Labels          map[string]string `json:"labels,omitempty"`
 }
 
 // GetName returns the name configured in the configuration

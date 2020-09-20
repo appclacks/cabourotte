@@ -14,13 +14,13 @@ import (
 
 // DNSHealthcheckConfiguration defines a DNS healthcheck configuration
 type DNSHealthcheckConfiguration struct {
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	ExpectedIPs []IP     `json:"expected-ips" yaml:"expected_ips"`
-	Domain      string   `json:"domain"`
-	Interval    Duration `json:"interval"`
-	OneOff      bool     `json:"one-off"`
-	Labels      map[string]string
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	ExpectedIPs []IP              `json:"expected-ips" yaml:"expected_ips"`
+	Domain      string            `json:"domain"`
+	Interval    Duration          `json:"interval"`
+	OneOff      bool              `json:"one-off"`
+	Labels      map[string]string `json:"labels,omitempty"`
 }
 
 // DNSHealthcheck defines an HTTP healthcheck
