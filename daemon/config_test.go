@@ -40,7 +40,7 @@ http:
 http:
   host: "127.0.0.1"
   port: 2000
-dns_checks:
+dns-checks:
   - name: foo
     description: bar
     domain: mcorbin.fr
@@ -48,7 +48,7 @@ dns_checks:
   - name: bar
     description: bar
     domain: mcorbin.fr
-    expected_ips:
+    expected-ips:
       - 10.0.0.1
       - 10.0.0.2
     interval: 10s
@@ -84,61 +84,61 @@ dns_checks:
 http:
   host: "127.0.0.1"
   port: 2000
-dns_checks:
+dns-checks:
   - name: foo
     description: bar
     domain: mcorbin.fr
     interval: 10s
     labels:
       environment: prod
-tcp_checks:
+tcp-checks:
   - name: foo
     description: bar
     target: "127.0.0.1"
     port: 8080
-    source_ip: "10.0.0.4"
+    source-ip: "10.0.0.4"
     interval: 10s
     timeout: 5s
     labels:
       environment: prod
-tls_checks:
+tls-checks:
   - name: tls
     description: bar
     insecure: true
     target: "127.0.0.1"
     port: 8080
-    source_ip: "10.0.0.4"
+    source-ip: "10.0.0.4"
     cert: /tmp/foo.cert
     cacert: /tmp/bar.cacert
     key: /tmp/bar.key
-    server_name: mcorbin.fr
-    expiration_delay: 24h
+    server-name: mcorbin.fr
+    expiration-delay: 24h
     interval: 10s
     timeout: 5s
     labels:
       environment: prod
-http_checks:
+http-checks:
   - name: foo
     description: bar
     target: "mcorbin.fr"
     port: 443
-    body_regexp:
+    body-regexp:
       - "foo*"
     interval: 10s
     timeout: 5s
     path: "/foo"
     protocol: https
     redirect: true
-    source_ip: 127.0.0.3
+    source-ip: 127.0.0.3
     headers:
       foo: bar
     body: foobar
-    valid_status:
+    valid-status:
       - 200
       - 201
     labels:
       environment: prod
-result_buffer: 1000
+result-buffer: 1000
 exporters:
   http:
     - host: "127.0.0.1"
@@ -268,7 +268,7 @@ http:
 http:
   host: 127.0.0.1
   port: 200
-dns_checks:
+dns-checks:
   - name: foo
     description: bar
     domain: ""
@@ -278,7 +278,7 @@ dns_checks:
 http:
   host: "127.0.0.1"
   port: 2000
-dns_checks:
+dns-checks:
   - name: foo
     description: bar
     domain: mcorbin.fr
@@ -288,7 +288,7 @@ dns_checks:
 http:
   host: "127.0.0.1"
   port: 2000
-tcp_checks:
+tcp-checks:
   - name: foo
     description: bar
     target: 127.0.0.1
@@ -300,14 +300,14 @@ tcp_checks:
 http:
   host: "127.0.0.1"
   port: 2000
-tls_checks:
+tls-checks:
   - name: foo
     description: bar
     target: 127.0.0.1
     port: 2000
     interval: 10s
     timeout: 5s
-    expiration_delay: foo
+    expiration-delay: foo
 `,
 	}
 	for _, c := range cases {

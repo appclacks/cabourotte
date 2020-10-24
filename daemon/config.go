@@ -10,12 +10,12 @@ import (
 
 // Configuration the HTTP server configuration
 type Configuration struct {
-	ResultBuffer uint `yaml:"result_buffer"`
+	ResultBuffer uint `yaml:"result-buffer"`
 	HTTP         http.Configuration
-	DNSChecks    []healthcheck.DNSHealthcheckConfiguration  `yaml:"dns_checks"`
-	TCPChecks    []healthcheck.TCPHealthcheckConfiguration  `yaml:"tcp_checks"`
-	HTTPChecks   []healthcheck.HTTPHealthcheckConfiguration `yaml:"http_checks"`
-	TLSChecks    []healthcheck.TLSHealthcheckConfiguration  `yaml:"tls_checks"`
+	DNSChecks    []healthcheck.DNSHealthcheckConfiguration  `yaml:"dns-checks"`
+	TCPChecks    []healthcheck.TCPHealthcheckConfiguration  `yaml:"tcp-checks"`
+	HTTPChecks   []healthcheck.HTTPHealthcheckConfiguration `yaml:"http-checks"`
+	TLSChecks    []healthcheck.TLSHealthcheckConfiguration  `yaml:"tls-checks"`
 	Exporters    exporter.Configuration
 }
 

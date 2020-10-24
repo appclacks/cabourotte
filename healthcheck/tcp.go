@@ -20,11 +20,11 @@ type TCPHealthcheckConfiguration struct {
 	// can be an IP or a domain
 	Target     string            `json:"target"`
 	Port       uint              `json:"port"`
-	SourceIP   IP                `json:"source-ip" yaml:"source_ip"`
+	SourceIP   IP                `json:"source-ip" yaml:"source-ip"`
 	Timeout    Duration          `json:"timeout"`
 	Interval   Duration          `json:"interval"`
 	OneOff     bool              `json:"one-off"`
-	ShouldFail bool              `json:"should-fail" yaml:"should_fail"`
+	ShouldFail bool              `json:"should-fail" yaml:"should-fail"`
 	Labels     map[string]string `json:"labels,omitempty"`
 }
 

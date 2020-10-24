@@ -23,16 +23,16 @@ type TLSHealthcheckConfiguration struct {
 	// can be an IP or a domain
 	Target          string   `json:"target"`
 	Port            uint     `json:"port"`
-	SourceIP        IP       `json:"source-ip" yaml:"source_ip"`
+	SourceIP        IP       `json:"source-ip" yaml:"source-ip"`
 	Timeout         Duration `json:"timeout"`
 	Interval        Duration `json:"interval"`
 	OneOff          bool     `json:"one-off"`
 	Key             string   `json:"key,omitempty"`
 	Cert            string   `json:"cert,omitempty"`
 	Cacert          string   `json:"cacert,omitempty"`
-	ServerName      string   `json:"server-name,omitempty" yaml:"server_name"`
+	ServerName      string   `json:"server-name,omitempty" yaml:"server-name"`
 	Insecure        bool
-	ExpirationDelay Duration          `json:"expiration-delay" yaml:"expiration_delay"`
+	ExpirationDelay Duration          `json:"expiration-delay" yaml:"expiration-delay"`
 	Labels          map[string]string `json:"labels,omitempty"`
 }
 

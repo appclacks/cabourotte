@@ -22,7 +22,7 @@ import (
 // HTTPHealthcheckConfiguration defines an HTTP healthcheck configuration
 type HTTPHealthcheckConfiguration struct {
 	Name        string `json:"name"`
-	ValidStatus []uint `json:"valid-status" yaml:"valid_status"`
+	ValidStatus []uint `json:"valid-status" yaml:"valid-status"`
 	Description string `json:"description"`
 	// can be an IP or a domain
 	Target     string            `json:"target"`
@@ -32,8 +32,8 @@ type HTTPHealthcheckConfiguration struct {
 	Headers    map[string]string `json:"headers",omitempty`
 	Protocol   Protocol          `json:"protocol"`
 	Path       string            `json:"path"`
-	SourceIP   IP                `json:"source-ip" yaml:"source_ip"`
-	BodyRegexp []Regexp          `json:"body-regexp" yaml:"body_regexp",omitempty`
+	SourceIP   IP                `json:"source-ip" yaml:"source-ip"`
+	BodyRegexp []Regexp          `json:"body-regexp" yaml:"body-regexp",omitempty`
 	Timeout    Duration          `json:"timeout"`
 	Interval   Duration          `json:"interval"`
 	OneOff     bool              `json:"one-off"`
