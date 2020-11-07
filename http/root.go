@@ -50,7 +50,24 @@ func New(logger *zap.Logger, memstore *memorystore.MemoryStore, promComponent *p
 			ClientCAs:  caCertPool,
 			ClientAuth: tls.RequireAndVerifyClientCert,
 		}
-		tlsConfig.BuildNameToCertificate()
+
+		serverCert, err := ioutil.ReadFile(config.Cert)
+		if err != nil {
+			return nil, errors.Wrap(err, "fail to read the certificate cert")
+		}
+
+		serverKey, err := ioutil.ReadFile(config.Key)
+		if err != nil {
+			return nil, errors.Wrap(err, "fail to read the certificate key")
+		}
+
+		x509KkeyPair, err := tls.X509KeyPair(serverCert, serverKey)
+		if err != nil {
+			return nil, errors.Wrap(err, "fail to build the x509 keypair")
+		}
+
+		tlsConfig.Certificates = make([]tls.Certificate, 1)
+		tlsConfig.Certificates[0] = x509KkeyPair
 		s := e.TLSServer
 		s.TLSConfig = tlsConfig
 	}
@@ -103,7 +120,13 @@ func (c *Component) Start() error {
 	go func() {
 		var err error
 		if c.Config.Cert != "" {
-			err = c.Server.StartTLS(address, c.Config.Cert, c.Config.Key)
+			c.Logger.Info("TLS enabled")
+			s := c.Server.TLSServer
+			s.Addr = address
+			if !c.Server.DisableHTTP2 {
+				s.TLSConfig.NextProtos = append(s.TLSConfig.NextProtos, "h2")
+			}
+			err = c.Server.StartServer(s)
 		} else {
 			err = c.Server.Start(address)
 		}
