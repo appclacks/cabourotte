@@ -11,8 +11,10 @@ github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
 # github.com/labstack/echo v3.3.10+incompatible
+## explicit
 github.com/labstack/echo
 # github.com/labstack/gommon v0.3.0
+## explicit
 github.com/labstack/gommon/color
 github.com/labstack/gommon/log
 # github.com/mattn/go-colorable v0.1.2
@@ -22,8 +24,10 @@ github.com/mattn/go-isatty
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/pkg/errors v0.9.1
+## explicit
 github.com/pkg/errors
 # github.com/prometheus/client_golang v1.6.0
+## explicit
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
 github.com/prometheus/client_golang/prometheus/promhttp
@@ -42,6 +46,7 @@ github.com/russross/blackfriday/v2
 # github.com/shurcooL/sanitized_anchor_name v1.0.0
 github.com/shurcooL/sanitized_anchor_name
 # github.com/urfave/cli/v2 v2.2.0
+## explicit
 github.com/urfave/cli/v2
 # github.com/valyala/bytebufferpool v1.0.0
 github.com/valyala/bytebufferpool
@@ -52,6 +57,7 @@ go.uber.org/atomic
 # go.uber.org/multierr v1.5.0
 go.uber.org/multierr
 # go.uber.org/zap v1.15.0
+## explicit
 go.uber.org/zap
 go.uber.org/zap/buffer
 go.uber.org/zap/internal/bufferpool
@@ -104,6 +110,8 @@ google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/timestamppb
 # gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637
+## explicit
 gopkg.in/tomb.v2
 # gopkg.in/yaml.v2 v2.2.5
+## explicit
 gopkg.in/yaml.v2
