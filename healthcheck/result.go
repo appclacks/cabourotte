@@ -8,7 +8,7 @@ import (
 type Result struct {
 	Name      string            `json:"name"`
 	Summary   interface{}       `json:"summary"`
-	Labels    map[string]string `json:"labels"`
+	Labels    map[string]string `json:"labels,omitempty"`
 	Success   bool              `json:"success"`
 	Timestamp time.Time         `json:"timestamp"`
 	Message   string            `json:"message"`
