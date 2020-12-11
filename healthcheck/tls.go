@@ -37,13 +37,13 @@ type TLSHealthcheckConfiguration struct {
 }
 
 // GetName returns the name configured in the configuration
-func (c *TLSHealthcheckConfiguration) GetName() string {
-	return c.Name
+func (h *TLSHealthcheckConfiguration) GetName() string {
+	return h.Name
 }
 
 // GetLabels returns the labels
-func (c *TLSHealthcheck) GetLabels() map[string]string {
-	return c.Config.Labels
+func (h *TLSHealthcheck) GetLabels() map[string]string {
+	return h.Config.Labels
 }
 
 // TLSHealthcheck defines a TLS healthcheck

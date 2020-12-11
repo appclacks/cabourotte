@@ -34,13 +34,13 @@ type DNSHealthcheck struct {
 }
 
 // GetName returns the name configured in the configuration
-func (c *DNSHealthcheckConfiguration) GetName() string {
-	return c.Name
+func (h *DNSHealthcheckConfiguration) GetName() string {
+	return h.Name
 }
 
 // GetLabels returns the labels
-func (c *DNSHealthcheck) GetLabels() map[string]string {
-	return c.Config.Labels
+func (h *DNSHealthcheck) GetLabels() map[string]string {
+	return h.Config.Labels
 }
 
 // ValidateDNSConfig validates the healthcheck configuration

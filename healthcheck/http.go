@@ -44,13 +44,13 @@ type HTTPHealthcheckConfiguration struct {
 }
 
 // GetName returns the name configured in the configuration
-func (c *HTTPHealthcheckConfiguration) GetName() string {
-	return c.Name
+func (h *HTTPHealthcheckConfiguration) GetName() string {
+	return h.Name
 }
 
 // GetLabels returns the labels
-func (c *HTTPHealthcheck) GetLabels() map[string]string {
-	return c.Config.Labels
+func (h *HTTPHealthcheck) GetLabels() map[string]string {
+	return h.Config.Labels
 }
 
 // ValidateHTTPConfig validates the healthcheck configuration

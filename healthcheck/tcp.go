@@ -29,13 +29,13 @@ type TCPHealthcheckConfiguration struct {
 }
 
 // GetName returns the name configured in the configuration
-func (c *TCPHealthcheckConfiguration) GetName() string {
-	return c.Name
+func (h *TCPHealthcheckConfiguration) GetName() string {
+	return h.Name
 }
 
 // GetLabels returns the labels
-func (c *TCPHealthcheck) GetLabels() map[string]string {
-	return c.Config.Labels
+func (h *TCPHealthcheck) GetLabels() map[string]string {
+	return h.Config.Labels
 }
 
 // ValidateTCPConfig validates the healthcheck configuration
