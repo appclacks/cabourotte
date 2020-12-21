@@ -136,6 +136,7 @@ func strContains(s []string, value string) bool {
 // ReloadHealthchecks reloads the healthchecks from a configuration
 func (c *Component) ReloadHealthchecks(daemonConfig *Configuration) error {
 	// contains the checks which were just added
+	currentConfigChecks := c.Config.configChecksNames()
 	newChecks := make(map[string]bool)
 	for i := range daemonConfig.DNSChecks {
 		config := &daemonConfig.DNSChecks[i]
@@ -176,6 +177,11 @@ func (c *Component) ReloadHealthchecks(daemonConfig *Configuration) error {
 	checks := c.Healthcheck.ListChecks()
 	for i := range checks {
 		check := checks[i]
+		// checks added by the API should not be removed
+		// on a reload if they are not in the new configuration
+		if _, ok := currentConfigChecks[check.Name()]; !ok {
+			continue
+		}
 		// if the newChecks map does not contain this healthcheck,
 		// it was not added and so should be removed
 		if _, ok := newChecks[check.Name()]; !ok {
