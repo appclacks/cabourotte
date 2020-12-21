@@ -119,6 +119,9 @@ func TestReload(t *testing.T) {
 			},
 		},
 	})
+	if component.Config.HTTP.Host != "127.0.0.2" {
+		t.Fatal("Invalid HTTP address after reload")
+	}
 	if err != nil {
 		t.Fatalf("Fail to reload the component\n%v", err)
 	}

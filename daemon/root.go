@@ -1,7 +1,6 @@
 package daemon
 
 import (
-	"fmt"
 	"reflect"
 	"sync"
 
@@ -134,6 +133,62 @@ func strContains(s []string, value string) bool {
 	return false
 }
 
+// ReloadHealthchecks reloads the healthchecks from a configuration
+func (c *Component) ReloadHealthchecks(daemonConfig *Configuration) error {
+	// contains the checks which were just added
+	newChecks := make(map[string]bool)
+	for i := range daemonConfig.DNSChecks {
+		config := &daemonConfig.DNSChecks[i]
+		newChecks[config.Name] = true
+		newCheck := healthcheck.NewDNSHealthcheck(c.Logger, config)
+		err := c.Healthcheck.AddCheck(newCheck)
+		if err != nil {
+			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Name())
+		}
+	}
+	for i := range daemonConfig.HTTPChecks {
+		config := &daemonConfig.HTTPChecks[i]
+		newChecks[config.Name] = true
+		newCheck := healthcheck.NewHTTPHealthcheck(c.Logger, config)
+		err := c.Healthcheck.AddCheck(newCheck)
+		if err != nil {
+			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Name())
+		}
+	}
+	for i := range daemonConfig.TCPChecks {
+		config := &daemonConfig.TCPChecks[i]
+		newChecks[config.Name] = true
+		newCheck := healthcheck.NewTCPHealthcheck(c.Logger, config)
+		err := c.Healthcheck.AddCheck(newCheck)
+		if err != nil {
+			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Name())
+		}
+	}
+	for i := range daemonConfig.TLSChecks {
+		config := &daemonConfig.TLSChecks[i]
+		newChecks[config.Name] = true
+		newCheck := healthcheck.NewTLSHealthcheck(c.Logger, config)
+		err := c.Healthcheck.AddCheck(newCheck)
+		if err != nil {
+			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Name())
+		}
+	}
+	checks := c.Healthcheck.ListChecks()
+	for i := range checks {
+		check := checks[i]
+		// if the newChecks map does not contain this healthcheck,
+		// it was not added and so should be removed
+		if _, ok := newChecks[check.Name()]; !ok {
+			err := c.Healthcheck.RemoveCheck(check.Name())
+			if err != nil {
+				return errors.Wrapf(err, "Fail to remove check %s", check.Name())
+			}
+		}
+
+	}
+	return nil
+}
+
 // Reload reloads the Cabourotte daemon. This function will remove or keep
 // existing healthchecks depending of the new configuration. New checks will be added.
 // The HTTP server will also be reloaded if its configuration has changed.
@@ -141,97 +196,9 @@ func (c *Component) Reload(daemonConfig *Configuration) error {
 	c.Logger.Info("Reloading the Cabourotte daemon")
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	var checksToRemove []string
-	var checksToKeep []string
-	// the new configurations
-	var configurations []healthcheck.HealthcheckConfiguration
-	// TODO refactor/simplify this crap
-	for i := range daemonConfig.DNSChecks {
-		configurations = append(configurations, &daemonConfig.DNSChecks[i])
-	}
-	for i := range daemonConfig.HTTPChecks {
-		configurations = append(configurations, &daemonConfig.HTTPChecks[i])
-	}
-
-	for i := range daemonConfig.TCPChecks {
-		configurations = append(configurations, &daemonConfig.TCPChecks[i])
-	}
-
-	for i := range daemonConfig.TLSChecks {
-		configurations = append(configurations, &daemonConfig.TLSChecks[i])
-	}
-
-	checks := c.Healthcheck.ListChecks()
-	for i := range c.Healthcheck.ListChecks() {
-		currentCheck := checks[i]
-		found := false
-		// iterate on the new Configurations
-		for i := range configurations {
-			config := configurations[i]
-			if currentCheck.Name() == config.GetName() {
-				// check found in the new config
-				// let's verify if the healthcheck
-				// configuration is the same
-				if reflect.DeepEqual(currentCheck.GetConfig(), config) {
-					// if it's equal, we want to keep it and not modify it
-					checksToKeep = append(checksToKeep, currentCheck.Name())
-					found = true
-				}
-				break
-			}
-		}
-		// check not found in the new config, it should be removed
-		if !found {
-			checksToRemove = append(checksToRemove, currentCheck.Name())
-		}
-	}
-	// remove checks which do not exist anymore
-	for i := range checksToRemove {
-		check := checksToRemove[i]
-		c.Healthcheck.RemoveCheck(check)
-	}
-	// Iterate again on the new configurations
-	for i := range configurations {
-		config := configurations[i]
-		// If the configuration is a new one, or if an healthcheck was updated,
-		// we create an healthcheck from the config.
-		if !strContains(checksToKeep, config.GetName()) {
-			var newCheck healthcheck.Healthcheck
-			switch t := config.(type) {
-			case *healthcheck.HTTPHealthcheckConfiguration:
-				checkConfig, ok := config.(*healthcheck.HTTPHealthcheckConfiguration)
-				if !ok {
-					return fmt.Errorf("Fail to create the HTTP healthcheck configuration for check %s", config.GetName())
-				}
-				newCheck = healthcheck.NewHTTPHealthcheck(c.Logger, checkConfig)
-
-			case *healthcheck.TCPHealthcheckConfiguration:
-				checkConfig, ok := config.(*healthcheck.TCPHealthcheckConfiguration)
-				if !ok {
-					return fmt.Errorf("Fail to create the TCP healthcheck configuration for check %s", config.GetName())
-				}
-				newCheck = healthcheck.NewTCPHealthcheck(c.Logger, checkConfig)
-			case *healthcheck.TLSHealthcheckConfiguration:
-				checkConfig, ok := config.(*healthcheck.TLSHealthcheckConfiguration)
-				if !ok {
-					return fmt.Errorf("Fail to create the TLS healthcheck configuration for check %s", config.GetName())
-				}
-				newCheck = healthcheck.NewTLSHealthcheck(c.Logger, checkConfig)
-			case *healthcheck.DNSHealthcheckConfiguration:
-				checkConfig, ok := config.(*healthcheck.DNSHealthcheckConfiguration)
-				if !ok {
-					return fmt.Errorf("Fail to create the DNS healthcheck configuration for check %s", config.GetName())
-				}
-				newCheck = healthcheck.NewDNSHealthcheck(c.Logger, checkConfig)
-			default:
-
-				return fmt.Errorf("Invalid healthcheck type during reload: %v", t)
-			}
-			err := c.Healthcheck.AddCheck(newCheck)
-			if err != nil {
-				return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Name())
-			}
-		}
+	err := c.ReloadHealthchecks(daemonConfig)
+	if err != nil {
+		return errors.Wrapf(err, "Fail to reload healthchecks")
 	}
 	// compare the server config to see if we need to recreate it
 	if !reflect.DeepEqual(c.Config.HTTP, daemonConfig.HTTP) {
@@ -249,9 +216,10 @@ func (c *Component) Reload(daemonConfig *Configuration) error {
 		}
 		c.HTTP = http
 	}
-	err := c.Exporter.Reload(&daemonConfig.Exporters)
+	err = c.Exporter.Reload(&daemonConfig.Exporters)
 	if err != nil {
 		return errors.Wrapf(err, "Fail to relaod the exporters")
 	}
+	c.Config = daemonConfig
 	return nil
 }

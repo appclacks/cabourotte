@@ -2,6 +2,7 @@ package healthcheck
 
 import (
 	"fmt"
+	"reflect"
 	"sync"
 	"time"
 
@@ -136,6 +137,12 @@ func (c *Component) removeCheck(identifier string) error {
 
 // AddCheck add an healthcheck to the component and starts it.
 func (c *Component) AddCheck(check Healthcheck) error {
+	if currentCheck, ok := c.Healthchecks[check.Name()]; ok {
+		if reflect.DeepEqual(currentCheck.healthcheck.GetConfig(), check.GetConfig()) {
+			currentCheck.healthcheck.LogInfo("trying to replace existing healthcheck with the same config: do nothing")
+			return nil
+		}
+	}
 	wrapper := NewWrapper(check)
 	wrapper.healthcheck.LogInfo("Adding healthcheck")
 	err := wrapper.healthcheck.Initialize()
