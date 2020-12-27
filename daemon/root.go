@@ -69,42 +69,7 @@ func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 		Exporter:    exporterComponent,
 		Healthcheck: checkComponent,
 	}
-	// start all checks
-	for i := range config.DNSChecks {
-		checkConfig := config.DNSChecks[i]
-		check := healthcheck.NewDNSHealthcheck(logger, &checkConfig)
-		err := checkComponent.AddCheck(check)
-		if err != nil {
-			return nil, errors.Wrapf(err, "Fail to add healthcheck %s", check.Name())
-		}
-	}
-
-	for i := range config.TCPChecks {
-		checkConfig := config.TCPChecks[i]
-		check := healthcheck.NewTCPHealthcheck(logger, &checkConfig)
-		err := checkComponent.AddCheck(check)
-		if err != nil {
-			return nil, errors.Wrapf(err, "Fail to add healthcheck %s", check.Name())
-		}
-	}
-
-	for i := range config.TLSChecks {
-		checkConfig := config.TLSChecks[i]
-		check := healthcheck.NewTLSHealthcheck(logger, &checkConfig)
-		err := checkComponent.AddCheck(check)
-		if err != nil {
-			return nil, errors.Wrapf(err, "Fail to add healthcheck %s", check.Name())
-		}
-	}
-
-	for i := range config.HTTPChecks {
-		checkConfig := config.HTTPChecks[i]
-		check := healthcheck.NewHTTPHealthcheck(logger, &checkConfig)
-		err := checkComponent.AddCheck(check)
-		if err != nil {
-			return nil, errors.Wrapf(err, "Fail to add healthcheck %s", check.Name())
-		}
-	}
+	component.ReloadHealthchecks(config)
 	return &component, nil
 }
 
