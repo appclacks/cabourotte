@@ -16,7 +16,7 @@ import (
 type DNSHealthcheckConfiguration struct {
 	Name        string            `json:"name"`
 	Description string            `json:"description"`
-	ExpectedIPs []IP              `json:"expected-ips" yaml:"expected-ips"`
+	ExpectedIPs []IP              `json:"expected-ips,omitempty" yaml:"expected-ips,omitempty"`
 	Domain      string            `json:"domain"`
 	Interval    Duration          `json:"interval"`
 	OneOff      bool              `json:"one-off"`
