@@ -33,18 +33,13 @@ type DNSHealthcheck struct {
 	t    tomb.Tomb
 }
 
-// GetName returns the name configured in the configuration
-func (h *DNSHealthcheckConfiguration) GetName() string {
-	return h.Name
-}
-
 // GetLabels returns the labels
 func (h *DNSHealthcheck) GetLabels() map[string]string {
 	return h.Config.Labels
 }
 
-// ValidateDNSConfig validates the healthcheck configuration
-func ValidateDNSConfig(config *DNSHealthcheckConfiguration) error {
+// Validate validates the healthcheck configuration
+func (config *DNSHealthcheckConfiguration) Validate() error {
 	if config.Name == "" {
 		return errors.New("The healthcheck name is missing")
 	}

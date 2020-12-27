@@ -43,11 +43,15 @@ func TestHandlers(t *testing.T) {
 		},
 		{
 			endpoint: "/healthcheck/tcp",
-			payload:  `{"name":"bar","description":"bar","domain":"mcorbin.fr","interval":"10m","one-off":false,"target":"mcorbin.fr","port":9999,"timeout":"10s"}`,
+			payload:  `{"name":"bar","description":"bar","interval":"10m","one-off":false,"target":"mcorbin.fr","port":9999,"timeout":"10s"}`,
 		},
 		{
 			endpoint: "/healthcheck/http",
 			payload:  `{"name":"baz","description":"bar","domain":"mcorbin.fr","interval":"10m","one-off":false,"target":"mcorbin.fr","port":9999,"timeout":"10s","protocol":"http","valid-status":[200]}`,
+		},
+		{
+			endpoint: "/healthcheck/tls",
+			payload:  `{"name":"tls-check","description":"bar","interval":"10m","one-off":false,"target":"mcorbin.fr","port":9999,"timeout":"10s"}`,
 		},
 	}
 	client := &http.Client{}
@@ -65,7 +69,7 @@ func TestHandlers(t *testing.T) {
 			t.Fatalf("HTTP request failed, status %d", resp.StatusCode)
 		}
 	}
-	if len(healthcheck.Healthchecks) != 3 {
+	if len(healthcheck.Healthchecks) != 4 {
 		t.Fatalf("Healthchecks were not successfully created: %d", len(healthcheck.Healthchecks))
 	}
 
@@ -121,7 +125,7 @@ func TestHandlers(t *testing.T) {
 		t.Fatalf("Invalid body\n")
 	}
 	// delete everything
-	checks := []string{"foo", "bar", "baz"}
+	checks := []string{"foo", "bar", "baz", "tls-check"}
 	for _, c := range checks {
 		req, err := http.NewRequest("DELETE", fmt.Sprintf("http://127.0.0.1:2001/healthcheck/%s", c), nil)
 		if err != nil {
@@ -205,5 +209,57 @@ func TestOneOffCheck(t *testing.T) {
 	body := string(bodyBytes)
 	if !strings.Contains(body, "One-off healthcheck baz successfully executed") {
 		t.Fatalf("Invalid body %s", body)
+	}
+	err = component.Stop()
+	if err != nil {
+		t.Fatalf("Fail to stop the component\n%v", err)
+	}
+}
+
+func TestBulkEndpoint(t *testing.T) {
+	logger := zap.NewExample()
+	prom := prometheus.New()
+	healthcheck, err := healthcheck.New(logger, make(chan *healthcheck.Result, 10), prometheus.New())
+	if err != nil {
+		t.Fatalf("Fail to create the healthcheck component\n%v", err)
+	}
+	component, err := New(zap.NewExample(), memorystore.NewMemoryStore(logger), prom, &Configuration{Host: "127.0.0.1", Port: 2001}, healthcheck)
+	if err != nil {
+		t.Fatalf("Fail to create the component\n%v", err)
+	}
+	err = component.Start()
+	if err != nil {
+		t.Fatalf("Fail to start the component\n%v", err)
+	}
+
+	client := &http.Client{}
+	reqBody := `{"http-checks": [{"name":"baz","description":"bar","interval":"10m","target":"127.0.0.1","port":3000,"timeout":"10s","protocol":"http","valid-status":[200]}]}`
+	req, err := http.NewRequest("POST", "http://127.0.0.1:2001/healthcheck/bulk", bytes.NewBuffer([]byte(reqBody)))
+	req.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		t.Fatalf("Fail to build the HTTP request\n%v", err)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Fatalf("HTTP request failed\n%v", err)
+	}
+	if resp.StatusCode != http.StatusCreated {
+		t.Fatalf("HTTP request failed, status %d", resp.StatusCode)
+	}
+	defer resp.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Fail to read the body\n%v", err)
+	}
+	body := string(bodyBytes)
+	if !strings.Contains(body, "Healthchecks successfully added") {
+		t.Fatalf("Invalid body %s", body)
+	}
+	if len(healthcheck.Healthchecks) != 1 {
+		t.Fatalf("Healthchecks were not successfully created: %d", len(healthcheck.Healthchecks))
+	}
+	err = component.Stop()
+	if err != nil {
+		t.Fatalf("Fail to stop the component\n%v", err)
 	}
 }

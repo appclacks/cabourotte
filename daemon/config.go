@@ -51,28 +51,28 @@ func (configuration *Configuration) UnmarshalYAML(unmarshal func(interface{}) er
 	}
 	for i := range raw.DNSChecks {
 		check := raw.DNSChecks[i]
-		err := healthcheck.ValidateDNSConfig(&check)
+		err := check.Validate()
 		if err != nil {
 			return errors.Wrap(err, "Invalid healthcheck configuration")
 		}
 	}
 	for i := range raw.TCPChecks {
 		check := raw.TCPChecks[i]
-		err := healthcheck.ValidateTCPConfig(&check)
+		err := check.Validate()
 		if err != nil {
 			return errors.Wrap(err, "Invalid healthcheck configuration")
 		}
 	}
 	for i := range raw.HTTPChecks {
 		check := raw.HTTPChecks[i]
-		err := healthcheck.ValidateHTTPConfig(&check)
+		err := check.Validate()
 		if err != nil {
 			return errors.Wrap(err, "Invalid healthcheck configuration")
 		}
 	}
 	for i := range raw.TLSChecks {
 		check := raw.TLSChecks[i]
-		err := healthcheck.ValidateTLSConfig(&check)
+		err := check.Validate()
 		if err != nil {
 			return errors.Wrap(err, "Invalid healthcheck configuration")
 		}

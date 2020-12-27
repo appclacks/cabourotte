@@ -43,18 +43,13 @@ type HTTPHealthcheckConfiguration struct {
 	Labels     map[string]string `json:"labels,omitempty"`
 }
 
-// GetName returns the name configured in the configuration
-func (h *HTTPHealthcheckConfiguration) GetName() string {
-	return h.Name
-}
-
 // GetLabels returns the labels
 func (h *HTTPHealthcheck) GetLabels() map[string]string {
 	return h.Config.Labels
 }
 
-// ValidateHTTPConfig validates the healthcheck configuration
-func ValidateHTTPConfig(config *HTTPHealthcheckConfiguration) error {
+// Validate validates the healthcheck configuration
+func (config *HTTPHealthcheckConfiguration) Validate() error {
 	if config.Name == "" {
 		return errors.New("The healthcheck name is missing")
 	}

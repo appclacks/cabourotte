@@ -36,11 +36,6 @@ type TLSHealthcheckConfiguration struct {
 	Labels          map[string]string `json:"labels,omitempty"`
 }
 
-// GetName returns the name configured in the configuration
-func (h *TLSHealthcheckConfiguration) GetName() string {
-	return h.Name
-}
-
 // GetLabels returns the labels
 func (h *TLSHealthcheck) GetLabels() map[string]string {
 	return h.Config.Labels
@@ -57,8 +52,8 @@ type TLSHealthcheck struct {
 	t    tomb.Tomb
 }
 
-// ValidateTLSConfig validates the healthcheck configuration
-func ValidateTLSConfig(config *TLSHealthcheckConfiguration) error {
+// Validate validates the healthcheck configuration
+func (config *TLSHealthcheckConfiguration) Validate() error {
 	if config.Name == "" {
 		return errors.New("The healthcheck name is missing")
 	}

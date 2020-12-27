@@ -15,7 +15,7 @@ import (
 
 // HealthcheckConfiguration is the interface for the healthcheck configuration
 type HealthcheckConfiguration interface {
-	GetName() string
+	Validate() error
 }
 
 // Healthcheck is the interface for an healthcheck

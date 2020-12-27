@@ -309,6 +309,20 @@ tls-checks:
     timeout: 5s
     expiration-delay: foo
 `,
+
+		`
+http:
+  host: "127.0.0.1"
+  port: 2000
+http-checks:
+  - name: foo
+    description: bar
+    target: 127.0.0.1
+    port: 2000
+    interval: 10s
+    timeout: 5s
+    expiration-delay: foo
+`,
 	}
 	for _, c := range cases {
 		var result Configuration

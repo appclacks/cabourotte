@@ -1,9 +1,12 @@
 package http
 
 import (
+	"fmt"
 	"net"
 
 	"github.com/pkg/errors"
+
+	"cabourotte/healthcheck"
 )
 
 // Configuration the HTTP server configuration
@@ -37,5 +40,59 @@ func (c *Configuration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		return errors.New("Invalid certificates")
 	}
 	*c = Configuration(raw)
+	return nil
+}
+
+// BulkPayload the paylaod for bulk requests fo healthchecks
+type BulkPayload struct {
+	DNSChecks  []healthcheck.DNSHealthcheckConfiguration  `json:"dns-checks"`
+	TCPChecks  []healthcheck.TCPHealthcheckConfiguration  `json:"tcp-checks"`
+	HTTPChecks []healthcheck.HTTPHealthcheckConfiguration `json:"http-checks"`
+	TLSChecks  []healthcheck.TLSHealthcheckConfiguration  `json:"tls-checks"`
+}
+
+// Validate validates the payload for bulk requests
+func (p *BulkPayload) Validate() error {
+	oneOffErrorMsg := "One-off healthchecks are not supported for bulk requests"
+	for _, config := range p.DNSChecks {
+		err := config.Validate()
+		if config.OneOff {
+			return errors.New(oneOffErrorMsg)
+		}
+		if err != nil {
+			msg := fmt.Sprintf("Invalid healthcheck configuration: %s", err.Error())
+			return errors.New(msg)
+		}
+	}
+	for _, config := range p.TCPChecks {
+		err := config.Validate()
+		if config.OneOff {
+			return errors.New(oneOffErrorMsg)
+		}
+		if err != nil {
+			msg := fmt.Sprintf("Invalid healthcheck configuration: %s", err.Error())
+			return errors.New(msg)
+		}
+	}
+	for _, config := range p.HTTPChecks {
+		err := config.Validate()
+		if config.OneOff {
+			return errors.New(oneOffErrorMsg)
+		}
+		if err != nil {
+			msg := fmt.Sprintf("Invalid healthcheck configuration: %s", err.Error())
+			return errors.New(msg)
+		}
+	}
+	for _, config := range p.TLSChecks {
+		err := config.Validate()
+		if config.OneOff {
+			return errors.New(oneOffErrorMsg)
+		}
+		if err != nil {
+			msg := fmt.Sprintf("Invalid healthcheck configuration: %s", err.Error())
+			return errors.New(msg)
+		}
+	}
 	return nil
 }

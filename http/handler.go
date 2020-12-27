@@ -18,11 +18,9 @@ type BasicResponse struct {
 func (c *Component) addCheck(ec echo.Context, check healthcheck.Healthcheck) error {
 	err := c.healthcheck.AddCheck(check)
 	if err != nil {
-		msg := fmt.Sprintf("Fail to start the healthcheck: %s", err.Error())
-		c.Logger.Error(msg)
-		return ec.JSON(http.StatusInternalServerError, &BasicResponse{Message: msg})
+		return err
 	}
-	return ec.JSON(http.StatusCreated, &BasicResponse{Message: "Healthcheck successfully added"})
+	return nil
 }
 
 // oneOff executes an one-off healthcheck and returns its result
@@ -45,12 +43,22 @@ func (c *Component) oneOff(ec echo.Context, healthcheck healthcheck.Healthcheck)
 	return ec.JSON(http.StatusCreated, &BasicResponse{Message: msg})
 }
 
+func (c *Component) addCheckError(ec echo.Context, healthcheck healthcheck.Healthcheck, err error) error {
+	msg := fmt.Sprintf("Fail to start the healthcheck %s: %s", healthcheck.Name(), err.Error())
+	c.Logger.Error(msg)
+	return ec.JSON(http.StatusInternalServerError, &BasicResponse{Message: msg})
+}
+
 // handleCheck handles new healthchecks requests
 func (c *Component) handleCheck(ec echo.Context, healthcheck healthcheck.Healthcheck) error {
 	if healthcheck.OneOff() {
 		return c.oneOff(ec, healthcheck)
 	}
-	return c.addCheck(ec, healthcheck)
+	err := c.addCheck(ec, healthcheck)
+	if err != nil {
+		return c.addCheckError(ec, healthcheck, err)
+	}
+	return ec.JSON(http.StatusCreated, &BasicResponse{Message: "Healthcheck successfully added"})
 }
 
 // handlers configures the handlers for the http server component
@@ -67,7 +75,7 @@ func (c *Component) handlers() {
 			c.Logger.Error(msg)
 			return ec.JSON(http.StatusBadRequest, &BasicResponse{Message: msg})
 		}
-		err := healthcheck.ValidateDNSConfig(&config)
+		err := config.Validate()
 		if err != nil {
 			msg := fmt.Sprintf("Invalid healthcheck configuration: %s", err.Error())
 			c.Logger.Error(msg)
@@ -84,7 +92,7 @@ func (c *Component) handlers() {
 			c.Logger.Error(msg)
 			return ec.JSON(http.StatusBadRequest, &BasicResponse{Message: msg})
 		}
-		err := healthcheck.ValidateTCPConfig(&config)
+		err := config.Validate()
 		if err != nil {
 			msg := fmt.Sprintf("Invalid healthcheck configuration: %s", err.Error())
 			c.Logger.Error(msg)
@@ -101,7 +109,7 @@ func (c *Component) handlers() {
 			c.Logger.Error(msg)
 			return ec.JSON(http.StatusBadRequest, &BasicResponse{Message: msg})
 		}
-		err := healthcheck.ValidateTLSConfig(&config)
+		err := config.Validate()
 		if err != nil {
 			msg := fmt.Sprintf("Invalid healthcheck configuration: %s", err.Error())
 			c.Logger.Error(msg)
@@ -118,7 +126,7 @@ func (c *Component) handlers() {
 			c.Logger.Error(msg)
 			return ec.JSON(http.StatusBadRequest, &BasicResponse{Message: msg})
 		}
-		err := healthcheck.ValidateHTTPConfig(&config)
+		err := config.Validate()
 		if err != nil {
 			msg := fmt.Sprintf("Invalid healthcheck configuration: %s", err.Error())
 			c.Logger.Error(msg)
@@ -126,6 +134,50 @@ func (c *Component) handlers() {
 		}
 		healthcheck := healthcheck.NewHTTPHealthcheck(c.Logger, &config)
 		return c.handleCheck(ec, healthcheck)
+	})
+
+	c.Server.POST("/healthcheck/bulk", func(ec echo.Context) error {
+		var payload BulkPayload
+		if err := ec.Bind(&payload); err != nil {
+			msg := fmt.Sprintf("Fail to add healthchecks. Invalid JSON: %s", err.Error())
+			c.Logger.Error(msg)
+			return ec.JSON(http.StatusBadRequest, &BasicResponse{Message: msg})
+		}
+		err := payload.Validate()
+		if err != nil {
+			msg := fmt.Sprintf("Fail to validate healthchecks configuration: %s", err.Error())
+			c.Logger.Error(msg)
+			return ec.JSON(http.StatusBadRequest, &BasicResponse{Message: msg})
+		}
+		for _, config := range payload.HTTPChecks {
+			healthcheck := healthcheck.NewHTTPHealthcheck(c.Logger, &config)
+			err := c.addCheck(ec, healthcheck)
+			if err != nil {
+				return c.addCheckError(ec, healthcheck, err)
+			}
+		}
+		for _, config := range payload.TCPChecks {
+			healthcheck := healthcheck.NewTCPHealthcheck(c.Logger, &config)
+			err := c.addCheck(ec, healthcheck)
+			if err != nil {
+				return c.addCheckError(ec, healthcheck, err)
+			}
+		}
+		for _, config := range payload.DNSChecks {
+			healthcheck := healthcheck.NewDNSHealthcheck(c.Logger, &config)
+			err := c.addCheck(ec, healthcheck)
+			if err != nil {
+				return c.addCheckError(ec, healthcheck, err)
+			}
+		}
+		for _, config := range payload.TLSChecks {
+			healthcheck := healthcheck.NewTLSHealthcheck(c.Logger, &config)
+			err := c.addCheck(ec, healthcheck)
+			if err != nil {
+				return c.addCheckError(ec, healthcheck, err)
+			}
+		}
+		return ec.JSON(http.StatusCreated, &BasicResponse{Message: "Healthchecks successfully added"})
 	})
 
 	c.Server.GET("/healthcheck", func(ec echo.Context) error {

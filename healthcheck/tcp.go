@@ -28,18 +28,8 @@ type TCPHealthcheckConfiguration struct {
 	Labels     map[string]string `json:"labels,omitempty"`
 }
 
-// GetName returns the name configured in the configuration
-func (h *TCPHealthcheckConfiguration) GetName() string {
-	return h.Name
-}
-
-// GetLabels returns the labels
-func (h *TCPHealthcheck) GetLabels() map[string]string {
-	return h.Config.Labels
-}
-
-// ValidateTCPConfig validates the healthcheck configuration
-func ValidateTCPConfig(config *TCPHealthcheckConfiguration) error {
+// Validate validates the healthcheck configuration
+func (config *TCPHealthcheckConfiguration) Validate() error {
 	if config.Name == "" {
 		return errors.New("The healthcheck name is missing")
 	}
@@ -59,6 +49,11 @@ func ValidateTCPConfig(config *TCPHealthcheckConfiguration) error {
 		return errors.New("The healthcheck interval should be greater than the timeout")
 	}
 	return nil
+}
+
+// GetLabels returns the labels
+func (h *TCPHealthcheck) GetLabels() map[string]string {
+	return h.Config.Labels
 }
 
 // TCPHealthcheck defines a TCP healthcheck
