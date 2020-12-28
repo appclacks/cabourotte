@@ -1,8 +1,10 @@
 package http
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
+	"text/template"
 
 	"github.com/labstack/echo"
 
@@ -226,5 +228,19 @@ func (c *Component) handlers() {
 	})
 
 	c.Server.GET("/metrics", echo.WrapHandler(c.Prometheus.Handler()))
+
+	c.Server.GET("/frontend", func(ec echo.Context) error {
+		tmpl, err := template.New("frontend").Parse(frontendTemplate)
+		if err != nil {
+			c.Logger.Error(err.Error())
+			return ec.JSON(http.StatusInternalServerError, &BasicResponse{Message: err.Error()})
+		}
+		var tmplBytes bytes.Buffer
+		if err := tmpl.Execute(&tmplBytes, c.MemoryStore.List()); err != nil {
+			c.Logger.Error(err.Error())
+			return ec.JSON(http.StatusInternalServerError, &BasicResponse{Message: err.Error()})
+		}
+		return ec.HTML(http.StatusOK, tmplBytes.String())
+	})
 
 }
