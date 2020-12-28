@@ -6,12 +6,13 @@ IT infrastructures are complex. We have more and more equipments, machines, and 
 
 The rise of containers orchestrators also made networking more complex. On a network failure, a service could be reachable from one part of your infrastructure but not from another one.
 
-Cabourotte is a tool which allow you to execute healthchecks (HTTP(s), TCP, DNS, TLS including monitoring of certificates expiration) on your infrastructure. It already supports various features including:
+Cabourotte is a tool which allow you to execute healthchecks (HTTP(s), TCP, DNS, TLS) on your infrastructure. It already supports various features including:
 
 - Configurable by using a YAML file, or by using the API. Using the API allows you to dynamically add, update, or remove healthchecks definitions. The API also allows you to list configured healthchecks and to get the latest status for each healthcheck.
 - Prometheus integration: the healthchecks results and executions time are exposed on a Prometheus endpoint alongside various internal metrics.
 - Support exporters, which can be configured to push the healthchecks results to another systems.
-- One-Off healthchecks: You can send requests to the API to execute healthchecks and get the healthchecks results in the responses.
+- `One-Off` healthchecks: You can send requests to the API to execute healthchecks and get the healthchecks results in the responses.
 - Hot reload on a SIGHUP.
+- A small frontend to see the current healthchecks status
 
-Lightweight, written in Golang, Cabourotte can be run everywhere to detect services and network failures.
+Lightweight, written in Golang, Cabourotte can run everywhere to detect services and network failures.
