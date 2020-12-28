@@ -2,6 +2,7 @@ package memorystore
 
 import (
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 
@@ -87,6 +88,9 @@ func (m *MemoryStore) List() []healthcheck.Result {
 		value := m.Results[i]
 		result = append(result, *value)
 	}
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Name < result[j].Name
+	})
 	return result
 }
 
