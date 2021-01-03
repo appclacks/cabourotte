@@ -116,14 +116,14 @@ func (c *Component) Start() error {
 					c.Logger.Info("Healthcheck successful",
 						zap.String("name", message.Name),
 						zap.Reflect("labels", message.Labels),
-						zap.String("date", message.Timestamp.String()),
+						zap.Int64("healthcheck-timestamp", message.HealthcheckTimestamp),
 					)
 				} else {
 					c.Logger.Error("healthcheck failed",
 						zap.String("name", message.Name),
 						zap.Reflect("labels", message.Labels),
 						zap.String("cause", message.Message),
-						zap.String("date", message.Timestamp.String()),
+						zap.Int64("healthcheck-timestamp", message.HealthcheckTimestamp),
 					)
 				}
 				c.lock.Lock()

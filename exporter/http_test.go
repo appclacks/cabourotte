@@ -40,10 +40,10 @@ func TestHTTPExporter(t *testing.T) {
 		t.Fatalf("Fail to start the http exporter:\n%v", err)
 	}
 	err = exporter.Push(&healthcheck.Result{
-		Name:      "foo",
-		Success:   true,
-		Timestamp: time.Now(),
-		Message:   "message",
+		Name:                 "foo",
+		Success:              true,
+		HealthcheckTimestamp: time.Now().Unix(),
+		Message:              "message",
 	})
 	if err != nil {
 		t.Fatalf("Fail to push healthcheck result:\n%v", err)

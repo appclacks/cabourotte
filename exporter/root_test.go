@@ -56,10 +56,10 @@ func TestStartStop(t *testing.T) {
 		t.Fatalf("Error starting the component :\n%v", err)
 	}
 	chanResult <- &healthcheck.Result{
-		Name:      "foo",
-		Success:   true,
-		Timestamp: time.Now(),
-		Message:   "message",
+		Name:                 "foo",
+		Success:              true,
+		HealthcheckTimestamp: time.Now().Unix(),
+		Message:              "message",
 	}
 	success := false
 	for i := 0; i < 10; i++ {
@@ -119,10 +119,10 @@ func TestReload(t *testing.T) {
 		t.Fatalf("Error starting the component :\n%v", err)
 	}
 	chanResult <- &healthcheck.Result{
-		Name:      "foo",
-		Success:   true,
-		Timestamp: time.Now(),
-		Message:   "message",
+		Name:                 "foo",
+		Success:              true,
+		HealthcheckTimestamp: time.Now().Unix(),
+		Message:              "message",
 	}
 	success := false
 	for i := 0; i < 10; i++ {

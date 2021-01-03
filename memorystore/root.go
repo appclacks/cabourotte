@@ -71,7 +71,8 @@ func (m *MemoryStore) Purge() {
 	now := time.Now()
 	for i := range m.Results {
 		result := m.Results[i]
-		if now.After(result.Timestamp.Add(m.TTL)) {
+		checkTimestamp := time.Unix(result.HealthcheckTimestamp, 0)
+		if now.After(checkTimestamp.Add(m.TTL)) {
 			m.Logger.Info("expire healthcheck",
 				zap.String("name", result.Name))
 			delete(m.Results, result.Name)

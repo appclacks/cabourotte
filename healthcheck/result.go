@@ -6,12 +6,12 @@ import (
 
 // Result represents the result of an healthcheck
 type Result struct {
-	Name      string            `json:"name"`
-	Summary   interface{}       `json:"summary"`
-	Labels    map[string]string `json:"labels,omitempty"`
-	Success   bool              `json:"success"`
-	Timestamp time.Time         `json:"timestamp"`
-	Message   string            `json:"message"`
+	Name                 string            `json:"name"`
+	Summary              interface{}       `json:"summary"`
+	Labels               map[string]string `json:"labels,omitempty"`
+	Success              bool              `json:"success"`
+	HealthcheckTimestamp int64             `json:"healthcheck-timestamp"`
+	Message              string            `json:"message"`
 }
 
 // Equals implements Equals for Result
@@ -25,7 +25,7 @@ func (r Result) Equals(v Result) bool {
 	if r.Success != v.Success {
 		return false
 	}
-	if r.Timestamp != v.Timestamp {
+	if r.HealthcheckTimestamp != v.HealthcheckTimestamp {
 		return false
 	}
 	if r.Message != v.Message {
@@ -46,10 +46,10 @@ func (r Result) Equals(v Result) bool {
 func NewResult(healthcheck Healthcheck, err error) *Result {
 	now := time.Now()
 	result := Result{
-		Name:      healthcheck.Name(),
-		Summary:   healthcheck.Summary(),
-		Labels:    healthcheck.GetLabels(),
-		Timestamp: now,
+		Name:                 healthcheck.Name(),
+		Summary:              healthcheck.Summary(),
+		Labels:               healthcheck.GetLabels(),
+		HealthcheckTimestamp: now.Unix(),
 	}
 	if err != nil {
 		result.Success = false
