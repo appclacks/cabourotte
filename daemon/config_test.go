@@ -57,8 +57,7 @@ dns-checks:
 				ResultBuffer: DefaultBufferSize,
 				HTTP: http.Configuration{
 					Host: "127.0.0.1",
-					Port: 2000,
-				},
+					Port: 2000},
 				DNSChecks: []healthcheck.DNSHealthcheckConfiguration{
 					healthcheck.DNSHealthcheckConfiguration{
 						Name:        "foo",
@@ -120,6 +119,7 @@ tls-checks:
 http-checks:
   - name: foo
     description: bar
+    insecure: true
     target: "mcorbin.fr"
     port: 443
     body-regexp:
@@ -210,6 +210,7 @@ exporters:
 				HTTPChecks: []healthcheck.HTTPHealthcheckConfiguration{
 					healthcheck.HTTPHealthcheckConfiguration{
 						Name:        "foo",
+						Insecure:    true,
 						Description: "bar",
 						Body:        "foobar",
 						Path:        "/foo",

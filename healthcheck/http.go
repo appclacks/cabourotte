@@ -34,6 +34,7 @@ type HTTPHealthcheckConfiguration struct {
 	Path       string            `json:"path,omitempty"`
 	SourceIP   IP                `json:"source-ip,omitempty" yaml:"source-ip,omitempty"`
 	BodyRegexp []Regexp          `json:"body-regexp,omitempty" yaml:"body-regexp,omitempty"`
+	Insecure   bool
 	Timeout    Duration          `json:"timeout"`
 	Interval   Duration          `json:"interval"`
 	OneOff     bool              `json:"one-off"`
@@ -154,8 +155,9 @@ func (h *HTTPHealthcheck) Initialize() error {
 		h.transport = &http.Transport{
 			DialContext: dialer.DialContext,
 			TLSClientConfig: &tls.Config{
-				RootCAs:      caCertPool,
-				Certificates: []tls.Certificate{cert},
+				RootCAs:            caCertPool,
+				InsecureSkipVerify: h.Config.Insecure,
+				Certificates:       []tls.Certificate{cert},
 			},
 		}
 	} else {
