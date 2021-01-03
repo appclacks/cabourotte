@@ -28,6 +28,7 @@ type HTTPExporter struct {
 // NewHTTPExporter creates a new HTTP exporter
 func NewHTTPExporter(logger *zap.Logger, config *HTTPConfiguration) (*HTTPExporter, error) {
 	protocol := "http"
+	tlsConfig := &tls.Config{}
 	if config.Protocol == healthcheck.HTTPS {
 		protocol = "https"
 	}
@@ -42,18 +43,24 @@ func NewHTTPExporter(logger *zap.Logger, config *HTTPConfiguration) (*HTTPExport
 		if err != nil {
 			return nil, errors.Wrapf(err, "Fail to load certificates")
 		}
+		tlsConfig.Certificates = []tls.Certificate{cert}
+	}
+	if config.Cacert != "" {
 		caCert, err := ioutil.ReadFile(config.Cacert)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Fail to load the ca certificate")
 		}
 		caCertPool := x509.NewCertPool()
-		caCertPool.AppendCertsFromPEM(caCert)
-		transport = &http.Transport{
-			TLSClientConfig: &tls.Config{
-				RootCAs:      caCertPool,
-				Certificates: []tls.Certificate{cert},
-			},
+		result := caCertPool.AppendCertsFromPEM(caCert)
+		if !result {
+			return nil, fmt.Errorf("fail to read ca certificate for exporter %s", config.Name)
 		}
+		tlsConfig.RootCAs = caCertPool
+
+	}
+	tlsConfig.InsecureSkipVerify = config.Insecure
+	transport = &http.Transport{
+		TLSClientConfig: tlsConfig,
 	}
 
 	exporter := HTTPExporter{

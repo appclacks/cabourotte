@@ -61,6 +61,24 @@ cacert: /tmp/cacert
 				Cacert:   "/tmp/cacert",
 			},
 		},
+		{
+			in: `
+host: "127.0.0.2"
+port: 2003
+protocol: http
+name: foo
+cacert: /tmp/cacert
+insecure: true
+`,
+			want: HTTPConfiguration{
+				Name:     "foo",
+				Host:     "127.0.0.2",
+				Port:     2003,
+				Protocol: healthcheck.HTTP,
+				Cacert:   "/tmp/cacert",
+				Insecure: true,
+			},
+		},
 	}
 	for _, c := range cases {
 		var result HTTPConfiguration

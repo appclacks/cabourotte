@@ -16,6 +16,7 @@ type HTTPConfiguration struct {
 	Key      string `json:"key,omitempty"`
 	Cert     string `json:"cert,omitempty"`
 	Cacert   string `json:"cacert,omitempty"`
+	Insecure bool
 }
 
 // Configuration the main configuration for the exporter component
@@ -39,8 +40,8 @@ func (c *HTTPConfiguration) UnmarshalYAML(unmarshal func(interface{}) error) err
 	if raw.Port == 0 {
 		return errors.New("Invalid port for the HTTP server")
 	}
-	if !((raw.Key != "" && raw.Cert != "" && raw.Cacert != "") ||
-		(raw.Key == "" && raw.Cert == "" && raw.Cacert == "")) {
+	if !((raw.Key != "" && raw.Cert != "") ||
+		(raw.Key == "" && raw.Cert == "")) {
 		return errors.New("Invalid certificates")
 	}
 	*c = HTTPConfiguration(raw)
