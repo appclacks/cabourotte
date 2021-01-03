@@ -72,8 +72,8 @@ func (config *HTTPHealthcheckConfiguration) Validate() error {
 	if config.Interval < config.Timeout {
 		return errors.New("The healthcheck interval should be greater than the timeout")
 	}
-	if !((config.Key != "" && config.Cert != "" && config.Cacert != "") ||
-		(config.Key == "" && config.Cert == "" && config.Cacert == "")) {
+	if !((config.Key != "" && config.Cert != "") ||
+		(config.Key == "" && config.Cert == "")) {
 		return errors.New("Invalid certificates")
 	}
 	return nil
@@ -127,6 +127,7 @@ func (h *HTTPHealthcheck) Initialize() error {
 	h.buildURL()
 	// tls is enabled
 	dialer := net.Dialer{}
+	tlsConfig := &tls.Config{}
 	if h.Config.SourceIP != nil {
 		srcIP := net.IP(h.Config.SourceIP).String()
 		addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:0", srcIP))
@@ -142,6 +143,9 @@ func (h *HTTPHealthcheck) Initialize() error {
 		if err != nil {
 			return errors.Wrapf(err, "Fail to load certificates")
 		}
+		tlsConfig.Certificates = []tls.Certificate{cert}
+	}
+	if h.Config.Cacert != "" {
 		caCert, err := ioutil.ReadFile(h.Config.Cacert)
 		if err != nil {
 			return errors.Wrapf(err, "Fail to load the ca certificate")
@@ -151,18 +155,13 @@ func (h *HTTPHealthcheck) Initialize() error {
 		if !result {
 			return fmt.Errorf("fail to read ca certificate for healthcheck %s", h.Config.Name)
 		}
+		tlsConfig.RootCAs = caCertPool
 
-		h.transport = &http.Transport{
-			DialContext: dialer.DialContext,
-			TLSClientConfig: &tls.Config{
-				RootCAs:            caCertPool,
-				InsecureSkipVerify: h.Config.Insecure,
-				Certificates:       []tls.Certificate{cert},
-			},
-		}
-	} else {
-		h.transport = &http.Transport{
-			DialContext: dialer.DialContext}
+	}
+	tlsConfig.InsecureSkipVerify = h.Config.Insecure
+	h.transport = &http.Transport{
+		DialContext:     dialer.DialContext,
+		TLSClientConfig: tlsConfig,
 	}
 	return nil
 }

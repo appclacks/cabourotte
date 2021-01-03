@@ -151,6 +151,28 @@ http-checks:
       - 201
     labels:
       environment: prod
+  - name: bar
+    cacert: /tmp/foo
+    description: bar
+    insecure: true
+    target: "mcorbin.fr"
+    port: 443
+    body-regexp:
+      - "foo*"
+    interval: 10s
+    timeout: 5s
+    path: "/foo"
+    protocol: https
+    redirect: true
+    source-ip: 127.0.0.3
+    headers:
+      foo: bar
+    body: foobar
+    valid-status:
+      - 200
+      - 201
+    labels:
+      environment: prod
 result-buffer: 1000
 exporters:
   http:
@@ -239,6 +261,29 @@ exporters:
 				HTTPChecks: []healthcheck.HTTPHealthcheckConfiguration{
 					healthcheck.HTTPHealthcheckConfiguration{
 						Name:        "foo",
+						Insecure:    true,
+						Description: "bar",
+						Body:        "foobar",
+						Path:        "/foo",
+						BodyRegexp:  []healthcheck.Regexp{regexp},
+						SourceIP:    healthcheck.IP(net.ParseIP("127.0.0.3")),
+						Target:      "mcorbin.fr",
+						Port:        443,
+						Redirect:    true,
+						Headers: map[string]string{
+							"foo": "bar",
+						},
+						Protocol:    healthcheck.HTTPS,
+						Timeout:     healthcheck.Duration(time.Second * 5),
+						Interval:    healthcheck.Duration(time.Second * 10),
+						ValidStatus: []uint{200, 201},
+						Labels: map[string]string{
+							"environment": "prod",
+						},
+					},
+					healthcheck.HTTPHealthcheckConfiguration{
+						Name:        "bar",
+						Cacert:      "/tmp/foo",
 						Insecure:    true,
 						Description: "bar",
 						Body:        "foobar",
@@ -369,6 +414,34 @@ tls-checks:
     expiration-delay: 24h
     interval: 10s
     timeout: 5s
+    labels:
+      environment: prod
+`,
+		`
+http:
+  host: "127.0.0.1"
+  port: 2000
+http-checks:
+  - name: foo
+    description: bar
+    insecure: true
+    target: "mcorbin.fr"
+    port: 443
+    body-regexp:
+      - "foo*"
+    interval: 10s
+    timeout: 5s
+    path: "/foo"
+    protocol: https
+    cert: /tmp/foo
+    redirect: true
+    source-ip: 127.0.0.3
+    headers:
+      foo: bar
+    body: foobar
+    valid-status:
+      - 200
+      - 201
     labels:
       environment: prod
 `,
