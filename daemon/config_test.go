@@ -116,6 +116,19 @@ tls-checks:
     timeout: 5s
     labels:
       environment: prod
+  - name: tls2
+    description: bar
+    insecure: true
+    target: "127.0.0.1"
+    port: 8080
+    source-ip: "10.0.0.4"
+    cacert: /tmp/bar.cacert
+    server-name: mcorbin.fr
+    expiration-delay: 24h
+    interval: 10s
+    timeout: 5s
+    labels:
+      environment: prod
 http-checks:
   - name: foo
     description: bar
@@ -193,6 +206,22 @@ exporters:
 						Cert:            "/tmp/foo.cert",
 						Cacert:          "/tmp/bar.cacert",
 						Key:             "/tmp/bar.key",
+						ExpirationDelay: healthcheck.Duration(time.Hour * 24),
+						ServerName:      "mcorbin.fr",
+						Insecure:        true,
+						Description:     "bar",
+						Target:          "127.0.0.1",
+						Port:            8080,
+						SourceIP:        healthcheck.IP(net.ParseIP("10.0.0.4")),
+						Timeout:         healthcheck.Duration(time.Second * 5),
+						Interval:        healthcheck.Duration(time.Second * 10),
+						Labels: map[string]string{
+							"environment": "prod",
+						},
+					},
+					healthcheck.TLSHealthcheckConfiguration{
+						Name:            "tls2",
+						Cacert:          "/tmp/bar.cacert",
 						ExpirationDelay: healthcheck.Duration(time.Hour * 24),
 						ServerName:      "mcorbin.fr",
 						Insecure:        true,
@@ -323,6 +352,25 @@ http-checks:
     interval: 10s
     timeout: 5s
     expiration-delay: foo
+`,
+		`
+http:
+  host: "127.0.0.1"
+  port: 2000
+tls-checks:
+  - name: tls
+    description: bar
+    insecure: true
+    target: "127.0.0.1"
+    port: 8080
+    source-ip: "10.0.0.4"
+    key: /tmp/bar.key
+    server-name: mcorbin.fr
+    expiration-delay: 24h
+    interval: 10s
+    timeout: 5s
+    labels:
+      environment: prod
 `,
 	}
 	for _, c := range cases {

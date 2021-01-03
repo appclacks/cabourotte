@@ -72,8 +72,8 @@ func (config *TLSHealthcheckConfiguration) Validate() error {
 	if config.Interval < config.Timeout {
 		return errors.New("The healthcheck interval should be greater than the timeout")
 	}
-	if !((config.Key != "" && config.Cert != "" && config.Cacert != "") ||
-		(config.Key == "" && config.Cert == "" && config.Cacert == "")) {
+	if !((config.Key != "" && config.Cert != "") ||
+		(config.Key == "" && config.Cert == "")) {
 		return errors.New("Invalid certificates")
 	}
 	return nil
@@ -112,6 +112,10 @@ func (h *TLSHealthcheck) Initialize() error {
 		if err != nil {
 			return errors.Wrapf(err, "Fail to load certificates")
 		}
+
+		tlsConfig.Certificates = []tls.Certificate{cert}
+	}
+	if h.Config.Cacert != "" {
 		caCert, err := ioutil.ReadFile(h.Config.Cacert)
 		if err != nil {
 			return errors.Wrapf(err, "Fail to load the ca certificate")
@@ -122,7 +126,6 @@ func (h *TLSHealthcheck) Initialize() error {
 			return fmt.Errorf("fail to read ca certificate for healthcheck %s", h.Config.Name)
 		}
 		tlsConfig.RootCAs = caCertPool
-		tlsConfig.Certificates = []tls.Certificate{cert}
 	}
 	if h.Config.ServerName != "" {
 		tlsConfig.ServerName = h.Config.ServerName
