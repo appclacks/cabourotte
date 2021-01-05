@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"html"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -255,7 +256,7 @@ func (h *HTTPHealthcheck) Execute() error {
 	}
 	responseBodyStr := string(responseBody)
 	if !h.isSuccessful(response) {
-		errorMsg := fmt.Sprintf("HTTP request failed: %d %s", response.StatusCode, responseBodyStr)
+		errorMsg := fmt.Sprintf("HTTP request failed: %d %s", response.StatusCode, html.EscapeString(responseBodyStr))
 		err = errors.New(errorMsg)
 		return err
 	}

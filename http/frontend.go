@@ -45,7 +45,7 @@ const frontendTemplate = `
     <ul>
       <li><b>Summary</b>: {{.Summary }}</li>
       <li><b>Message</b>: {{ .Message }}</li>
-      <li><b>Date</b>: {{ .Timestamp.Format "02/01/2006 15:04:05 -0700" }}</li>
+      <li><b>Timestamp</b>: {{ .HealthcheckTimestamp }}</li>
       {{ if .Labels }}
       <li><b>Labels</b>: {{ range $key, $value := .Labels }}<b>{{ $key }}</b> = {{ $value }} | {{ end }}
       </li>
