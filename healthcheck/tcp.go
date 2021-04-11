@@ -144,7 +144,7 @@ func (h *TCPHealthcheck) LogInfo(message string) {
 // Execute executes an healthcheck on the given target
 func (h *TCPHealthcheck) Execute() error {
 	h.LogDebug("start executing healthcheck")
-	ctx := h.t.Context(nil)
+	ctx := h.t.Context(context.TODO())
 	dialer := net.Dialer{}
 	if h.Config.SourceIP != nil {
 		srcIP := net.IP(h.Config.SourceIP).String()

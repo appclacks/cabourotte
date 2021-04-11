@@ -222,7 +222,7 @@ func (h *HTTPHealthcheck) LogInfo(message string) {
 // Execute executes an healthcheck on the given target
 func (h *HTTPHealthcheck) Execute() error {
 	h.LogDebug("start executing healthcheck")
-	ctx := h.t.Context(nil)
+	ctx := h.t.Context(context.TODO())
 	body := bytes.NewBuffer([]byte(h.Config.Body))
 	req, err := http.NewRequest("GET", h.URL, body)
 	if err != nil {

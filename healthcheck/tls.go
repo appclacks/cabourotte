@@ -182,7 +182,7 @@ func (h *TLSHealthcheck) LogInfo(message string) {
 func (h *TLSHealthcheck) Execute() error {
 	h.LogDebug("start executing healthcheck")
 	dialer := net.Dialer{}
-	ctx := h.t.Context(nil)
+	ctx := h.t.Context(context.TODO())
 	if h.Config.SourceIP != nil {
 		srcIP := net.IP(h.Config.SourceIP).String()
 		addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:0", srcIP))
