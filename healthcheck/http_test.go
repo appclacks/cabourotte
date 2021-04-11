@@ -16,7 +16,7 @@ import (
 	"cabourotte/prometheus"
 )
 
-func TestisSuccessfulOK(t *testing.T) {
+func TestIsSuccessfulOK(t *testing.T) {
 	h := HTTPHealthcheck{
 		Config: &HTTPHealthcheckConfiguration{
 			ValidStatus: []uint{200},
