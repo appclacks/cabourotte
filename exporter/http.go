@@ -37,7 +37,6 @@ func NewHTTPExporter(logger *zap.Logger, config *HTTPConfiguration) (*HTTPExport
 		protocol,
 		net.JoinHostPort(config.Host, fmt.Sprintf("%d", config.Port)),
 		config.Path)
-	transport := &http.Transport{}
 	if config.Key != "" {
 		cert, err := tls.LoadX509KeyPair(config.Cert, config.Key)
 		if err != nil {
@@ -59,7 +58,7 @@ func NewHTTPExporter(logger *zap.Logger, config *HTTPConfiguration) (*HTTPExport
 
 	}
 	tlsConfig.InsecureSkipVerify = config.Insecure
-	transport = &http.Transport{
+	transport := &http.Transport{
 		TLSClientConfig: tlsConfig,
 	}
 
