@@ -124,7 +124,7 @@ func TestStartStopTLS(t *testing.T) {
 	client = http.Client{
 		Transport: transport,
 	}
-	resp, err = client.Get("https://localhost:2000/metrics")
+	_, err = client.Get("https://localhost:2000/metrics")
 	if err == nil {
 		t.Fatalf("Was expecting an error")
 	}
