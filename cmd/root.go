@@ -43,6 +43,7 @@ func Main() {
 					if err != nil {
 						return errors.Wrapf(err, "Fail to start the logger")
 					}
+					// nolint
 					defer logger.Sync()
 					daemonComponent, err := daemon.New(logger, &config)
 					if err != nil {
