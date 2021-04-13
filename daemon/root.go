@@ -89,15 +89,6 @@ func (c *Component) Stop() error {
 	return nil
 }
 
-func strContains(s []string, value string) bool {
-	for _, v := range s {
-		if v == value {
-			return true
-		}
-	}
-	return false
-}
-
 // ReloadHealthchecks reloads the healthchecks from a configuration
 func (c *Component) ReloadHealthchecks(daemonConfig *Configuration) error {
 	// contains the checks which were just added

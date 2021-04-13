@@ -8,8 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"net"
-
-	"gopkg.in/tomb.v2"
+	//"gopkg.in/tomb.v2"
 )
 
 // DNSHealthcheckConfiguration defines a DNS healthcheck configuration
@@ -30,7 +29,6 @@ type DNSHealthcheck struct {
 	URL    string
 
 	Tick *time.Ticker
-	t    tomb.Tomb
 }
 
 // GetLabels returns the labels
