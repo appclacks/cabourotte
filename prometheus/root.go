@@ -16,13 +16,16 @@ type Prometheus struct {
 }
 
 // New creates a new Prometheus component
-func New() *Prometheus {
+func New() (*Prometheus, error) {
 	reg := prom.NewRegistry()
 	p := &Prometheus{
 		Registry: reg,
 	}
-	p.Register(prom.NewGoCollector())
-	return p
+	err := p.Register(prom.NewGoCollector())
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
 }
 
 // Register adds a metric to the component

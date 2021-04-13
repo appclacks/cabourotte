@@ -53,7 +53,10 @@ func (m *MemoryStore) Start() {
 func (m *MemoryStore) Stop() error {
 	m.Tick.Stop()
 	m.t.Kill(nil)
-	m.t.Wait()
+	err := m.t.Wait()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

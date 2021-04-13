@@ -31,7 +31,10 @@ type Component struct {
 // New creates and start a new daemon component
 func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 	logger.Info("Starting the Cabourotte daemon")
-	prom := prometheus.New()
+	prom, err := prometheus.New()
+	if err != nil {
+		return nil, err
+	}
 	chanResult := make(chan *healthcheck.Result, config.ResultBuffer)
 	checkComponent, err := healthcheck.New(logger, chanResult, prom)
 	if err != nil {
@@ -69,7 +72,10 @@ func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 		Exporter:    exporterComponent,
 		Healthcheck: checkComponent,
 	}
-	component.ReloadHealthchecks(config)
+	err = component.ReloadHealthchecks(config)
+	if err != nil {
+		return nil, err
+	}
 	return &component, nil
 }
 

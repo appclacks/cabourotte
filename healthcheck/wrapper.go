@@ -24,7 +24,10 @@ func NewWrapper(healthcheck Healthcheck) *Wrapper {
 func (w *Wrapper) Stop() error {
 	w.Tick.Stop()
 	w.t.Kill(nil)
-	w.t.Wait()
+	err := w.t.Wait()
+	if err != nil {
+		return err
+	}
 	return nil
 
 }

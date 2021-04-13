@@ -201,7 +201,10 @@ func (c *Component) Stop() error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	c.t.Kill(nil)
-	c.t.Wait()
+	err := c.t.Wait()
+	if err != nil {
+		return err
+	}
 	c.prometheus.Unregister(c.chanResultGauge)
 	c.prometheus.Unregister(c.exporterHistogram)
 	for k := range c.Exporters {

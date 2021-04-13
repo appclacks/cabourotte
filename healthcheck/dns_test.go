@@ -52,7 +52,11 @@ func TestDNSStartStop(t *testing.T) {
 		},
 	)
 	wrapper := NewWrapper(healthcheck)
-	component, err := New(zap.NewExample(), make(chan *Result, 10), prometheus.New())
+	prom, err := prometheus.New()
+	if err != nil {
+		t.Fatalf("Error creating prometheus component :\n%v", err)
+	}
+	component, err := New(zap.NewExample(), make(chan *Result, 10), prom)
 	if err != nil {
 		t.Fatalf("Fail to create the component\n%v", err)
 	}

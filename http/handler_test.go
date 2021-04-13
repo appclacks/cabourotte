@@ -18,10 +18,13 @@ import (
 )
 
 func TestHandlers(t *testing.T) {
-	prom := prometheus.New()
+	prom, err := prometheus.New()
+	if err != nil {
+		t.Fatalf("Error creating prometheus component :\n%v", err)
+	}
 	logger := zap.NewExample()
 	memstore := memorystore.NewMemoryStore(logger)
-	healthcheck, err := healthcheck.New(zap.NewExample(), make(chan *healthcheck.Result, 10), prometheus.New())
+	healthcheck, err := healthcheck.New(zap.NewExample(), make(chan *healthcheck.Result, 10), prom)
 	if err != nil {
 		t.Fatalf("Fail to create the healthcheck component\n%v", err)
 	}
@@ -161,8 +164,14 @@ func TestHandlers(t *testing.T) {
 func TestOneOffCheck(t *testing.T) {
 	count := 0
 	logger := zap.NewExample()
-	prom := prometheus.New()
-	healthcheck, err := healthcheck.New(logger, make(chan *healthcheck.Result, 10), prometheus.New())
+	prom, err := prometheus.New()
+	if err != nil {
+		t.Fatalf("Error creating prometheus component :\n%v", err)
+	}
+	if err != nil {
+		t.Fatalf("Error creating prometheus component :\n%v", err)
+	}
+	healthcheck, err := healthcheck.New(logger, make(chan *healthcheck.Result, 10), prom)
 	if err != nil {
 		t.Fatalf("Fail to create the healthcheck component\n%v", err)
 	}
@@ -218,8 +227,11 @@ func TestOneOffCheck(t *testing.T) {
 
 func TestBulkEndpoint(t *testing.T) {
 	logger := zap.NewExample()
-	prom := prometheus.New()
-	healthcheck, err := healthcheck.New(logger, make(chan *healthcheck.Result, 10), prometheus.New())
+	prom, err := prometheus.New()
+	if err != nil {
+		t.Fatalf("Error creating prometheus component :\n%v", err)
+	}
+	healthcheck, err := healthcheck.New(logger, make(chan *healthcheck.Result, 10), prom)
 	if err != nil {
 		t.Fatalf("Fail to create the healthcheck component\n%v", err)
 	}

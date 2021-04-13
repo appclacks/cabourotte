@@ -34,11 +34,15 @@ func TestStartStop(t *testing.T) {
 	}
 	chanResult := make(chan *healthcheck.Result, 10)
 	logger := zap.NewExample()
+	prom, err := prometheus.New()
+	if err != nil {
+		t.Fatalf("Error creating prometheus component :\n%v", err)
+	}
 	component, err := New(
 		logger,
 		memorystore.NewMemoryStore(logger),
 		chanResult,
-		prometheus.New(),
+		prom,
 		&Configuration{
 			HTTP: []HTTPConfiguration{
 				HTTPConfiguration{
@@ -97,11 +101,15 @@ func TestReload(t *testing.T) {
 	}
 	chanResult := make(chan *healthcheck.Result, 10)
 	logger := zap.NewExample()
+	prom, err := prometheus.New()
+	if err != nil {
+		t.Fatalf("Error creating prometheus component :\n%v", err)
+	}
 	component, err := New(
 		logger,
 		memorystore.NewMemoryStore(logger),
 		chanResult,
-		prometheus.New(),
+		prom,
 		&Configuration{
 			HTTP: []HTTPConfiguration{
 				HTTPConfiguration{

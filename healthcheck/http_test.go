@@ -96,7 +96,10 @@ func TestHTTPExecuteSuccess(t *testing.T) {
 			Timeout:     Duration(time.Second * 2),
 		},
 	}
-	h.Initialize()
+	err = h.Initialize()
+	if err != nil {
+		t.Fatalf("Initialization error :\n%v", err)
+	}
 	err = h.Execute()
 	if err != nil {
 		t.Fatalf("healthcheck error :\n%v", err)
@@ -117,7 +120,10 @@ func TestHTTPExecuteRegexpSuccess(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		count++
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("cabourotte !"))
+		_, err := w.Write([]byte("cabourotte !"))
+		if err != nil {
+			t.Fatalf("Error writing :\n%v", err)
+		}
 	}))
 	defer ts.Close()
 
@@ -140,7 +146,10 @@ func TestHTTPExecuteRegexpSuccess(t *testing.T) {
 			Timeout:     Duration(time.Second * 2),
 		},
 	}
-	h.Initialize()
+	err = h.Initialize()
+	if err != nil {
+		t.Fatalf("Initialization error :\n%v", err)
+	}
 	err = h.Execute()
 	if err != nil {
 		t.Fatalf("healthcheck error :\n%v", err)
@@ -155,7 +164,10 @@ func TestHTTPExecuteRegexpFailure(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		count++
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("cabourotte !"))
+		_, err := w.Write([]byte("cabourotte !"))
+		if err != nil {
+			t.Fatalf("Error writing :\n%v", err)
+		}
 	}))
 	defer ts.Close()
 
@@ -178,7 +190,10 @@ func TestHTTPExecuteRegexpFailure(t *testing.T) {
 			Timeout:     Duration(time.Second * 2),
 		},
 	}
-	h.Initialize()
+	err = h.Initialize()
+	if err != nil {
+		t.Fatalf("Initialization error :\n%v", err)
+	}
 	err = h.Execute()
 	if err == nil {
 		t.Fatalf("Was expecting an error")
@@ -217,7 +232,10 @@ func TestHTTPv6ExecuteSuccess(t *testing.T) {
 			Timeout:     Duration(time.Second * 2),
 		},
 	}
-	h.Initialize()
+	err = h.Initialize()
+	if err != nil {
+		t.Fatalf("Initialization error :\n%v", err)
+	}
 	err = h.Execute()
 	if err != nil {
 		t.Fatalf("healthcheck error :\n%v", err)
@@ -251,7 +269,10 @@ func TestHTTPExecuteFailure(t *testing.T) {
 			Timeout:     Duration(time.Second * 2),
 		},
 	}
-	h.Initialize()
+	err = h.Initialize()
+	if err != nil {
+		t.Fatalf("Initialization error :\n%v", err)
+	}
 	err = h.Execute()
 	if err == nil {
 		t.Fatalf("Was expecting an error")
@@ -314,7 +335,11 @@ func TestHTTPStartStop(t *testing.T) {
 		},
 	)
 	wrapper := NewWrapper(healthcheck)
-	component, err := New(zap.NewExample(), make(chan *Result, 10), prometheus.New())
+	prom, err := prometheus.New()
+	if err != nil {
+		t.Fatalf("Error creating prometheus component :\n%v", err)
+	}
+	component, err := New(zap.NewExample(), make(chan *Result, 10), prom)
 	if err != nil {
 		t.Fatalf("Fail to create the component\n%v", err)
 	}
@@ -366,7 +391,10 @@ func TestHTTPExecuteSourceIP(t *testing.T) {
 			Timeout:     Duration(time.Second * 2),
 		},
 	}
-	h.Initialize()
+	err = h.Initialize()
+	if err != nil {
+		t.Fatalf("Initialization error :\n%v", err)
+	}
 	err = h.Execute()
 	if err != nil {
 		t.Fatalf("healthcheck error :\n%v", err)

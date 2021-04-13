@@ -133,7 +133,7 @@ func (h *HTTPHealthcheck) Initialize() error {
 		srcIP := net.IP(h.Config.SourceIP).String()
 		addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:0", srcIP))
 		if err != nil {
-			errors.Wrapf(err, "Fail to set the source IP %s", srcIP)
+			return errors.Wrapf(err, "Fail to set the source IP %s", srcIP)
 		}
 		dialer = net.Dialer{
 			LocalAddr: addr,
