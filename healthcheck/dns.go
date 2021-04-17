@@ -8,7 +8,6 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"net"
-	//"gopkg.in/tomb.v2"
 )
 
 // DNSHealthcheckConfiguration defines a DNS healthcheck configuration
