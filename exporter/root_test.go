@@ -34,11 +34,15 @@ func TestStartStop(t *testing.T) {
 	}
 	chanResult := make(chan *healthcheck.Result, 10)
 	logger := zap.NewExample()
+	prom, err := prometheus.New()
+	if err != nil {
+		t.Fatalf("Error creating prometheus component :\n%v", err)
+	}
 	component, err := New(
 		logger,
 		memorystore.NewMemoryStore(logger),
 		chanResult,
-		prometheus.New(),
+		prom,
 		&Configuration{
 			HTTP: []HTTPConfiguration{
 				HTTPConfiguration{
@@ -48,10 +52,10 @@ func TestStartStop(t *testing.T) {
 					Protocol: healthcheck.HTTP,
 				},
 			}})
-	err = component.Start()
 	if err != nil {
 		t.Fatalf("Error creating the component :\n%v", err)
 	}
+	err = component.Start()
 	if err != nil {
 		t.Fatalf("Error starting the component :\n%v", err)
 	}
@@ -97,11 +101,15 @@ func TestReload(t *testing.T) {
 	}
 	chanResult := make(chan *healthcheck.Result, 10)
 	logger := zap.NewExample()
+	prom, err := prometheus.New()
+	if err != nil {
+		t.Fatalf("Error creating prometheus component :\n%v", err)
+	}
 	component, err := New(
 		logger,
 		memorystore.NewMemoryStore(logger),
 		chanResult,
-		prometheus.New(),
+		prom,
 		&Configuration{
 			HTTP: []HTTPConfiguration{
 				HTTPConfiguration{
@@ -111,10 +119,10 @@ func TestReload(t *testing.T) {
 					Name:     "foo",
 				},
 			}})
-	err = component.Start()
 	if err != nil {
 		t.Fatalf("Error creating the component :\n%v", err)
 	}
+	err = component.Start()
 	if err != nil {
 		t.Fatalf("Error starting the component :\n%v", err)
 	}
@@ -185,6 +193,9 @@ func TestReload(t *testing.T) {
 				Name:     "bar",
 			},
 		}})
+	if err != nil {
+		t.Fatalf("Error reloading the component :\n%v", err)
+	}
 	p4 := fmt.Sprintf("%p", component.Exporters["foo"])
 	if p3 != p4 {
 		t.Fatalf("Error reloading the component: the exporter was recreated")
