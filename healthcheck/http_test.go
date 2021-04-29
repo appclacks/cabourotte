@@ -380,7 +380,7 @@ func TestHTTPExecuteSourceIP(t *testing.T) {
 	h := HTTPHealthcheck{
 		Logger: zap.NewExample(),
 		Config: &HTTPHealthcheckConfiguration{
-			SourceIP:    IP(net.IP("127.0.0.1")),
+			SourceIP:    IP(net.ParseIP("127.0.0.1")),
 			ValidStatus: []uint{200},
 			Headers:     map[string]string{"Foo": "Bar"},
 			Port:        uint(port),
