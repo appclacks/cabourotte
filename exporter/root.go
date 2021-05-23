@@ -2,7 +2,6 @@ package exporter
 
 import (
 	"fmt"
-	"reflect"
 	"sync"
 	"time"
 
@@ -20,6 +19,8 @@ import (
 type Exporter interface {
 	Start() error
 	Stop() error
+	Reconnect() error
+	IsStarted() bool
 	Name() string
 	GetConfig() interface{}
 	Push(*healthcheck.Result) error
@@ -51,6 +52,14 @@ func New(logger *zap.Logger, store *memorystore.MemoryStore, chanResult chan *he
 			return nil, errors.Wrapf(err, "fail to create the http exporter")
 		}
 		exporters[httpConfig.Name] = exporter
+	}
+	for i := range config.Riemann {
+		riemannConfig := config.Riemann[i]
+		exporter, err := NewRiemannExporter(logger, &riemannConfig)
+		if err != nil {
+			return nil, errors.Wrapf(err, "fail to create the http exporter")
+		}
+		exporters[riemannConfig.Name] = exporter
 	}
 	buckets := []float64{
 		0.05, 0.1, 0.2, 0.4, 0.8, 1,
@@ -94,7 +103,8 @@ func (c *Component) Start() error {
 	for _, exporter := range c.Exporters {
 		err := exporter.Start()
 		if err != nil {
-			return errors.Wrapf(err, "fail to start the exporter %s", exporter.Name())
+			// do not return error on purpose, clients should be able to reconnect
+			c.Logger.Error(fmt.Sprintf("fail to create the exporter %s: %s", exporter.Name(), err.Error()))
 		}
 	}
 	c.t.Go(func() error {
@@ -129,16 +139,32 @@ func (c *Component) Start() error {
 				c.lock.Lock()
 				for k := range c.Exporters {
 					exporter := c.Exporters[k]
-					start := time.Now()
-					err := exporter.Push(message)
-					duration := time.Since(start)
-					status := "success"
-					name := exporter.Name()
-					if err != nil {
-						c.Logger.Error(fmt.Sprintf("Failed to push healthchecks result for exporter %s: %s", name, err.Error()))
-						status = "failure"
+					if exporter.IsStarted() {
+						start := time.Now()
+						err := exporter.Push(message)
+						duration := time.Since(start)
+						status := "success"
+						name := exporter.Name()
+						if err != nil {
+							c.Logger.Error(fmt.Sprintf("Failed to push healthchecks result for exporter %s: %s", name, err.Error()))
+							status = "failure"
+							err := exporter.Stop()
+							if err != nil {
+								// do not return error
+								// on purpose
+								c.Logger.Error(fmt.Sprintf("Fail to close the exporter %s: %s", name, err.Error()))
+							}
+						}
+						c.exporterHistogram.With(prom.Labels{"name": name, "status": status}).Observe(duration.Seconds())
 					}
-					c.exporterHistogram.With(prom.Labels{"name": name, "status": status}).Observe(duration.Seconds())
+					if !exporter.IsStarted() {
+						err := exporter.Reconnect()
+						if err != nil {
+							// do not return error
+							// on purpose
+							c.Logger.Error(fmt.Sprintf("fail to reconnect the exporter %s: %s", exporter.Name(), err.Error()))
+						}
+					}
 				}
 				c.lock.Unlock()
 			case <-c.t.Dying():
@@ -147,52 +173,6 @@ func (c *Component) Start() error {
 		}
 	})
 	// nothing to do
-	return nil
-}
-
-func (c *Component) reload(config interface{}, configName string, exporterType string) error {
-	recreate := true
-	if exporter, ok := c.Exporters[configName]; ok {
-		if reflect.DeepEqual(exporter.GetConfig(), config) {
-			recreate = false
-		} else {
-			c.Logger.Info(fmt.Sprintf("Recreating exporter %s", configName))
-			err := exporter.Stop()
-			if err != nil {
-				return errors.Wrapf(err, "fail to create the http exporter %s", configName)
-			}
-		}
-	}
-	if recreate {
-		var exporter Exporter
-		var err error
-		if exporterType == "http" {
-			conf := config.(*HTTPConfiguration)
-			exporter, err = NewHTTPExporter(c.Logger, conf)
-		}
-		if err != nil {
-			return errors.Wrapf(err, "fail to create the http exporter %s", configName)
-		}
-		err = exporter.Start()
-		if err != nil {
-			return errors.Wrapf(err, "fail to create the http exporter %s", configName)
-		}
-		c.Exporters[configName] = exporter
-	}
-	return nil
-}
-
-// Reload reloads the Exporter component.
-func (c *Component) Reload(config *Configuration) error {
-	c.lock.Lock()
-	defer c.lock.Unlock()
-	for i := range config.HTTP {
-		httpConfig := config.HTTP[i]
-		err := c.reload(&httpConfig, httpConfig.Name, "http")
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
