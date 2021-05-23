@@ -19,6 +19,7 @@ import (
 // Main the main entrypoint
 func Main() {
 	app := &cli.App{
+		Usage: "Cabourotte, a monitoring tool to execute healthchecks on your infrastructure",
 		Commands: []*cli.Command{
 			{
 				Name:  "daemon",
