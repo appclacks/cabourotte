@@ -184,10 +184,6 @@ func (c *Component) Reload(daemonConfig *Configuration) error {
 		}
 		c.HTTP = http
 	}
-	err = c.Exporter.Reload(&daemonConfig.Exporters)
-	if err != nil {
-		return errors.Wrapf(err, "Fail to relaod the exporters")
-	}
 	c.Config = daemonConfig
 	return nil
 }
