@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	prom "github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 )
@@ -21,7 +22,7 @@ func New() (*Prometheus, error) {
 	p := &Prometheus{
 		Registry: reg,
 	}
-	err := p.Register(prom.NewGoCollector())
+	err := p.Register(collectors.NewGoCollector())
 	if err != nil {
 		return nil, err
 	}
