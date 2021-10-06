@@ -95,7 +95,6 @@ func New(logger *zap.Logger, chanResult chan *Result, promComponent *prometheus.
 	}
 
 	return &component, nil
-
 }
 
 // Start start the healthcheck component

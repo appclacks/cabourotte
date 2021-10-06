@@ -100,6 +100,15 @@ func (c *Component) ReloadHealthchecks(daemonConfig *Configuration) error {
 	// contains the checks which were just added
 	currentConfigChecks := c.Config.configChecksNames()
 	newChecks := make(map[string]bool)
+	for i := range daemonConfig.CommandChecks {
+		config := &daemonConfig.CommandChecks[i]
+		newChecks[config.Name] = true
+		newCheck := healthcheck.NewCommandHealthcheck(c.Logger, config)
+		err := c.Healthcheck.AddCheck(newCheck)
+		if err != nil {
+			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Name())
+		}
+	}
 	for i := range daemonConfig.DNSChecks {
 		config := &daemonConfig.DNSChecks[i]
 		newChecks[config.Name] = true

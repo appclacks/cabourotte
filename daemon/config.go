@@ -10,13 +10,14 @@ import (
 
 // Configuration the HTTP server configuration
 type Configuration struct {
-	ResultBuffer uint `yaml:"result-buffer"`
-	HTTP         http.Configuration
-	DNSChecks    []healthcheck.DNSHealthcheckConfiguration  `yaml:"dns-checks"`
-	TCPChecks    []healthcheck.TCPHealthcheckConfiguration  `yaml:"tcp-checks"`
-	HTTPChecks   []healthcheck.HTTPHealthcheckConfiguration `yaml:"http-checks"`
-	TLSChecks    []healthcheck.TLSHealthcheckConfiguration  `yaml:"tls-checks"`
-	Exporters    exporter.Configuration
+	ResultBuffer  uint `yaml:"result-buffer"`
+	HTTP          http.Configuration
+	CommandChecks []healthcheck.CommandHealthcheckConfiguration `yaml:"command-checks"`
+	DNSChecks     []healthcheck.DNSHealthcheckConfiguration     `yaml:"dns-checks"`
+	TCPChecks     []healthcheck.TCPHealthcheckConfiguration     `yaml:"tcp-checks"`
+	HTTPChecks    []healthcheck.HTTPHealthcheckConfiguration    `yaml:"http-checks"`
+	TLSChecks     []healthcheck.TLSHealthcheckConfiguration     `yaml:"tls-checks"`
+	Exporters     exporter.Configuration
 }
 
 // DefaultBufferSize the default siez for the buffer containing healthchecks results
@@ -26,6 +27,9 @@ const DefaultBufferSize = 5000
 // configuration file
 func (configuration *Configuration) configChecksNames() map[string]bool {
 	checks := make(map[string]bool)
+	for i := range configuration.CommandChecks {
+		checks[configuration.CommandChecks[i].Name] = true
+	}
 	for i := range configuration.DNSChecks {
 		checks[configuration.DNSChecks[i].Name] = true
 	}
@@ -48,6 +52,13 @@ func (configuration *Configuration) UnmarshalYAML(unmarshal func(interface{}) er
 	raw := rawConfiguration{}
 	if err := unmarshal(&raw); err != nil {
 		return errors.Wrap(err, "Unable to read Cabourotte configuration")
+	}
+	for i := range raw.CommandChecks {
+		check := raw.CommandChecks[i]
+		err := check.Validate()
+		if err != nil {
+			return errors.Wrap(err, "Invalid healthcheck configuration")
+		}
 	}
 	for i := range raw.DNSChecks {
 		check := raw.DNSChecks[i]
