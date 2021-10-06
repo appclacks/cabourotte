@@ -28,13 +28,17 @@ port: 2000
 key: /tmp/foo
 cert: /tmp/bar
 cacert: /tmp/baz
+disable-healthcheck-api: true
+disable-result-api: true
 `,
 			want: Configuration{
-				Host:   "127.0.0.1",
-				Port:   2000,
-				Key:    "/tmp/foo",
-				Cert:   "/tmp/bar",
-				Cacert: "/tmp/baz",
+				Host:                  "127.0.0.1",
+				Port:                  2000,
+				Key:                   "/tmp/foo",
+				Cert:                  "/tmp/bar",
+				Cacert:                "/tmp/baz",
+				DisableResultAPI:      true,
+				DisableHealthcheckAPI: true,
 			},
 		},
 	}

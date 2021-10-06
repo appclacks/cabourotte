@@ -11,11 +11,13 @@ import (
 
 // Configuration the HTTP server configuration
 type Configuration struct {
-	Host   string
-	Port   uint32
-	Key    string
-	Cert   string
-	Cacert string
+	Host                  string
+	Port                  uint32
+	DisableHealthcheckAPI bool `yaml:"disable-healthcheck-api,omitempty"`
+	DisableResultAPI      bool `yaml:"disable-result-api,omitempty"`
+	Key                   string
+	Cert                  string
+	Cacert                string
 }
 
 // UnmarshalYAML parses the configuration of the http component from YAML.
