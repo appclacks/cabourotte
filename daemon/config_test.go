@@ -100,6 +100,15 @@ tcp-checks:
     timeout: 5s
     labels:
       environment: prod
+command-checks:
+  - name: command1
+    description: bar
+    command: ls
+    arguments: [-l, /]
+    timeout: 3s
+    interval: 10s
+    labels:
+      type: command
 tls-checks:
   - name: tls
     description: bar
@@ -219,6 +228,19 @@ exporters:
 						Interval:    healthcheck.Duration(time.Second * 10),
 						Labels: map[string]string{
 							"environment": "prod",
+						},
+					},
+				},
+				CommandChecks: []healthcheck.CommandHealthcheckConfiguration{
+					healthcheck.CommandHealthcheckConfiguration{
+						Name:        "command1",
+						Description: "bar",
+						Command:     "ls",
+						Arguments:   []string{"-l", "/"},
+						Timeout:     healthcheck.Duration(time.Second * 3),
+						Interval:    healthcheck.Duration(time.Second * 10),
+						Labels: map[string]string{
+							"type": "command",
 						},
 					},
 				},

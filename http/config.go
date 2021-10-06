@@ -45,10 +45,11 @@ func (c *Configuration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 // BulkPayload the paylaod for bulk requests fo healthchecks
 type BulkPayload struct {
-	DNSChecks  []healthcheck.DNSHealthcheckConfiguration  `json:"dns-checks"`
-	TCPChecks  []healthcheck.TCPHealthcheckConfiguration  `json:"tcp-checks"`
-	HTTPChecks []healthcheck.HTTPHealthcheckConfiguration `json:"http-checks"`
-	TLSChecks  []healthcheck.TLSHealthcheckConfiguration  `json:"tls-checks"`
+	DNSChecks     []healthcheck.DNSHealthcheckConfiguration     `json:"dns-checks"`
+	CommandChecks []healthcheck.CommandHealthcheckConfiguration `json:"command-checks"`
+	TCPChecks     []healthcheck.TCPHealthcheckConfiguration     `json:"tcp-checks"`
+	HTTPChecks    []healthcheck.HTTPHealthcheckConfiguration    `json:"http-checks"`
+	TLSChecks     []healthcheck.TLSHealthcheckConfiguration     `json:"tls-checks"`
 }
 
 // Validate validates the payload for bulk requests

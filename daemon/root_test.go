@@ -94,6 +94,19 @@ func TestReload(t *testing.T) {
 				Interval:    healthcheck.Duration(time.Second * 10),
 			},
 		},
+		CommandChecks: []healthcheck.CommandHealthcheckConfiguration{
+			healthcheck.CommandHealthcheckConfiguration{
+				Name:        "command1",
+				Description: "bar",
+				Command:     "ls",
+				Arguments:   []string{"-l", "/"},
+				Timeout:     healthcheck.Duration(time.Second * 3),
+				Interval:    healthcheck.Duration(time.Second * 10),
+				Labels: map[string]string{
+					"type": "command",
+				},
+			},
+		},
 		HTTPChecks: []healthcheck.HTTPHealthcheckConfiguration{
 			healthcheck.HTTPHealthcheckConfiguration{
 				Name:        "bar",
@@ -125,7 +138,7 @@ func TestReload(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to reload the component\n%v", err)
 	}
-	if len(component.Healthcheck.ListChecks()) != 3 {
+	if len(component.Healthcheck.ListChecks()) != 4 {
 		t.Fatalf("The healthcheck was not added correctly")
 	}
 	dnsCheck := healthcheck.NewDNSHealthcheck(zap.NewExample(),
@@ -137,8 +150,15 @@ func TestReload(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to add dns healthcheck")
 	}
-	if len(component.Healthcheck.ListChecks()) != 4 {
+	if len(component.Healthcheck.ListChecks()) != 5 {
 		t.Fatalf("The DNS healthcheck was not added correctly")
+	}
+	err = component.Healthcheck.AddCheck(dnsCheck)
+	if err != nil {
+		t.Fatalf("Fail to add dns healthcheck")
+	}
+	if len(component.Healthcheck.ListChecks()) != 5 {
+		t.Fatalf("The DNS healthcheck was not overrided")
 	}
 	err = component.Reload(&Configuration{
 		HTTP: http.Configuration{

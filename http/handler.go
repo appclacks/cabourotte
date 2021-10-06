@@ -64,7 +64,6 @@ func (c *Component) handleCheck(ec echo.Context, healthcheck healthcheck.Healthc
 }
 
 // handlers configures the handlers for the http server component
-// todo: handler one-off tasks
 func (c *Component) handlers() {
 	c.Server.Use(c.countResponse)
 	echo.NotFoundHandler = func(ec echo.Context) error {
@@ -138,6 +137,23 @@ func (c *Component) handlers() {
 		return c.handleCheck(ec, healthcheck)
 	})
 
+	c.Server.POST("/healthcheck/command", func(ec echo.Context) error {
+		var config healthcheck.CommandHealthcheckConfiguration
+		if err := ec.Bind(&config); err != nil {
+			msg := fmt.Sprintf("Fail to create the Command healthcheck. Invalid JSON: %s", err.Error())
+			c.Logger.Error(msg)
+			return ec.JSON(http.StatusBadRequest, &BasicResponse{Message: msg})
+		}
+		err := config.Validate()
+		if err != nil {
+			msg := fmt.Sprintf("Invalid healthcheck configuration: %s", err.Error())
+			c.Logger.Error(msg)
+			return ec.JSON(http.StatusBadRequest, &BasicResponse{Message: msg})
+		}
+		healthcheck := healthcheck.NewCommandHealthcheck(c.Logger, &config)
+		return c.handleCheck(ec, healthcheck)
+	})
+
 	c.Server.POST("/healthcheck/bulk", func(ec echo.Context) error {
 		var payload BulkPayload
 		if err := ec.Bind(&payload); err != nil {
@@ -174,6 +190,13 @@ func (c *Component) handlers() {
 		}
 		for _, config := range payload.TLSChecks {
 			healthcheck := healthcheck.NewTLSHealthcheck(c.Logger, &config)
+			err := c.addCheck(ec, healthcheck)
+			if err != nil {
+				return c.addCheckError(ec, healthcheck, err)
+			}
+		}
+		for _, config := range payload.CommandChecks {
+			healthcheck := healthcheck.NewCommandHealthcheck(c.Logger, &config)
 			err := c.addCheck(ec, healthcheck)
 			if err != nil {
 				return c.addCheckError(ec, healthcheck, err)
