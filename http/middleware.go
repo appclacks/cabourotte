@@ -16,11 +16,10 @@ func (c *Component) countResponse(next echo.HandlerFunc) echo.HandlerFunc {
 		duration := time.Since(start)
 		method := context.Request().Method
 		path := context.Path()
-		status := fmt.Sprintf("%d", context.Response().Status)
 		if err != nil {
-			c.Logger.Error(status)
 			context.Error(err)
 		}
+		status := fmt.Sprintf("%d", context.Response().Status)
 		if status == "404" {
 			path = "?"
 		}

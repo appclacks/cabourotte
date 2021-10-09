@@ -2,6 +2,7 @@ package http
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -273,5 +274,61 @@ func TestBulkEndpoint(t *testing.T) {
 	err = component.Stop()
 	if err != nil {
 		t.Fatalf("Fail to stop the component\n%v", err)
+	}
+}
+
+func basicAuth(username, password string) string {
+	auth := username + ":" + password
+	return base64.StdEncoding.EncodeToString([]byte(auth))
+}
+
+func TestBasicAuth(t *testing.T) {
+	prom, err := prometheus.New()
+	if err != nil {
+		t.Fatalf("Error creating prometheus component :\n%v", err)
+	}
+	logger := zap.NewExample()
+	memstore := memorystore.NewMemoryStore(logger)
+	healthcheck, err := healthcheck.New(zap.NewExample(), make(chan *healthcheck.Result, 10), prom)
+	if err != nil {
+		t.Fatalf("Fail to create the healthcheck component\n%v", err)
+	}
+	component, err := New(logger,
+		memstore,
+		prom,
+		&Configuration{
+			Host: "127.0.0.1",
+			Port: 2001,
+			BasicAuth: BasicAuth{
+				Username: "foobar",
+				Password: "mypassword",
+			}},
+		healthcheck)
+	if err != nil {
+		t.Fatalf("Fail to create the component\n%v", err)
+	}
+	err = component.Start()
+	if err != nil {
+		t.Fatalf("Fail to start the component\n%v", err)
+	}
+	resp, err := http.Get("http://127.0.0.1:2001/result")
+	if err != nil {
+		t.Fatalf("HTTP request failed\n%v", err)
+	}
+	if resp.StatusCode != 401 {
+		t.Fatalf("Expected 401, got status %d", resp.StatusCode)
+	}
+	req, err := http.NewRequest("GET", "http://127.0.0.1:2001/result", nil)
+	if err != nil {
+		t.Fatalf("Fail to build the request\n%v", err)
+	}
+	req.Header.Add("Authorization", "Basic "+basicAuth("foobar", "mypassword"))
+	client := &http.Client{}
+	resp, err = client.Do(req)
+	if err != nil {
+		t.Fatalf("HTTP request failed\n%v", err)
+	}
+	if resp.StatusCode != 200 {
+		t.Fatalf("Expected 200, got status %d", resp.StatusCode)
 	}
 }

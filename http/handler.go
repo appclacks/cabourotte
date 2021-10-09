@@ -2,11 +2,13 @@ package http
 
 import (
 	"bytes"
+	"crypto/subtle"
 	"fmt"
 	"net/http"
 	"text/template"
 
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 
 	"cabourotte/healthcheck"
 )
@@ -66,6 +68,18 @@ func (c *Component) handleCheck(ec echo.Context, healthcheck healthcheck.Healthc
 // handlers configures the handlers for the http server component
 func (c *Component) handlers() {
 	c.Server.Use(c.countResponse)
+	if c.Config.BasicAuth.Username != "" {
+		c.Server.Use(middleware.BasicAuth(func(username, password string, ctx echo.Context) (bool, error) {
+			if subtle.ConstantTimeCompare([]byte(username),
+				[]byte(c.Config.BasicAuth.Username)) == 1 &&
+				subtle.ConstantTimeCompare([]byte(password),
+					[]byte(c.Config.BasicAuth.Password)) == 1 {
+				return true, nil
+			}
+			c.Logger.Error("Invalid Basic Auth credentials")
+			return false, nil
+		}))
+	}
 	echo.NotFoundHandler = func(ec echo.Context) error {
 		return ec.JSON(http.StatusNotFound, &BasicResponse{Message: "not found"})
 	}

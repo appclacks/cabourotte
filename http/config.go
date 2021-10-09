@@ -9,6 +9,12 @@ import (
 	"cabourotte/healthcheck"
 )
 
+// BasicAuth basic auth for the configuration
+type BasicAuth struct {
+	Username string
+	Password string
+}
+
 // Configuration the HTTP server configuration
 type Configuration struct {
 	Host                  string
@@ -17,6 +23,8 @@ type Configuration struct {
 	DisableResultAPI      bool `yaml:"disable-result-api,omitempty"`
 	Key                   string
 	Cert                  string
+	BasicAuth             BasicAuth `yaml:"basic-auth"`
+	AllowedCN             []string  `yaml:"allowed-cn"`
 	Cacert                string
 }
 
@@ -40,6 +48,10 @@ func (c *Configuration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	if !((raw.Key != "" && raw.Cert != "" && raw.Cacert != "") ||
 		(raw.Key == "" && raw.Cert == "" && raw.Cacert == "")) {
 		return errors.New("Invalid certificates")
+	}
+	if (raw.BasicAuth.Username == "" && raw.BasicAuth.Password != "") ||
+		(raw.BasicAuth.Username != "" && raw.BasicAuth.Password == "") {
+		return errors.New("Invalid Basic Auth configuration")
 	}
 	*c = Configuration(raw)
 	return nil

@@ -1,6 +1,7 @@
 package http
 
 import (
+	"reflect"
 	"testing"
 
 	"gopkg.in/yaml.v2"
@@ -30,6 +31,12 @@ cert: /tmp/bar
 cacert: /tmp/baz
 disable-healthcheck-api: true
 disable-result-api: true
+basic-auth:
+  username: "foo"
+  password: "bar"
+allowed-cn:
+  - "mcorbin"
+  - "aaa"
 `,
 			want: Configuration{
 				Host:                  "127.0.0.1",
@@ -39,6 +46,11 @@ disable-result-api: true
 				Cacert:                "/tmp/baz",
 				DisableResultAPI:      true,
 				DisableHealthcheckAPI: true,
+				AllowedCN:             []string{"mcorbin", "aaa"},
+				BasicAuth: BasicAuth{
+					Username: "foo",
+					Password: "bar",
+				},
 			},
 		},
 	}
@@ -47,7 +59,7 @@ disable-result-api: true
 		if err := yaml.Unmarshal([]byte(c.in), &result); err != nil {
 			t.Fatalf("Unmarshal yaml error:\n%v", err)
 		}
-		if result != c.want {
+		if !reflect.DeepEqual(result, c.want) {
 			t.Fatalf("Invalid configuration: \n%s\n%v", c.in, c.want)
 		}
 	}
@@ -91,6 +103,23 @@ port: 2000
 cert: "/tmp/foo"
 `,
 		},
+		{
+			in: `
+
+host: "127.0.0.1"
+port: 2000
+basic-auth:
+  password: "foo"
+`},
+
+		{
+			in: `
+
+host: "127.0.0.1"
+port: 2000
+basic-auth:
+  username: "foo"
+`},
 	}
 	for _, c := range cases {
 		var result Configuration
