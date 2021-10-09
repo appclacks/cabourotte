@@ -27,6 +27,7 @@ type HTTPHealthcheckConfiguration struct {
 	Description string `json:"description"`
 	// can be an IP or a domain
 	Target     string            `json:"target"`
+	Method     string            `json:"method"`
 	Port       uint              `json:"port"`
 	Redirect   bool              `json:"redirect"`
 	Body       string            `json:"body,omitempty"`
@@ -66,6 +67,13 @@ func (config *HTTPHealthcheckConfiguration) Validate() error {
 	}
 	if config.Timeout == 0 {
 		return errors.New("The healthcheck timeout is missing")
+	}
+	if config.Method != "" {
+		if config.Method != "GET" && config.Method != "POST" && config.Method != "PUT" && config.Method != "HEAD" {
+			return errors.New(fmt.Sprintf("The healthcheck method is invalid: %s", config.Method))
+		}
+	} else {
+		config.Method = "GET"
 	}
 	if !config.OneOff {
 		if config.Interval < Duration(2*time.Second) {
@@ -226,7 +234,7 @@ func (h *HTTPHealthcheck) Execute() error {
 	h.LogDebug("start executing healthcheck")
 	ctx := h.t.Context(context.TODO())
 	body := bytes.NewBuffer([]byte(h.Config.Body))
-	req, err := http.NewRequest("GET", h.URL, body)
+	req, err := http.NewRequest(h.Config.Method, h.URL, body)
 	if err != nil {
 		return errors.Wrapf(err, "fail to initialize HTTP request")
 	}

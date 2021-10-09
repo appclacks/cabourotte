@@ -60,22 +60,26 @@ func TestIssuccessfulFailure(t *testing.T) {
 	}
 }
 
-func TestHTTPExecuteSuccess(t *testing.T) {
+func TestHTTPExecuteGetSuccess(t *testing.T) {
 	count := 0
 	headersOK := false
 	bodyOK := false
 	expectedBody := "my custom body"
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Foo") == "Bar" && r.Header.Get("User-agent") == "Cabourotte" {
-			headersOK = true
+		if r.Method != "GET" {
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			if r.Header.Get("Foo") == "Bar" && r.Header.Get("User-agent") == "Cabourotte" {
+				headersOK = true
+			}
+			bodyBytes, _ := ioutil.ReadAll(r.Body)
+			body := string(bodyBytes)
+			if body == expectedBody {
+				bodyOK = true
+			}
+			count++
+			w.WriteHeader(http.StatusOK)
 		}
-		bodyBytes, _ := ioutil.ReadAll(r.Body)
-		body := string(bodyBytes)
-		if body == expectedBody {
-			bodyOK = true
-		}
-		count++
-		w.WriteHeader(http.StatusOK)
 	}))
 	defer ts.Close()
 
@@ -410,5 +414,65 @@ func TestHTTPExecuteSourceIP(t *testing.T) {
 	}
 	if !sourceIPOK {
 		t.Fatalf("Invalid source IP")
+	}
+}
+
+func TestHTTPExecutePostSuccess(t *testing.T) {
+	count := 0
+	headersOK := false
+	bodyOK := false
+	expectedBody := "my custom body"
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			if r.Header.Get("Foo") == "Bar" && r.Header.Get("User-agent") == "Cabourotte" {
+				headersOK = true
+			}
+			bodyBytes, _ := ioutil.ReadAll(r.Body)
+			body := string(bodyBytes)
+			if body == expectedBody {
+				bodyOK = true
+			}
+			count++
+			w.WriteHeader(http.StatusOK)
+		}
+	}))
+	defer ts.Close()
+
+	port, err := strconv.ParseUint(strings.Split(ts.URL, ":")[2], 10, 16)
+	if err != nil {
+		t.Fatalf("error getting HTTP server port :\n%v", err)
+	}
+	h := HTTPHealthcheck{
+		Logger: zap.NewExample(),
+		Config: &HTTPHealthcheckConfiguration{
+			ValidStatus: []uint{200},
+			Headers:     map[string]string{"Foo": "Bar"},
+			Port:        uint(port),
+			Target:      "127.0.0.1",
+			Method:      "POST",
+			Protocol:    HTTP,
+			Body:        expectedBody,
+			Path:        "/",
+			Timeout:     Duration(time.Second * 2),
+		},
+	}
+	err = h.Initialize()
+	if err != nil {
+		t.Fatalf("Initialization error :\n%v", err)
+	}
+	err = h.Execute()
+	if err != nil {
+		t.Fatalf("healthcheck error :\n%v", err)
+	}
+	if count != 1 {
+		t.Fatal("The request counter is invalid")
+	}
+	if !headersOK {
+		t.Fatal("Invalid headers")
+	}
+	if !bodyOK {
+		t.Fatal("Invalid body")
 	}
 }
