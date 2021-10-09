@@ -10,8 +10,6 @@ github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 ## explicit
 github.com/dgrijalva/jwt-go
-# github.com/go-kit/kit v0.10.0
-## explicit; go 1.13
 # github.com/golang/protobuf v1.5.2
 ## explicit; go 1.9
 github.com/golang/protobuf/proto
@@ -94,11 +92,11 @@ go.uber.org/zap/zapcore
 ## explicit; go 1.17
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
-# golang.org/x/net v0.0.0-20211005001312-d4b1ae081e3b
+# golang.org/x/net v0.0.0-20211008194852-3b03d305991f
 ## explicit; go 1.17
 golang.org/x/net/context
 golang.org/x/net/idna
-# golang.org/x/sys v0.0.0-20211004093028-2c5d950f24ef
+# golang.org/x/sys v0.0.0-20211007075335-d3039528d8ac
 ## explicit; go 1.17
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
