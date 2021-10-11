@@ -45,13 +45,15 @@ func TestAddRemoveCheck(t *testing.T) {
 	healthcheck := NewTCPHealthcheck(
 		logger,
 		&TCPHealthcheckConfiguration{
-			Name:        "foo",
-			Description: "bar",
-			Target:      "127.0.0.1",
-			Port:        9000,
-			Timeout:     Duration(time.Second * 3),
-			Interval:    Duration(time.Second * 5),
-			OneOff:      false,
+			BaseConfig: BaseConfig{
+				Name:        "foo",
+				Description: "bar",
+				Timeout:     Duration(time.Second * 3),
+				Interval:    Duration(time.Second * 5),
+				OneOff:      false,
+			},
+			Target: "127.0.0.1",
+			Port:   9000,
 		},
 	)
 	err = component.AddCheck(healthcheck)
@@ -71,13 +73,15 @@ func TestAddRemoveCheck(t *testing.T) {
 	newHealthcheck := NewTCPHealthcheck(
 		logger,
 		&TCPHealthcheckConfiguration{
-			Name:        "foo",
-			Description: "bar",
-			Target:      "127.0.0.1",
-			Port:        9000,
-			Timeout:     Duration(time.Second * 3),
-			Interval:    Duration(time.Second * 5),
-			OneOff:      false,
+			BaseConfig: BaseConfig{
+				Name:        "foo",
+				Description: "bar",
+				Timeout:     Duration(time.Second * 3),
+				Interval:    Duration(time.Second * 5),
+				OneOff:      false,
+			},
+			Target: "127.0.0.1",
+			Port:   9000,
 		},
 	)
 	// add replaces the existing healthcheck
@@ -127,13 +131,15 @@ func TestGetCheck(t *testing.T) {
 	healthcheck := NewTCPHealthcheck(
 		logger,
 		&TCPHealthcheckConfiguration{
-			Name:        "foo",
-			Description: "bar",
-			Target:      "127.0.0.1",
-			Port:        9000,
-			Timeout:     Duration(time.Second * 3),
-			Interval:    Duration(time.Second * 5),
-			OneOff:      false,
+			BaseConfig: BaseConfig{
+				Name:        "foo",
+				Description: "bar",
+				Timeout:     Duration(time.Second * 3),
+				Interval:    Duration(time.Second * 5),
+				OneOff:      false,
+			},
+			Target: "127.0.0.1",
+			Port:   9000,
 		},
 	)
 	err = component.AddCheck(healthcheck)

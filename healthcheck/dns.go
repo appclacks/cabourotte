@@ -1,52 +1,34 @@
 package healthcheck
 
 import (
-	"encoding/json"
 	"fmt"
-	"time"
+
+	"net"
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
-	"net"
 )
 
 // DNSHealthcheckConfiguration defines a DNS healthcheck configuration
 type DNSHealthcheckConfiguration struct {
-	Name        string            `json:"name"`
-	Description string            `json:"description"`
-	ExpectedIPs []IP              `json:"expected-ips,omitempty" yaml:"expected-ips,omitempty"`
-	Domain      string            `json:"domain"`
-	Interval    Duration          `json:"interval"`
-	OneOff      bool              `json:"one-off"`
-	Labels      map[string]string `json:"labels,omitempty"`
+	BaseConfig  `json:",inline"`
+	ExpectedIPs []IP   `json:"expected-ips,omitempty" yaml:"expected-ips,omitempty"`
+	Domain      string `json:"domain"`
+	// No Timeout
 }
 
 // DNSHealthcheck defines an HTTP healthcheck
 type DNSHealthcheck struct {
-	Logger *zap.Logger
-	Config *DNSHealthcheckConfiguration
-	URL    string
-
-	Tick *time.Ticker
-}
-
-// GetLabels returns the labels
-func (h *DNSHealthcheck) GetLabels() map[string]string {
-	return h.Config.Labels
+	Base
 }
 
 // Validate validates the healthcheck configuration
 func (config *DNSHealthcheckConfiguration) Validate() error {
-	if config.Name == "" {
-		return errors.New("The healthcheck name is missing")
+	if err := config.BaseConfig.Validate(); err != nil {
+		return err
 	}
 	if config.Domain == "" {
 		return errors.New("The healthcheck domain is missing")
-	}
-	if !config.OneOff {
-		if config.Interval < Duration(2*time.Second) {
-			return errors.New("The healthcheck interval should be greater than 2 second")
-		}
 	}
 	return nil
 }
@@ -56,59 +38,39 @@ func (h *DNSHealthcheck) Initialize() error {
 	return nil
 }
 
-// Interval Get the interval.
-func (h *DNSHealthcheck) Interval() Duration {
-	return h.Config.Interval
-}
-
-// GetConfig get the config
-func (h *DNSHealthcheck) GetConfig() interface{} {
-	return h.Config
-}
-
-// Name returns the healthcheck identifier.
-func (h *DNSHealthcheck) Name() string {
-	return h.Config.Name
-}
-
 // Summary returns an healthcheck summary
 func (h *DNSHealthcheck) Summary() string {
 	summary := ""
-	if h.Config.Description != "" {
-		summary = fmt.Sprintf("%s on %s", h.Config.Description, h.Config.Domain)
+	if h.Config.GetDescription() != "" {
+		summary = fmt.Sprintf("%s on %s", h.Config.GetDescription(), h.Config.(*DNSHealthcheckConfiguration).Domain)
 
 	} else {
-		summary = fmt.Sprintf("on %s", h.Config.Domain)
+		summary = fmt.Sprintf("on %s", h.Config.(*DNSHealthcheckConfiguration).Domain)
 	}
 
 	return summary
-}
-
-// OneOff returns true if the healthcheck if a one-off check
-func (h *DNSHealthcheck) OneOff() bool {
-	return h.Config.OneOff
 }
 
 // LogError logs an error with context
 func (h *DNSHealthcheck) LogError(err error, message string) {
 	h.Logger.Error(err.Error(),
 		zap.String("extra", message),
-		zap.String("domain", h.Config.Domain),
-		zap.String("name", h.Config.Name))
+		zap.String("domain", h.Config.(*DNSHealthcheckConfiguration).Domain),
+		zap.String("name", h.Config.GetName()))
 }
 
 // LogDebug logs a message with context
 func (h *DNSHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
-		zap.String("domain", h.Config.Domain),
-		zap.String("name", h.Config.Name))
+		zap.String("domain", h.Config.(*DNSHealthcheckConfiguration).Domain),
+		zap.String("name", h.Config.GetName()))
 }
 
 // LogInfo logs a message with context
 func (h *DNSHealthcheck) LogInfo(message string) {
 	h.Logger.Info(message,
-		zap.String("domain", h.Config.Domain),
-		zap.String("name", h.Config.Name))
+		zap.String("domain", h.Config.(*DNSHealthcheckConfiguration).Domain),
+		zap.String("name", h.Config.GetName()))
 }
 
 func verifyIPs(expectedIPs []IP, lookupIPs []net.IP) error {
@@ -140,11 +102,11 @@ func verifyIPs(expectedIPs []IP, lookupIPs []net.IP) error {
 // Execute executes an healthcheck on the given domain
 func (h *DNSHealthcheck) Execute() error {
 	h.LogDebug("start executing healthcheck")
-	ips, err := net.LookupIP(h.Config.Domain)
+	ips, err := net.LookupIP(h.Config.(*DNSHealthcheckConfiguration).Domain)
 	if err != nil {
 		return errors.Wrapf(err, "Fail to lookup IP for domain")
 	}
-	err = verifyIPs(h.Config.ExpectedIPs, ips)
+	err = verifyIPs(h.Config.(*DNSHealthcheckConfiguration).ExpectedIPs, ips)
 	if err != nil {
 		return err
 	}
@@ -154,12 +116,9 @@ func (h *DNSHealthcheck) Execute() error {
 // NewDNSHealthcheck creates a DNS healthcheck from a logger and a configuration
 func NewDNSHealthcheck(logger *zap.Logger, config *DNSHealthcheckConfiguration) *DNSHealthcheck {
 	return &DNSHealthcheck{
-		Logger: logger,
-		Config: config,
+		Base: Base{
+			Logger: logger,
+			Config: config,
+		},
 	}
-}
-
-// MarshalJSON marshal to json a dns healthcheck
-func (h *DNSHealthcheck) MarshalJSON() ([]byte, error) {
-	return json.Marshal(h.Config)
 }

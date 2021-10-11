@@ -9,10 +9,14 @@ import (
 
 func TestCommandExecuteSuccess(t *testing.T) {
 	h := CommandHealthcheck{
-		Logger: zap.NewExample(),
-		Config: &CommandHealthcheckConfiguration{
-			Command: "ls",
-			Timeout: Duration(time.Second * 2),
+		Base{
+			Logger: zap.NewExample(),
+			Config: &CommandHealthcheckConfiguration{
+				BaseConfig: BaseConfig{
+					Timeout: Duration(time.Second * 2),
+				},
+				Command: "ls",
+			},
 		},
 	}
 	err := h.Execute()
@@ -23,11 +27,15 @@ func TestCommandExecuteSuccess(t *testing.T) {
 
 func TestCommandExecuteFailure(t *testing.T) {
 	h := CommandHealthcheck{
-		Logger: zap.NewExample(),
-		Config: &CommandHealthcheckConfiguration{
-			Command:   "ls",
-			Arguments: []string{"/doesnotexist"},
-			Timeout:   Duration(time.Second * 2),
+		Base{
+			Logger: zap.NewExample(),
+			Config: &CommandHealthcheckConfiguration{
+				Command:   "ls",
+				Arguments: []string{"/doesnotexist"},
+				BaseConfig: BaseConfig{
+					Timeout: Duration(time.Second * 2),
+				},
+			},
 		},
 	}
 	err := h.Execute()

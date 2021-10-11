@@ -34,14 +34,16 @@ func TestReload(t *testing.T) {
 		},
 		HTTPChecks: []healthcheck.HTTPHealthcheckConfiguration{
 			healthcheck.HTTPHealthcheckConfiguration{
-				Name:        "foo",
-				Description: "bar",
+				BaseConfig: healthcheck.BaseConfig{
+					Name:        "foo",
+					Description: "bar",
+					Timeout:     healthcheck.Duration(time.Second * 5),
+					Interval:    healthcheck.Duration(time.Second * 10),
+				},
 				Path:        "/foo",
 				Target:      "mcorbin.fr",
 				Port:        443,
 				Protocol:    healthcheck.HTTPS,
-				Timeout:     healthcheck.Duration(time.Second * 5),
-				Interval:    healthcheck.Duration(time.Second * 10),
 				ValidStatus: []uint{200, 201},
 			},
 		},
@@ -61,14 +63,16 @@ func TestReload(t *testing.T) {
 		},
 		HTTPChecks: []healthcheck.HTTPHealthcheckConfiguration{
 			healthcheck.HTTPHealthcheckConfiguration{
-				Name:        "foo",
-				Description: "bar",
+				BaseConfig: healthcheck.BaseConfig{
+					Name:        "foo",
+					Description: "bar",
+					Timeout:     healthcheck.Duration(time.Second * 5),
+					Interval:    healthcheck.Duration(time.Second * 10),
+				},
 				Path:        "/foo",
 				Target:      "mcorbin.fr",
 				Port:        443,
 				Protocol:    healthcheck.HTTPS,
-				Timeout:     healthcheck.Duration(time.Second * 5),
-				Interval:    healthcheck.Duration(time.Second * 10),
 				ValidStatus: []uint{200, 201},
 			},
 		},
@@ -86,48 +90,56 @@ func TestReload(t *testing.T) {
 		},
 		TCPChecks: []healthcheck.TCPHealthcheckConfiguration{
 			healthcheck.TCPHealthcheckConfiguration{
-				Name:        "toto",
-				Description: "bar",
-				Target:      "mcorbin.fr",
-				Port:        443,
-				Timeout:     healthcheck.Duration(time.Second * 5),
-				Interval:    healthcheck.Duration(time.Second * 10),
+				BaseConfig: healthcheck.BaseConfig{
+					Name:        "toto",
+					Description: "bar",
+					Timeout:     healthcheck.Duration(time.Second * 5),
+					Interval:    healthcheck.Duration(time.Second * 10),
+				},
+				Target: "mcorbin.fr",
+				Port:   443,
 			},
 		},
 		CommandChecks: []healthcheck.CommandHealthcheckConfiguration{
 			healthcheck.CommandHealthcheckConfiguration{
-				Name:        "command1",
-				Description: "bar",
-				Command:     "ls",
-				Arguments:   []string{"-l", "/"},
-				Timeout:     healthcheck.Duration(time.Second * 3),
-				Interval:    healthcheck.Duration(time.Second * 10),
-				Labels: map[string]string{
-					"type": "command",
+				BaseConfig: healthcheck.BaseConfig{
+					Name:        "command1",
+					Description: "bar",
+					Timeout:     healthcheck.Duration(time.Second * 3),
+					Interval:    healthcheck.Duration(time.Second * 10),
+					Labels: map[string]string{
+						"type": "command",
+					},
 				},
+				Command:   "ls",
+				Arguments: []string{"-l", "/"},
 			},
 		},
 		HTTPChecks: []healthcheck.HTTPHealthcheckConfiguration{
 			healthcheck.HTTPHealthcheckConfiguration{
-				Name:        "bar",
-				Description: "bar",
+				BaseConfig: healthcheck.BaseConfig{
+					Name:        "bar",
+					Description: "bar",
+					Timeout:     healthcheck.Duration(time.Second * 5),
+					Interval:    healthcheck.Duration(time.Second * 10),
+				},
 				Path:        "/foo",
 				Target:      "mcorbin.fr",
 				Port:        80,
 				Protocol:    healthcheck.HTTPS,
-				Timeout:     healthcheck.Duration(time.Second * 5),
-				Interval:    healthcheck.Duration(time.Second * 10),
 				ValidStatus: []uint{200, 201},
 			},
 			healthcheck.HTTPHealthcheckConfiguration{
-				Name:        "bar3",
-				Description: "bar",
+				BaseConfig: healthcheck.BaseConfig{
+					Name:        "bar3",
+					Description: "bar",
+					Timeout:     healthcheck.Duration(time.Second * 5),
+					Interval:    healthcheck.Duration(time.Second * 10),
+				},
 				Path:        "/foo",
 				Target:      "mcorbin.fr",
 				Port:        80,
 				Protocol:    healthcheck.HTTPS,
-				Timeout:     healthcheck.Duration(time.Second * 5),
-				Interval:    healthcheck.Duration(time.Second * 10),
 				ValidStatus: []uint{200, 201},
 			},
 		},
@@ -143,8 +155,10 @@ func TestReload(t *testing.T) {
 	}
 	dnsCheck := healthcheck.NewDNSHealthcheck(zap.NewExample(),
 		&healthcheck.DNSHealthcheckConfiguration{
-			Name:     "new-dns-check",
-			Interval: healthcheck.Duration(time.Second * 10),
+			BaseConfig: healthcheck.BaseConfig{
+				Name:     "new-dns-check",
+				Interval: healthcheck.Duration(time.Second * 10),
+			},
 		})
 	err = component.Healthcheck.AddCheck(dnsCheck)
 	if err != nil {

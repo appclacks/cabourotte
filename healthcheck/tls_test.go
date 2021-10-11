@@ -13,9 +13,11 @@ import (
 
 func TestTLSBuildURL(t *testing.T) {
 	h := TLSHealthcheck{
-		Config: &TLSHealthcheckConfiguration{
-			Port:   2000,
-			Target: "127.0.0.1",
+		Base: Base{
+			Config: &TLSHealthcheckConfiguration{
+				Port:   2000,
+				Target: "127.0.0.1",
+			},
 		},
 	}
 	h.buildURL()
@@ -36,11 +38,15 @@ func TestTLSExecuteError(t *testing.T) {
 		t.Fatalf("error getting HTTP server port :\n%v", err)
 	}
 	h := TLSHealthcheck{
-		Logger: zap.NewExample(),
-		Config: &TLSHealthcheckConfiguration{
-			Port:    uint(port),
-			Target:  "127.0.0.1",
-			Timeout: Duration(time.Second * 2),
+		Base: Base{
+			Logger: zap.NewExample(),
+			Config: &TLSHealthcheckConfiguration{
+				Port:   uint(port),
+				Target: "127.0.0.1",
+				BaseConfig: BaseConfig{
+					Timeout: Duration(time.Second * 2),
+				},
+			},
 		},
 	}
 	h.buildURL()
@@ -52,11 +58,15 @@ func TestTLSExecuteError(t *testing.T) {
 
 func TestTLSExecuteErrorNoTarget(t *testing.T) {
 	h := TLSHealthcheck{
-		Logger: zap.NewExample(),
-		Config: &TLSHealthcheckConfiguration{
-			Port:    80,
-			Target:  "doesnotexist.mcorbin.fr",
-			Timeout: Duration(time.Second * 2),
+		Base: Base{
+			Logger: zap.NewExample(),
+			Config: &TLSHealthcheckConfiguration{
+				Port:   80,
+				Target: "doesnotexist.mcorbin.fr",
+				BaseConfig: BaseConfig{
+					Timeout: Duration(time.Second * 2),
+				},
+			},
 		},
 	}
 	h.buildURL()

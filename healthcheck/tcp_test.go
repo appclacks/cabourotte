@@ -16,9 +16,11 @@ import (
 
 func TestTCPBuildURL(t *testing.T) {
 	h := TCPHealthcheck{
-		Config: &TCPHealthcheckConfiguration{
-			Port:   2000,
-			Target: "127.0.0.1",
+		Base: Base{
+			Config: &TCPHealthcheckConfiguration{
+				Port:   2000,
+				Target: "127.0.0.1",
+			},
 		},
 	}
 	h.buildURL()
@@ -39,11 +41,15 @@ func TestTCPExecuteSuccess(t *testing.T) {
 		t.Fatalf("error getting HTTP server port :\n%v", err)
 	}
 	h := TCPHealthcheck{
-		Logger: zap.NewExample(),
-		Config: &TCPHealthcheckConfiguration{
-			Port:    uint(port),
-			Target:  "127.0.0.1",
-			Timeout: Duration(time.Second * 2),
+		Base: Base{
+			Logger: zap.NewExample(),
+			Config: &TCPHealthcheckConfiguration{
+				Port:   uint(port),
+				Target: "127.0.0.1",
+				BaseConfig: BaseConfig{
+					Timeout: Duration(time.Second * 2),
+				},
+			},
 		},
 	}
 	h.buildURL()
@@ -64,12 +70,16 @@ func TestTCPExecuteSuccessSourceIP(t *testing.T) {
 		t.Fatalf("error getting HTTP server port :\n%v", err)
 	}
 	h := TCPHealthcheck{
-		Logger: zap.NewExample(),
-		Config: &TCPHealthcheckConfiguration{
-			Port:     uint(port),
-			SourceIP: IP(net.ParseIP("127.0.0.1")),
-			Target:   "127.0.0.1",
-			Timeout:  Duration(time.Second * 2),
+		Base: Base{
+			Logger: zap.NewExample(),
+			Config: &TCPHealthcheckConfiguration{
+				Port:     uint(port),
+				SourceIP: IP(net.ParseIP("127.0.0.1")),
+				Target:   "127.0.0.1",
+				BaseConfig: BaseConfig{
+					Timeout: Duration(time.Second * 2),
+				},
+			},
 		},
 	}
 	h.buildURL()
@@ -98,11 +108,15 @@ func TestTCPv6ExecuteSuccess(t *testing.T) {
 		t.Fatalf("error getting HTTP server port :\n%v", err)
 	}
 	h := TCPHealthcheck{
-		Logger: zap.NewExample(),
-		Config: &TCPHealthcheckConfiguration{
-			Port:    uint(port),
-			Target:  "::1",
-			Timeout: Duration(time.Second * 2),
+		Base: Base{
+			Logger: zap.NewExample(),
+			Config: &TCPHealthcheckConfiguration{
+				Port:   uint(port),
+				Target: "::1",
+				BaseConfig: BaseConfig{
+					Timeout: Duration(time.Second * 2),
+				},
+			},
 		},
 	}
 	h.buildURL()
@@ -117,16 +131,17 @@ func TestTCPStartStop(t *testing.T) {
 	healthcheck := NewTCPHealthcheck(
 		logger,
 		&TCPHealthcheckConfiguration{
-			Name:        "foo",
-			Description: "bar",
-			Target:      "127.0.0.1",
-			Port:        9000,
-			Timeout:     Duration(time.Second * 3),
-			Interval:    Duration(time.Second * 5),
-			OneOff:      false,
+			BaseConfig: BaseConfig{
+				Name:        "foo",
+				Description: "bar",
+				Timeout:     Duration(time.Second * 3),
+				Interval:    Duration(time.Second * 5),
+				OneOff:      false,
+			},
+			Target: "127.0.0.1",
+			Port:   9000,
 		},
 	)
-	wrapper := NewWrapper(healthcheck)
 	prom, err := prometheus.New()
 	if err != nil {
 		t.Fatalf("Error creating prometheus component :\n%v", err)
@@ -135,8 +150,8 @@ func TestTCPStartStop(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to create the component\n%v", err)
 	}
-	component.startWrapper(wrapper)
-	err = wrapper.Stop()
+	component.startWrapper(healthcheck)
+	err = healthcheck.Stop()
 	if err != nil {
 		t.Fatalf("Fail to stop the healthcheck\n%v", err)
 	}
@@ -144,12 +159,16 @@ func TestTCPStartStop(t *testing.T) {
 
 func TestTCPExecuteSuccessShoulddFail(t *testing.T) {
 	h := TCPHealthcheck{
-		Logger: zap.NewExample(),
-		Config: &TCPHealthcheckConfiguration{
-			ShouldFail: true,
-			Port:       80,
-			Target:     "doesnotexist.mcorbin.fr",
-			Timeout:    Duration(time.Second * 2),
+		Base: Base{
+			Logger: zap.NewExample(),
+			Config: &TCPHealthcheckConfiguration{
+				ShouldFail: true,
+				Port:       80,
+				Target:     "doesnotexist.mcorbin.fr",
+				BaseConfig: BaseConfig{
+					Timeout: Duration(time.Second * 2),
+				},
+			},
 		},
 	}
 	h.buildURL()

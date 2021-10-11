@@ -18,8 +18,10 @@ import (
 
 func TestIsSuccessfulOK(t *testing.T) {
 	h := HTTPHealthcheck{
-		Config: &HTTPHealthcheckConfiguration{
-			ValidStatus: []uint{200},
+		Base: Base{
+			Config: &HTTPHealthcheckConfiguration{
+				ValidStatus: []uint{200},
+			},
 		},
 	}
 	response := http.Response{StatusCode: 200}
@@ -28,8 +30,10 @@ func TestIsSuccessfulOK(t *testing.T) {
 	}
 
 	h = HTTPHealthcheck{
-		Config: &HTTPHealthcheckConfiguration{
-			ValidStatus: []uint{200, 201, 400},
+		Base: Base{
+			Config: &HTTPHealthcheckConfiguration{
+				ValidStatus: []uint{200, 201, 400},
+			},
 		},
 	}
 	response = http.Response{StatusCode: 400}
@@ -40,8 +44,10 @@ func TestIsSuccessfulOK(t *testing.T) {
 
 func TestIssuccessfulFailure(t *testing.T) {
 	h := HTTPHealthcheck{
-		Config: &HTTPHealthcheckConfiguration{
-			ValidStatus: []uint{200},
+		Base: Base{
+			Config: &HTTPHealthcheckConfiguration{
+				ValidStatus: []uint{200},
+			},
 		},
 	}
 	response := http.Response{StatusCode: 201}
@@ -50,8 +56,10 @@ func TestIssuccessfulFailure(t *testing.T) {
 	}
 
 	h = HTTPHealthcheck{
-		Config: &HTTPHealthcheckConfiguration{
-			ValidStatus: []uint{200, 201, 400},
+		Base: Base{
+			Config: &HTTPHealthcheckConfiguration{
+				ValidStatus: []uint{200, 201, 400},
+			},
 		},
 	}
 	response = http.Response{StatusCode: 500}
@@ -88,16 +96,20 @@ func TestHTTPExecuteGetSuccess(t *testing.T) {
 		t.Fatalf("error getting HTTP server port :\n%v", err)
 	}
 	h := HTTPHealthcheck{
-		Logger: zap.NewExample(),
-		Config: &HTTPHealthcheckConfiguration{
-			ValidStatus: []uint{200},
-			Headers:     map[string]string{"Foo": "Bar"},
-			Port:        uint(port),
-			Target:      "127.0.0.1",
-			Protocol:    HTTP,
-			Body:        expectedBody,
-			Path:        "/",
-			Timeout:     Duration(time.Second * 2),
+		Base: Base{
+			Logger: zap.NewExample(),
+			Config: &HTTPHealthcheckConfiguration{
+				ValidStatus: []uint{200},
+				Headers:     map[string]string{"Foo": "Bar"},
+				Port:        uint(port),
+				Target:      "127.0.0.1",
+				Protocol:    HTTP,
+				Body:        expectedBody,
+				Path:        "/",
+				BaseConfig: BaseConfig{
+					Timeout: Duration(time.Second * 2),
+				},
+			},
 		},
 	}
 	err = h.Initialize()
@@ -138,16 +150,19 @@ func TestHTTPExecuteRegexpSuccess(t *testing.T) {
 	r := regexp.MustCompile("cabourotte*")
 	regexp := Regexp(*r)
 	h := HTTPHealthcheck{
-		Logger: zap.NewExample(),
-		Config: &HTTPHealthcheckConfiguration{
-			ValidStatus: []uint{200},
-			Headers:     map[string]string{"Foo": "Bar"},
-			Port:        uint(port),
-			Target:      "127.0.0.1",
-			BodyRegexp:  []Regexp{regexp},
-			Protocol:    HTTP,
-			Path:        "/",
-			Timeout:     Duration(time.Second * 2),
+		Base: Base{
+			Logger: zap.NewExample(),
+			Config: &HTTPHealthcheckConfiguration{
+				ValidStatus: []uint{200},
+				Headers:     map[string]string{"Foo": "Bar"},
+				Port:        uint(port),
+				Target:      "127.0.0.1",
+				BodyRegexp:  []Regexp{regexp},
+				Protocol:    HTTP,
+				Path:        "/",
+				BaseConfig: BaseConfig{
+					Timeout: Duration(time.Second * 2)},
+			},
 		},
 	}
 	err = h.Initialize()
@@ -182,16 +197,20 @@ func TestHTTPExecuteRegexpFailure(t *testing.T) {
 	r := regexp.MustCompile("trololo*")
 	regexp := Regexp(*r)
 	h := HTTPHealthcheck{
-		Logger: zap.NewExample(),
-		Config: &HTTPHealthcheckConfiguration{
-			ValidStatus: []uint{200},
-			Headers:     map[string]string{"Foo": "Bar"},
-			Port:        uint(port),
-			Target:      "127.0.0.1",
-			BodyRegexp:  []Regexp{regexp},
-			Protocol:    HTTP,
-			Path:        "/",
-			Timeout:     Duration(time.Second * 2),
+		Base: Base{
+			Logger: zap.NewExample(),
+			Config: &HTTPHealthcheckConfiguration{
+				ValidStatus: []uint{200},
+				Headers:     map[string]string{"Foo": "Bar"},
+				Port:        uint(port),
+				Target:      "127.0.0.1",
+				BodyRegexp:  []Regexp{regexp},
+				Protocol:    HTTP,
+				Path:        "/",
+				BaseConfig: BaseConfig{
+					Timeout: Duration(time.Second * 2),
+				},
+			},
 		},
 	}
 	err = h.Initialize()
@@ -226,14 +245,18 @@ func TestHTTPv6ExecuteSuccess(t *testing.T) {
 		t.Fatalf("error getting HTTP server port :\n%v", err)
 	}
 	h := HTTPHealthcheck{
-		Logger: zap.NewExample(),
-		Config: &HTTPHealthcheckConfiguration{
-			ValidStatus: []uint{200},
-			Port:        uint(port),
-			Target:      "::1",
-			Protocol:    HTTP,
-			Path:        "/",
-			Timeout:     Duration(time.Second * 2),
+		Base: Base{
+			Logger: zap.NewExample(),
+			Config: &HTTPHealthcheckConfiguration{
+				ValidStatus: []uint{200},
+				Port:        uint(port),
+				Target:      "::1",
+				Protocol:    HTTP,
+				Path:        "/",
+				BaseConfig: BaseConfig{
+					Timeout: Duration(time.Second * 2),
+				},
+			},
 		},
 	}
 	err = h.Initialize()
@@ -262,15 +285,18 @@ func TestHTTPExecuteFailure(t *testing.T) {
 		t.Fatalf("error getting HTTP server port :\n%v", err)
 	}
 	h := HTTPHealthcheck{
-		Logger: zap.NewExample(),
-		Config: &HTTPHealthcheckConfiguration{
-			Name:        "foo",
-			ValidStatus: []uint{200},
-			Port:        uint(port),
-			Target:      "127.0.0.1",
-			Protocol:    HTTP,
-			Path:        "/",
-			Timeout:     Duration(time.Second * 2),
+		Base: Base{
+			Logger: zap.NewExample(),
+			Config: &HTTPHealthcheckConfiguration{
+				ValidStatus: []uint{200},
+				Port:        uint(port),
+				Target:      "127.0.0.1",
+				Protocol:    HTTP,
+				Path:        "/",
+				BaseConfig: BaseConfig{
+					Name:    "foo",
+					Timeout: Duration(time.Second * 2)},
+			},
 		},
 	}
 	err = h.Initialize()
@@ -288,13 +314,17 @@ func TestHTTPExecuteFailure(t *testing.T) {
 
 func TestHTTPBuildURL(t *testing.T) {
 	h := HTTPHealthcheck{
-		Config: &HTTPHealthcheckConfiguration{
-			ValidStatus: []uint{200},
-			Port:        2000,
-			Target:      "127.0.0.1",
-			Protocol:    HTTP,
-			Path:        "/",
-			Timeout:     Duration(time.Second * 2),
+		Base: Base{
+			Config: &HTTPHealthcheckConfiguration{
+				ValidStatus: []uint{200},
+				Port:        2000,
+				Target:      "127.0.0.1",
+				Protocol:    HTTP,
+				Path:        "/",
+				BaseConfig: BaseConfig{
+					Timeout: Duration(time.Second * 2),
+				},
+			},
 		},
 	}
 	h.buildURL()
@@ -306,13 +336,17 @@ func TestHTTPBuildURL(t *testing.T) {
 
 func TestHTTPSBuildURL(t *testing.T) {
 	h := HTTPHealthcheck{
-		Config: &HTTPHealthcheckConfiguration{
-			ValidStatus: []uint{200},
-			Port:        2000,
-			Target:      "127.0.0.1",
-			Protocol:    HTTPS,
-			Path:        "/foo",
-			Timeout:     Duration(time.Second * 2),
+		Base: Base{
+			Config: &HTTPHealthcheckConfiguration{
+				ValidStatus: []uint{200},
+				Port:        2000,
+				Target:      "127.0.0.1",
+				Protocol:    HTTPS,
+				Path:        "/foo",
+				BaseConfig: BaseConfig{
+					Timeout: Duration(time.Second * 2),
+				},
+			},
 		},
 	}
 	h.buildURL()
@@ -327,18 +361,19 @@ func TestHTTPStartStop(t *testing.T) {
 	healthcheck := NewHTTPHealthcheck(
 		logger,
 		&HTTPHealthcheckConfiguration{
-			Name:        "foo",
-			Description: "bar",
-			Target:      "127.0.0.1",
-			Path:        "/",
-			Protocol:    HTTP,
-			Port:        9000,
-			Timeout:     Duration(time.Second * 3),
-			Interval:    Duration(time.Second * 5),
-			OneOff:      false,
+			BaseConfig: BaseConfig{
+				Name:        "foo",
+				Description: "bar",
+				Timeout:     Duration(time.Second * 3),
+				Interval:    Duration(time.Second * 5),
+				OneOff:      false,
+			},
+			Target:   "127.0.0.1",
+			Path:     "/",
+			Protocol: HTTP,
+			Port:     9000,
 		},
 	)
-	wrapper := NewWrapper(healthcheck)
 	prom, err := prometheus.New()
 	if err != nil {
 		t.Fatalf("Error creating prometheus component :\n%v", err)
@@ -347,8 +382,8 @@ func TestHTTPStartStop(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to create the component\n%v", err)
 	}
-	component.startWrapper(wrapper)
-	err = wrapper.Stop()
+	component.startWrapper(healthcheck)
+	err = healthcheck.Stop()
 	if err != nil {
 		t.Fatalf("Fail to stop the healthcheck\n%v", err)
 	}
@@ -382,17 +417,21 @@ func TestHTTPExecuteSourceIP(t *testing.T) {
 		t.Fatalf("error getting HTTP server port :\n%v", err)
 	}
 	h := HTTPHealthcheck{
-		Logger: zap.NewExample(),
-		Config: &HTTPHealthcheckConfiguration{
-			SourceIP:    IP(net.ParseIP("127.0.0.1")),
-			ValidStatus: []uint{200},
-			Headers:     map[string]string{"Foo": "Bar"},
-			Port:        uint(port),
-			Target:      "127.0.0.1",
-			Protocol:    HTTP,
-			Body:        expectedBody,
-			Path:        "/",
-			Timeout:     Duration(time.Second * 2),
+		Base: Base{
+			Logger: zap.NewExample(),
+			Config: &HTTPHealthcheckConfiguration{
+				SourceIP:    IP(net.ParseIP("127.0.0.1")),
+				ValidStatus: []uint{200},
+				Headers:     map[string]string{"Foo": "Bar"},
+				Port:        uint(port),
+				Target:      "127.0.0.1",
+				Protocol:    HTTP,
+				Body:        expectedBody,
+				Path:        "/",
+				BaseConfig: BaseConfig{
+					Timeout: Duration(time.Second * 2),
+				},
+			},
 		},
 	}
 	err = h.Initialize()
@@ -445,17 +484,21 @@ func TestHTTPExecutePostSuccess(t *testing.T) {
 		t.Fatalf("error getting HTTP server port :\n%v", err)
 	}
 	h := HTTPHealthcheck{
-		Logger: zap.NewExample(),
-		Config: &HTTPHealthcheckConfiguration{
-			ValidStatus: []uint{200},
-			Headers:     map[string]string{"Foo": "Bar"},
-			Port:        uint(port),
-			Target:      "127.0.0.1",
-			Method:      "POST",
-			Protocol:    HTTP,
-			Body:        expectedBody,
-			Path:        "/",
-			Timeout:     Duration(time.Second * 2),
+		Base: Base{
+			Logger: zap.NewExample(),
+			Config: &HTTPHealthcheckConfiguration{
+				ValidStatus: []uint{200},
+				Headers:     map[string]string{"Foo": "Bar"},
+				Port:        uint(port),
+				Target:      "127.0.0.1",
+				Method:      "POST",
+				Protocol:    HTTP,
+				Body:        expectedBody,
+				Path:        "/",
+				BaseConfig: BaseConfig{
+					Timeout: Duration(time.Second * 2),
+				},
+			},
 		},
 	}
 	err = h.Initialize()

@@ -12,10 +12,12 @@ import (
 
 func TestDNSExecuteSuccess(t *testing.T) {
 	h := DNSHealthcheck{
-		Logger: zap.NewExample(),
-		Config: &DNSHealthcheckConfiguration{
-			// it will hopefully resolve ^^
-			Domain: "mcorbin.fr",
+		Base: Base{
+			Logger: zap.NewExample(),
+			Config: &DNSHealthcheckConfiguration{
+				// it will hopefully resolve ^^
+				Domain: "mcorbin.fr",
+			},
 		},
 	}
 
@@ -27,9 +29,11 @@ func TestDNSExecuteSuccess(t *testing.T) {
 
 func TestDNSExecuteFailure(t *testing.T) {
 	h := DNSHealthcheck{
-		Logger: zap.NewExample(),
-		Config: &DNSHealthcheckConfiguration{
-			Domain: "doesnotexist.mcorbin.fr",
+		Base: Base{
+			Logger: zap.NewExample(),
+			Config: &DNSHealthcheckConfiguration{
+				Domain: "doesnotexist.mcorbin.fr",
+			},
 		},
 	}
 
@@ -44,14 +48,16 @@ func TestDNSStartStop(t *testing.T) {
 	healthcheck := NewDNSHealthcheck(
 		logger,
 		&DNSHealthcheckConfiguration{
-			Name:        "foo",
-			Description: "bar",
-			Domain:      "mcorbin.fr",
-			Interval:    Duration(time.Second * 5),
-			OneOff:      false,
+			BaseConfig: BaseConfig{
+				Name:        "foo",
+				Description: "bar",
+				Interval:    Duration(time.Second * 5),
+				OneOff:      false,
+			},
+			Domain: "mcorbin.fr",
 		},
 	)
-	wrapper := NewWrapper(healthcheck)
+
 	prom, err := prometheus.New()
 	if err != nil {
 		t.Fatalf("Error creating prometheus component :\n%v", err)
@@ -60,8 +66,8 @@ func TestDNSStartStop(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to create the component\n%v", err)
 	}
-	component.startWrapper(wrapper)
-	err = wrapper.Stop()
+	component.startWrapper(healthcheck)
+	err = healthcheck.Stop()
 	if err != nil {
 		t.Fatalf("Fail to stop the healthcheck\n%v", err)
 	}
