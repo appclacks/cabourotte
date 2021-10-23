@@ -69,7 +69,7 @@ func (config *HTTPHealthcheckConfiguration) Validate() error {
 		return errors.New("The healthcheck timeout is missing")
 	}
 	if config.Method != "" {
-		if config.Method != "GET" && config.Method != "POST" && config.Method != "PUT" && config.Method != "HEAD" {
+		if config.Method != "GET" && config.Method != "POST" && config.Method != "PUT" && config.Method != "HEAD" && config.Method != "DELETE" {
 			return errors.New(fmt.Sprintf("The healthcheck method is invalid: %s", config.Method))
 		}
 	} else {
