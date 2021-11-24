@@ -77,6 +77,11 @@ func (h *TLSHealthcheck) Base() Base {
 	return h.Config.Base
 }
 
+// SetSource set the healthcheck source
+func (h *TLSHealthcheck) SetSource(source Source) {
+	h.Config.Base.Source = source
+}
+
 // Summary returns an healthcheck summary
 func (h *TLSHealthcheck) Summary() string {
 	summary := ""

@@ -57,6 +57,11 @@ func (h *DNSHealthcheck) Base() Base {
 	return h.Config.Base
 }
 
+// SetSource set the healthcheck source
+func (h *DNSHealthcheck) SetSource(source Source) {
+	h.Config.Base.Source = source
+}
+
 // Summary returns an healthcheck summary
 func (h *DNSHealthcheck) Summary() string {
 	summary := ""

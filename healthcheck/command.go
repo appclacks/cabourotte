@@ -66,6 +66,11 @@ func (h *CommandHealthcheck) Base() Base {
 	return h.Config.Base
 }
 
+// SetSource set the healthcheck source
+func (h *CommandHealthcheck) SetSource(source Source) {
+	h.Config.Base.Source = source
+}
+
 // Summary returns an healthcheck summary
 func (h *CommandHealthcheck) Summary() string {
 	summary := ""

@@ -20,6 +20,7 @@ type BasicResponse struct {
 
 // addCheck adds a periodic healthcheck to the healthcheck component.
 func (c *Component) addCheck(ec echo.Context, check healthcheck.Healthcheck) error {
+	check.SetSource(healthcheck.API)
 	err := c.healthcheck.AddCheck(check)
 	if err != nil {
 		return err

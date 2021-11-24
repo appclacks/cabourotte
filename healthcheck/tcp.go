@@ -96,7 +96,11 @@ func (h *TCPHealthcheck) GetConfig() interface{} {
 // Base get the base configuration
 func (h *TCPHealthcheck) Base() Base {
 	return h.Config.Base
+}
 
+// SetSource set the healthcheck source
+func (h *TCPHealthcheck) SetSource(source Source) {
+	h.Config.Base.Source = source
 }
 
 // LogError logs an error with context

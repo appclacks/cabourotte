@@ -173,6 +173,11 @@ func (h *HTTPHealthcheck) Base() Base {
 	return h.Config.Base
 }
 
+// SetSource set the healthcheck source
+func (h *HTTPHealthcheck) SetSource(source Source) {
+	h.Config.Base.Source = source
+}
+
 // isSuccessful verifies if a healthcheck result is considered valid
 // depending of the healthcheck configuration
 func (h *HTTPHealthcheck) isSuccessful(response *http.Response) bool {

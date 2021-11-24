@@ -27,6 +27,7 @@ type Healthcheck interface {
 	LogDebug(message string)
 	LogInfo(message string)
 	Base() Base
+	SetSource(source Source)
 	LogError(err error, message string)
 }
 
