@@ -22,14 +22,11 @@ type HealthcheckConfiguration interface {
 type Healthcheck interface {
 	Initialize() error
 	GetConfig() interface{}
-	GetLabels() map[string]string
-	Name() string
 	Summary() string
 	Execute() error
 	LogDebug(message string)
 	LogInfo(message string)
-	OneOff() bool
-	Interval() Duration
+	Base() Base
 	LogError(err error, message string)
 }
 
@@ -46,7 +43,7 @@ type Component struct {
 // Start an healthcheck wrapper
 func (c *Component) startWrapper(w *Wrapper) {
 	w.healthcheck.LogInfo("Starting healthcheck")
-	w.Tick = time.NewTicker(time.Duration(w.healthcheck.Interval()))
+	w.Tick = time.NewTicker(time.Duration(w.healthcheck.Base().Interval))
 	w.t.Go(func() error {
 		for {
 			select {
@@ -62,7 +59,7 @@ func (c *Component) startWrapper(w *Wrapper) {
 				if result.Success {
 					status = "success"
 				}
-				c.resultHistogram.With(prom.Labels{"name": w.healthcheck.Name(), "status": status}).Observe(duration.Seconds())
+				c.resultHistogram.With(prom.Labels{"name": w.healthcheck.Base().Name, "status": status}).Observe(duration.Seconds())
 				c.ChanResult <- result
 			case <-w.t.Dying():
 				return nil
@@ -130,7 +127,7 @@ func (c *Component) removeCheck(identifier string) error {
 		c.resultHistogram.Delete(prom.Labels{"name": identifier, "status": "success"})
 		err := existingWrapper.Stop()
 		if err != nil {
-			return errors.Wrapf(err, "Fail to stop healthcheck %s", existingWrapper.healthcheck.Name())
+			return errors.Wrapf(err, "Fail to stop healthcheck %s", existingWrapper.healthcheck.Base().Name)
 		}
 		delete(c.Healthchecks, identifier)
 	}
@@ -139,7 +136,7 @@ func (c *Component) removeCheck(identifier string) error {
 
 // AddCheck add an healthcheck to the component and starts it.
 func (c *Component) AddCheck(check Healthcheck) error {
-	if currentCheck, ok := c.Healthchecks[check.Name()]; ok {
+	if currentCheck, ok := c.Healthchecks[check.Base().Name]; ok {
 		if reflect.DeepEqual(currentCheck.healthcheck.GetConfig(), check.GetConfig()) {
 			currentCheck.healthcheck.LogInfo("trying to replace existing healthcheck with the same config: do nothing")
 			return nil
@@ -149,19 +146,19 @@ func (c *Component) AddCheck(check Healthcheck) error {
 	wrapper.healthcheck.LogInfo("Adding healthcheck")
 	err := wrapper.healthcheck.Initialize()
 	if err != nil {
-		return errors.Wrapf(err, "Fail to initialize healthcheck %s", wrapper.healthcheck.Name())
+		return errors.Wrapf(err, "Fail to initialize healthcheck %s", wrapper.healthcheck.Base().Name)
 	}
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
 	// verifies if the healthcheck already exists, and removes it if needed.
 	// Updating an healthcheck is removing the old one and adding the new one.
-	err = c.removeCheck(wrapper.healthcheck.Name())
+	err = c.removeCheck(wrapper.healthcheck.Base().Name)
 	if err != nil {
-		return errors.Wrapf(err, "Fail to stop existing healthcheck %s", wrapper.healthcheck.Name())
+		return errors.Wrapf(err, "Fail to stop existing healthcheck %s", wrapper.healthcheck.Base().Name)
 	}
 	c.startWrapper(wrapper)
-	c.Healthchecks[wrapper.healthcheck.Name()] = wrapper
+	c.Healthchecks[wrapper.healthcheck.Base().Name] = wrapper
 	return nil
 }
 

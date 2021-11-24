@@ -50,9 +50,9 @@ func (r Result) Equals(v Result) bool {
 func NewResult(healthcheck Healthcheck, duration float64, err error) *Result {
 	now := time.Now()
 	result := Result{
-		Name:                 healthcheck.Name(),
+		Name:                 healthcheck.Base().Name,
 		Summary:              healthcheck.Summary(),
-		Labels:               healthcheck.GetLabels(),
+		Labels:               healthcheck.Base().Labels,
 		HealthcheckTimestamp: now.Unix(),
 		Duration:             duration,
 	}

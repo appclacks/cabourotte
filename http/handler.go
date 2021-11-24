@@ -29,33 +29,33 @@ func (c *Component) addCheck(ec echo.Context, check healthcheck.Healthcheck) err
 
 // oneOff executes an one-off healthcheck and returns its result
 func (c *Component) oneOff(ec echo.Context, healthcheck healthcheck.Healthcheck) error {
-	c.Logger.Info(fmt.Sprintf("Executing one-off healthcheck %s", healthcheck.Name()))
+	c.Logger.Info(fmt.Sprintf("Executing one-off healthcheck %s", healthcheck.Base().Name))
 	err := healthcheck.Initialize()
 	if err != nil {
-		msg := fmt.Sprintf("Fail to initialize one off healthcheck %s: %s", healthcheck.Name(), err.Error())
+		msg := fmt.Sprintf("Fail to initialize one off healthcheck %s: %s", healthcheck.Base().Name, err.Error())
 		c.Logger.Error(msg)
 		return ec.JSON(http.StatusInternalServerError, &BasicResponse{Message: msg})
 	}
 	err = healthcheck.Execute()
 	if err != nil {
-		msg := fmt.Sprintf("Execution of one off healthcheck %s failed: %s", healthcheck.Name(), err.Error())
+		msg := fmt.Sprintf("Execution of one off healthcheck %s failed: %s", healthcheck.Base().Name, err.Error())
 		c.Logger.Error(msg)
 		return ec.JSON(http.StatusInternalServerError, &BasicResponse{Message: msg})
 	}
-	msg := fmt.Sprintf("One-off healthcheck %s successfully executed", healthcheck.Name())
+	msg := fmt.Sprintf("One-off healthcheck %s successfully executed", healthcheck.Base().Name)
 	c.Logger.Info(msg)
 	return ec.JSON(http.StatusCreated, &BasicResponse{Message: msg})
 }
 
 func (c *Component) addCheckError(ec echo.Context, healthcheck healthcheck.Healthcheck, err error) error {
-	msg := fmt.Sprintf("Fail to start the healthcheck %s: %s", healthcheck.Name(), err.Error())
+	msg := fmt.Sprintf("Fail to start the healthcheck %s: %s", healthcheck.Base().Name, err.Error())
 	c.Logger.Error(msg)
 	return ec.JSON(http.StatusInternalServerError, &BasicResponse{Message: msg})
 }
 
 // handleCheck handles new healthchecks requests
 func (c *Component) handleCheck(ec echo.Context, healthcheck healthcheck.Healthcheck) error {
-	if healthcheck.OneOff() {
+	if healthcheck.Base().OneOff {
 		return c.oneOff(ec, healthcheck)
 	}
 	err := c.addCheck(ec, healthcheck)

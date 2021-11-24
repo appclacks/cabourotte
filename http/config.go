@@ -71,7 +71,7 @@ func (p *BulkPayload) Validate() error {
 	oneOffErrorMsg := "One-off healthchecks are not supported for bulk requests"
 	for _, config := range p.DNSChecks {
 		err := config.Validate()
-		if config.OneOff {
+		if config.Base.OneOff {
 			return errors.New(oneOffErrorMsg)
 		}
 		if err != nil {
@@ -81,7 +81,7 @@ func (p *BulkPayload) Validate() error {
 	}
 	for _, config := range p.TCPChecks {
 		err := config.Validate()
-		if config.OneOff {
+		if config.Base.OneOff {
 			return errors.New(oneOffErrorMsg)
 		}
 		if err != nil {
@@ -91,7 +91,7 @@ func (p *BulkPayload) Validate() error {
 	}
 	for _, config := range p.HTTPChecks {
 		err := config.Validate()
-		if config.OneOff {
+		if config.Base.OneOff {
 			return errors.New(oneOffErrorMsg)
 		}
 		if err != nil {
@@ -101,7 +101,7 @@ func (p *BulkPayload) Validate() error {
 	}
 	for _, config := range p.TLSChecks {
 		err := config.Validate()
-		if config.OneOff {
+		if config.Base.OneOff {
 			return errors.New(oneOffErrorMsg)
 		}
 		if err != nil {

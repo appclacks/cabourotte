@@ -22,9 +22,8 @@ import (
 
 // HTTPHealthcheckConfiguration defines an HTTP healthcheck configuration
 type HTTPHealthcheckConfiguration struct {
-	Name        string `json:"name"`
+	Base        `json:",inline" yaml:",inline"`
 	ValidStatus []uint `json:"valid-status" yaml:"valid-status"`
-	Description string `json:"description"`
 	// can be an IP or a domain
 	Target     string            `json:"target"`
 	Method     string            `json:"method"`
@@ -37,23 +36,15 @@ type HTTPHealthcheckConfiguration struct {
 	SourceIP   IP                `json:"source-ip,omitempty" yaml:"source-ip,omitempty"`
 	BodyRegexp []Regexp          `json:"body-regexp,omitempty" yaml:"body-regexp,omitempty"`
 	Insecure   bool
-	Timeout    Duration          `json:"timeout"`
-	Interval   Duration          `json:"interval"`
-	OneOff     bool              `json:"one-off"`
-	Key        string            `json:"key,omitempty"`
-	Cert       string            `json:"cert,omitempty"`
-	Cacert     string            `json:"cacert,omitempty"`
-	Labels     map[string]string `json:"labels,omitempty"`
-}
-
-// GetLabels returns the labels
-func (h *HTTPHealthcheck) GetLabels() map[string]string {
-	return h.Config.Labels
+	Timeout    Duration `json:"timeout"`
+	Key        string   `json:"key,omitempty"`
+	Cert       string   `json:"cert,omitempty"`
+	Cacert     string   `json:"cacert,omitempty"`
 }
 
 // Validate validates the healthcheck configuration
 func (config *HTTPHealthcheckConfiguration) Validate() error {
-	if config.Name == "" {
+	if config.Base.Name == "" {
 		return errors.New("The healthcheck name is missing")
 	}
 	if len(config.ValidStatus) == 0 {
@@ -75,11 +66,11 @@ func (config *HTTPHealthcheckConfiguration) Validate() error {
 	} else {
 		config.Method = "GET"
 	}
-	if !config.OneOff {
-		if config.Interval < Duration(2*time.Second) {
+	if !config.Base.OneOff {
+		if config.Base.Interval < Duration(2*time.Second) {
 			return errors.New("The healthcheck interval should be greater than 2 second")
 		}
-		if config.Interval < config.Timeout {
+		if config.Base.Interval < config.Timeout {
 			return errors.New("The healthcheck interval should be greater than the timeout")
 		}
 	}
@@ -115,16 +106,11 @@ func (h *HTTPHealthcheck) buildURL() {
 		h.Config.Path)
 }
 
-// Name returns the healthcheck identifier.
-func (h *HTTPHealthcheck) Name() string {
-	return h.Config.Name
-}
-
 // Summary returns an healthcheck summary
 func (h *HTTPHealthcheck) Summary() string {
 	summary := ""
-	if h.Config.Description != "" {
-		summary = fmt.Sprintf("%s on %s:%d", h.Config.Description, h.Config.Target, h.Config.Port)
+	if h.Config.Base.Description != "" {
+		summary = fmt.Sprintf("%s on %s:%d", h.Config.Base.Description, h.Config.Target, h.Config.Port)
 
 	} else {
 		summary = fmt.Sprintf("on %s:%d", h.Config.Target, h.Config.Port)
@@ -164,7 +150,7 @@ func (h *HTTPHealthcheck) Initialize() error {
 		caCertPool := x509.NewCertPool()
 		result := caCertPool.AppendCertsFromPEM(caCert)
 		if !result {
-			return fmt.Errorf("fail to read ca certificate for healthcheck %s", h.Config.Name)
+			return fmt.Errorf("fail to read ca certificate for healthcheck %s", h.Config.Base.Name)
 		}
 		tlsConfig.RootCAs = caCertPool
 
@@ -177,20 +163,14 @@ func (h *HTTPHealthcheck) Initialize() error {
 	return nil
 }
 
-// OneOff returns true if the healthcheck if a one-off check
-func (h *HTTPHealthcheck) OneOff() bool {
-	return h.Config.OneOff
-
-}
-
-// Interval Get the interval.
-func (h *HTTPHealthcheck) Interval() Duration {
-	return h.Config.Interval
-}
-
 // GetConfig get the config
 func (h *HTTPHealthcheck) GetConfig() interface{} {
 	return h.Config
+}
+
+// Base get the base configuration
+func (h *HTTPHealthcheck) Base() Base {
+	return h.Config.Base
 }
 
 // isSuccessful verifies if a healthcheck result is considered valid
@@ -210,7 +190,7 @@ func (h *HTTPHealthcheck) LogError(err error, message string) {
 		zap.String("extra", message),
 		zap.String("target", h.Config.Target),
 		zap.Uint("port", h.Config.Port),
-		zap.String("name", h.Config.Name))
+		zap.String("name", h.Config.Base.Name))
 }
 
 // LogDebug logs a message with context
@@ -218,7 +198,7 @@ func (h *HTTPHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
 		zap.String("target", h.Config.Target),
 		zap.Uint("port", h.Config.Port),
-		zap.String("name", h.Config.Name))
+		zap.String("name", h.Config.Base.Name))
 }
 
 // LogInfo logs a message with context
@@ -226,7 +206,7 @@ func (h *HTTPHealthcheck) LogInfo(message string) {
 	h.Logger.Info(message,
 		zap.String("target", h.Config.Target),
 		zap.Uint("port", h.Config.Port),
-		zap.String("name", h.Config.Name))
+		zap.String("name", h.Config.Base.Name))
 }
 
 // Execute executes an healthcheck on the given target

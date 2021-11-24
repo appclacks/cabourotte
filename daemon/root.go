@@ -102,47 +102,47 @@ func (c *Component) ReloadHealthchecks(daemonConfig *Configuration) error {
 	newChecks := make(map[string]bool)
 	for i := range daemonConfig.CommandChecks {
 		config := &daemonConfig.CommandChecks[i]
-		newChecks[config.Name] = true
+		newChecks[config.Base.Name] = true
 		newCheck := healthcheck.NewCommandHealthcheck(c.Logger, config)
 		err := c.Healthcheck.AddCheck(newCheck)
 		if err != nil {
-			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Name())
+			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Base().Name)
 		}
 	}
 	for i := range daemonConfig.DNSChecks {
 		config := &daemonConfig.DNSChecks[i]
-		newChecks[config.Name] = true
+		newChecks[config.Base.Name] = true
 		newCheck := healthcheck.NewDNSHealthcheck(c.Logger, config)
 		err := c.Healthcheck.AddCheck(newCheck)
 		if err != nil {
-			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Name())
+			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Base().Name)
 		}
 	}
 	for i := range daemonConfig.HTTPChecks {
 		config := &daemonConfig.HTTPChecks[i]
-		newChecks[config.Name] = true
+		newChecks[config.Base.Name] = true
 		newCheck := healthcheck.NewHTTPHealthcheck(c.Logger, config)
 		err := c.Healthcheck.AddCheck(newCheck)
 		if err != nil {
-			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Name())
+			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Base().Name)
 		}
 	}
 	for i := range daemonConfig.TCPChecks {
 		config := &daemonConfig.TCPChecks[i]
-		newChecks[config.Name] = true
+		newChecks[config.Base.Name] = true
 		newCheck := healthcheck.NewTCPHealthcheck(c.Logger, config)
 		err := c.Healthcheck.AddCheck(newCheck)
 		if err != nil {
-			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Name())
+			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Base().Name)
 		}
 	}
 	for i := range daemonConfig.TLSChecks {
 		config := &daemonConfig.TLSChecks[i]
-		newChecks[config.Name] = true
+		newChecks[config.Base.Name] = true
 		newCheck := healthcheck.NewTLSHealthcheck(c.Logger, config)
 		err := c.Healthcheck.AddCheck(newCheck)
 		if err != nil {
-			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Name())
+			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Base().Name)
 		}
 	}
 	checks := c.Healthcheck.ListChecks()
@@ -150,15 +150,15 @@ func (c *Component) ReloadHealthchecks(daemonConfig *Configuration) error {
 		check := checks[i]
 		// checks added by the API should not be removed
 		// on a reload if they are not in the new configuration
-		if _, ok := currentConfigChecks[check.Name()]; !ok {
+		if _, ok := currentConfigChecks[check.Base().Name]; !ok {
 			continue
 		}
 		// if the newChecks map does not contain this healthcheck,
 		// it was not added and so should be removed
-		if _, ok := newChecks[check.Name()]; !ok {
-			err := c.Healthcheck.RemoveCheck(check.Name())
+		if _, ok := newChecks[check.Base().Name]; !ok {
+			err := c.Healthcheck.RemoveCheck(check.Base().Name)
 			if err != nil {
-				return errors.Wrapf(err, "Fail to remove check %s", check.Name())
+				return errors.Wrapf(err, "Fail to remove check %s", check.Base().Name)
 			}
 		}
 

@@ -45,13 +45,15 @@ func TestAddRemoveCheck(t *testing.T) {
 	healthcheck := NewTCPHealthcheck(
 		logger,
 		&TCPHealthcheckConfiguration{
-			Name:        "foo",
-			Description: "bar",
-			Target:      "127.0.0.1",
-			Port:        9000,
-			Timeout:     Duration(time.Second * 3),
-			Interval:    Duration(time.Second * 5),
-			OneOff:      false,
+			Base: Base{
+				Name:        "foo",
+				Description: "bar",
+				Interval:    Duration(time.Second * 5),
+				OneOff:      false,
+			},
+			Target:  "127.0.0.1",
+			Port:    9000,
+			Timeout: Duration(time.Second * 3),
 		},
 	)
 	err = component.AddCheck(healthcheck)
@@ -65,19 +67,21 @@ func TestAddRemoveCheck(t *testing.T) {
 	if len(listResult) != 1 {
 		t.Fatalf("The healthcheck is not in the healthcheck list")
 	}
-	if listResult[0].Name() != "foo" {
+	if listResult[0].Base().Name != "foo" {
 		t.Fatalf("The healthcheck name is not accurate")
 	}
 	newHealthcheck := NewTCPHealthcheck(
 		logger,
 		&TCPHealthcheckConfiguration{
-			Name:        "foo",
-			Description: "bar",
-			Target:      "127.0.0.1",
-			Port:        9000,
-			Timeout:     Duration(time.Second * 3),
-			Interval:    Duration(time.Second * 5),
-			OneOff:      false,
+			Base: Base{
+				Name:        "foo",
+				Description: "bar",
+				Interval:    Duration(time.Second * 5),
+				OneOff:      false,
+			},
+			Target:  "127.0.0.1",
+			Port:    9000,
+			Timeout: Duration(time.Second * 3),
 		},
 	)
 	// add replaces the existing healthcheck
@@ -127,13 +131,15 @@ func TestGetCheck(t *testing.T) {
 	healthcheck := NewTCPHealthcheck(
 		logger,
 		&TCPHealthcheckConfiguration{
-			Name:        "foo",
-			Description: "bar",
-			Target:      "127.0.0.1",
-			Port:        9000,
-			Timeout:     Duration(time.Second * 3),
-			Interval:    Duration(time.Second * 5),
-			OneOff:      false,
+			Base: Base{
+				Name:        "foo",
+				Description: "bar",
+				Interval:    Duration(time.Second * 5),
+				OneOff:      false,
+			},
+			Target:  "127.0.0.1",
+			Port:    9000,
+			Timeout: Duration(time.Second * 3),
 		},
 	)
 	err = component.AddCheck(healthcheck)

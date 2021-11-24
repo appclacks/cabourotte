@@ -14,14 +14,10 @@ import (
 
 // CommandHealthcheckConfiguration defines a COMMAND healthcheck configuration
 type CommandHealthcheckConfiguration struct {
-	Name        string            `json:"name"`
-	Description string            `json:"description"`
-	Command     string            `json:"command"`
-	Arguments   []string          `json:"arguments"`
-	Timeout     Duration          `json:"timeout"`
-	Interval    Duration          `json:"interval"`
-	OneOff      bool              `json:"one-off"`
-	Labels      map[string]string `json:"labels,omitempty"`
+	Base      `json:",inline" yaml:",inline"`
+	Command   string   `json:"command"`
+	Arguments []string `json:"arguments"`
+	Timeout   Duration `json:"timeout"`
 }
 
 // CommandHealthcheck defines an HTTP healthcheck
@@ -33,14 +29,9 @@ type CommandHealthcheck struct {
 	Tick *time.Ticker
 }
 
-// GetLabels returns the labels
-func (h *CommandHealthcheck) GetLabels() map[string]string {
-	return h.Config.Labels
-}
-
 // Validate validates the healthcheck configuration
 func (config *CommandHealthcheckConfiguration) Validate() error {
-	if config.Name == "" {
+	if config.Base.Name == "" {
 		return errors.New("The healthcheck name is missing")
 	}
 	if config.Command == "" {
@@ -49,11 +40,11 @@ func (config *CommandHealthcheckConfiguration) Validate() error {
 	if config.Timeout == 0 {
 		return errors.New("The healthcheck timeout is missing")
 	}
-	if !config.OneOff {
-		if config.Interval < Duration(2*time.Second) {
+	if !config.Base.OneOff {
+		if config.Base.Interval < Duration(2*time.Second) {
 			return errors.New("The healthcheck interval should be greater than 2 second")
 		}
-		if config.Interval < config.Timeout {
+		if config.Base.Interval < config.Timeout {
 			return errors.New("The healthcheck interval should be greater than the timeout")
 		}
 	}
@@ -65,26 +56,21 @@ func (h *CommandHealthcheck) Initialize() error {
 	return nil
 }
 
-// Interval Get the interval.
-func (h *CommandHealthcheck) Interval() Duration {
-	return h.Config.Interval
-}
-
 // GetConfig get the config
 func (h *CommandHealthcheck) GetConfig() interface{} {
 	return h.Config
 }
 
-// Name returns the healthcheck identifier.
-func (h *CommandHealthcheck) Name() string {
-	return h.Config.Name
+// Base get the base configuration
+func (h *CommandHealthcheck) Base() Base {
+	return h.Config.Base
 }
 
 // Summary returns an healthcheck summary
 func (h *CommandHealthcheck) Summary() string {
 	summary := ""
-	if h.Config.Description != "" {
-		summary = fmt.Sprintf("%s, command %s", h.Config.Description, h.Config.Command)
+	if h.Config.Base.Description != "" {
+		summary = fmt.Sprintf("%s, command %s", h.Config.Base.Description, h.Config.Command)
 
 	} else {
 		summary = fmt.Sprintf("command %s", h.Config.Command)
@@ -93,31 +79,26 @@ func (h *CommandHealthcheck) Summary() string {
 	return summary
 }
 
-// OneOff returns true if the healthcheck if a one-off check
-func (h *CommandHealthcheck) OneOff() bool {
-	return h.Config.OneOff
-}
-
 // LogError logs an error with context
 func (h *CommandHealthcheck) LogError(err error, message string) {
 	h.Logger.Error(err.Error(),
 		zap.String("extra", message),
 		zap.String("command", h.Config.Command),
-		zap.String("name", h.Config.Name))
+		zap.String("name", h.Config.Base.Name))
 }
 
 // LogDebug logs a message with context
 func (h *CommandHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
 		zap.String("command", h.Config.Command),
-		zap.String("name", h.Config.Name))
+		zap.String("name", h.Config.Base.Name))
 }
 
 // LogInfo logs a message with context
 func (h *CommandHealthcheck) LogInfo(message string) {
 	h.Logger.Info(message,
 		zap.String("command", h.Config.Command),
-		zap.String("name", h.Config.Name))
+		zap.String("name", h.Config.Base.Name))
 }
 
 // Execute executes an healthcheck on the given domain

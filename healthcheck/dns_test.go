@@ -44,11 +44,13 @@ func TestDNSStartStop(t *testing.T) {
 	healthcheck := NewDNSHealthcheck(
 		logger,
 		&DNSHealthcheckConfiguration{
-			Name:        "foo",
-			Description: "bar",
-			Domain:      "mcorbin.fr",
-			Interval:    Duration(time.Second * 5),
-			OneOff:      false,
+			Base: Base{
+				Name:        "foo",
+				Description: "bar",
+				Interval:    Duration(time.Second * 5),
+				OneOff:      false,
+			},
+			Domain: "mcorbin.fr",
 		},
 	)
 	wrapper := NewWrapper(healthcheck)

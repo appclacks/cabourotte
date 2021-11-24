@@ -28,19 +28,19 @@ const DefaultBufferSize = 5000
 func (configuration *Configuration) configChecksNames() map[string]bool {
 	checks := make(map[string]bool)
 	for i := range configuration.CommandChecks {
-		checks[configuration.CommandChecks[i].Name] = true
+		checks[configuration.CommandChecks[i].Base.Name] = true
 	}
 	for i := range configuration.DNSChecks {
-		checks[configuration.DNSChecks[i].Name] = true
+		checks[configuration.DNSChecks[i].Base.Name] = true
 	}
 	for i := range configuration.TCPChecks {
-		checks[configuration.TCPChecks[i].Name] = true
+		checks[configuration.TCPChecks[i].Base.Name] = true
 	}
 	for i := range configuration.HTTPChecks {
-		checks[configuration.HTTPChecks[i].Name] = true
+		checks[configuration.HTTPChecks[i].Base.Name] = true
 	}
 	for i := range configuration.TLSChecks {
-		checks[configuration.TLSChecks[i].Name] = true
+		checks[configuration.TLSChecks[i].Base.Name] = true
 	}
 	return checks
 }

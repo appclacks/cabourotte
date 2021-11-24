@@ -15,22 +15,18 @@ import (
 
 // TCPHealthcheckConfiguration defines a TCP healthcheck configuration
 type TCPHealthcheckConfiguration struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	Base `json:",inline" yaml:",inline"`
 	// can be an IP or a domain
-	Target     string            `json:"target"`
-	Port       uint              `json:"port"`
-	SourceIP   IP                `json:"source-ip,omitempty" yaml:"source-ip,omitempty"`
-	Timeout    Duration          `json:"timeout"`
-	Interval   Duration          `json:"interval"`
-	OneOff     bool              `json:"one-off"`
-	ShouldFail bool              `json:"should-fail" yaml:"should-fail"`
-	Labels     map[string]string `json:"labels,omitempty"`
+	Target     string   `json:"target"`
+	Port       uint     `json:"port"`
+	SourceIP   IP       `json:"source-ip,omitempty" yaml:"source-ip,omitempty"`
+	Timeout    Duration `json:"timeout"`
+	ShouldFail bool     `json:"should-fail" yaml:"should-fail"`
 }
 
 // Validate validates the healthcheck configuration
 func (config *TCPHealthcheckConfiguration) Validate() error {
-	if config.Name == "" {
+	if config.Base.Name == "" {
 		return errors.New("The healthcheck name is missing")
 	}
 	if config.Target == "" {
@@ -42,20 +38,15 @@ func (config *TCPHealthcheckConfiguration) Validate() error {
 	if config.Timeout == 0 {
 		return errors.New("The healthcheck timeout is missing")
 	}
-	if !config.OneOff {
-		if config.Interval < Duration(2*time.Second) {
+	if !config.Base.OneOff {
+		if config.Base.Interval < Duration(2*time.Second) {
 			return errors.New("The healthcheck interval should be greater than 2 second")
 		}
-		if config.Interval < config.Timeout {
+		if config.Base.Interval < config.Timeout {
 			return errors.New("The healthcheck interval should be greater than the timeout")
 		}
 	}
 	return nil
-}
-
-// GetLabels returns the labels
-func (h *TCPHealthcheck) GetLabels() map[string]string {
-	return h.Config.Labels
 }
 
 // TCPHealthcheck defines a TCP healthcheck
@@ -74,16 +65,11 @@ func (h *TCPHealthcheck) buildURL() {
 	h.URL = net.JoinHostPort(h.Config.Target, fmt.Sprintf("%d", h.Config.Port))
 }
 
-// Name returns the healthcheck identifier.
-func (h *TCPHealthcheck) Name() string {
-	return h.Config.Name
-}
-
 // Summary returns an healthcheck summary
 func (h *TCPHealthcheck) Summary() string {
 	summary := ""
-	if h.Config.Description != "" {
-		summary = fmt.Sprintf("%s on %s:%d", h.Config.Description, h.Config.Target, h.Config.Port)
+	if h.Config.Base.Description != "" {
+		summary = fmt.Sprintf("%s on %s:%d", h.Config.Base.Description, h.Config.Target, h.Config.Port)
 
 	} else {
 		summary = fmt.Sprintf("on %s:%d", h.Config.Target, h.Config.Port)
@@ -102,19 +88,14 @@ func (h *TCPHealthcheck) Initialize() error {
 	return nil
 }
 
-// Interval Get the interval.
-func (h *TCPHealthcheck) Interval() Duration {
-	return h.Config.Interval
-}
-
 // GetConfig get the config
 func (h *TCPHealthcheck) GetConfig() interface{} {
 	return h.Config
 }
 
-// OneOff returns true if the healthcheck if a one-off check
-func (h *TCPHealthcheck) OneOff() bool {
-	return h.Config.OneOff
+// Base get the base configuration
+func (h *TCPHealthcheck) Base() Base {
+	return h.Config.Base
 
 }
 
@@ -124,7 +105,7 @@ func (h *TCPHealthcheck) LogError(err error, message string) {
 		zap.String("extra", message),
 		zap.String("target", h.Config.Target),
 		zap.Uint("port", h.Config.Port),
-		zap.String("name", h.Config.Name))
+		zap.String("name", h.Config.Base.Name))
 }
 
 // LogDebug logs a message with context
@@ -132,7 +113,7 @@ func (h *TCPHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
 		zap.String("target", h.Config.Target),
 		zap.Uint("port", h.Config.Port),
-		zap.String("name", h.Config.Name))
+		zap.String("name", h.Config.Base.Name))
 }
 
 // LogInfo logs a message with context
@@ -140,7 +121,7 @@ func (h *TCPHealthcheck) LogInfo(message string) {
 	h.Logger.Info(message,
 		zap.String("target", h.Config.Target),
 		zap.Uint("port", h.Config.Port),
-		zap.String("name", h.Config.Name))
+		zap.String("name", h.Config.Base.Name))
 }
 
 // Execute executes an healthcheck on the given target

@@ -117,13 +117,15 @@ func TestTCPStartStop(t *testing.T) {
 	healthcheck := NewTCPHealthcheck(
 		logger,
 		&TCPHealthcheckConfiguration{
-			Name:        "foo",
-			Description: "bar",
-			Target:      "127.0.0.1",
-			Port:        9000,
-			Timeout:     Duration(time.Second * 3),
-			Interval:    Duration(time.Second * 5),
-			OneOff:      false,
+			Base: Base{
+				Name:        "foo",
+				Description: "bar",
+				Interval:    Duration(time.Second * 5),
+				OneOff:      false,
+			},
+			Target:  "127.0.0.1",
+			Port:    9000,
+			Timeout: Duration(time.Second * 3),
 		},
 	)
 	wrapper := NewWrapper(healthcheck)
