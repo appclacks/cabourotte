@@ -3,9 +3,10 @@ package daemon
 import (
 	"github.com/pkg/errors"
 
-	"cabourotte/exporter"
-	"cabourotte/healthcheck"
-	"cabourotte/http"
+	"github.com/mcorbin/cabourotte/discovery"
+	"github.com/mcorbin/cabourotte/exporter"
+	"github.com/mcorbin/cabourotte/healthcheck"
+	"github.com/mcorbin/cabourotte/http"
 )
 
 // Configuration the HTTP server configuration
@@ -18,6 +19,7 @@ type Configuration struct {
 	HTTPChecks    []healthcheck.HTTPHealthcheckConfiguration    `yaml:"http-checks"`
 	TLSChecks     []healthcheck.TLSHealthcheckConfiguration     `yaml:"tls-checks"`
 	Exporters     exporter.Configuration
+	Discovery     discovery.Configuration
 }
 
 // DefaultBufferSize the default siez for the buffer containing healthchecks results

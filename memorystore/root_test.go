@@ -6,7 +6,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"cabourotte/healthcheck"
+	"github.com/mcorbin/cabourotte/healthcheck"
 )
 
 func TestMemoryExporter(t *testing.T) {

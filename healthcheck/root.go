@@ -10,7 +10,7 @@ import (
 	prom "github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 
-	"cabourotte/prometheus"
+	"github.com/mcorbin/cabourotte/prometheus"
 )
 
 // HealthcheckConfiguration is the interface for the healthcheck configuration
@@ -27,7 +27,7 @@ type Healthcheck interface {
 	LogDebug(message string)
 	LogInfo(message string)
 	Base() Base
-	SetSource(source Source)
+	SetSource(source string)
 	LogError(err error, message string)
 }
 
@@ -131,15 +131,18 @@ func (c *Component) removeCheck(identifier string) error {
 			return errors.Wrapf(err, "Fail to stop healthcheck %s", existingWrapper.healthcheck.Base().Name)
 		}
 		delete(c.Healthchecks, identifier)
+		existingWrapper.healthcheck.LogInfo("Healthcheck stopped")
 	}
 	return nil
 }
 
 // AddCheck add an healthcheck to the component and starts it.
 func (c *Component) AddCheck(check Healthcheck) error {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	if currentCheck, ok := c.Healthchecks[check.Base().Name]; ok {
 		if reflect.DeepEqual(currentCheck.healthcheck.GetConfig(), check.GetConfig()) {
-			currentCheck.healthcheck.LogInfo("trying to replace existing healthcheck with the same config: do nothing")
+			currentCheck.healthcheck.LogDebug("trying to replace existing healthcheck with the same config: do nothing")
 			return nil
 		}
 	}
@@ -149,8 +152,6 @@ func (c *Component) AddCheck(check Healthcheck) error {
 	if err != nil {
 		return errors.Wrapf(err, "Fail to initialize healthcheck %s", wrapper.healthcheck.Base().Name)
 	}
-	c.lock.Lock()
-	defer c.lock.Unlock()
 
 	// verifies if the healthcheck already exists, and removes it if needed.
 	// Updating an healthcheck is removing the old one and adding the new one.
@@ -165,9 +166,9 @@ func (c *Component) AddCheck(check Healthcheck) error {
 
 // RemoveCheck Removes an healthcheck
 func (c *Component) RemoveCheck(name string) error {
-	c.Logger.Info(fmt.Sprintf("Removing healthcheck %s", name))
 	c.lock.Lock()
 	defer c.lock.Unlock()
+	c.Logger.Info(fmt.Sprintf("Removing healthcheck %s", name))
 	return c.removeCheck(name)
 }
 
@@ -191,4 +192,26 @@ func (c *Component) GetCheck(name string) (Healthcheck, error) {
 		return existingWrapper.healthcheck, nil
 	}
 	return nil, fmt.Errorf("Healthcheck %s not found", name)
+}
+
+// RemoveNonConfiguredHealthchecks takes two list of healthchecks. Delete from the
+// healthcheck component the checks which exist in the first list but not in the
+// second one
+func (c *Component) RemoveNonConfiguredHealthchecks(oldChecks map[string]bool, newChecks map[string]bool) error {
+	for check, _ := range oldChecks {
+		// checks which are present in both old and current config
+		// should be kept
+		if _, ok := newChecks[check]; ok {
+			continue
+		}
+		// the rest should be deleted
+		if _, ok := newChecks[check]; !ok {
+			err := c.RemoveCheck(check)
+			if err != nil {
+				return errors.Wrapf(err, "Fail to remove check %s", check)
+			}
+		}
+
+	}
+	return nil
 }

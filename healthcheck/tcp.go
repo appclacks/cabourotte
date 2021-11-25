@@ -99,7 +99,7 @@ func (h *TCPHealthcheck) Base() Base {
 }
 
 // SetSource set the healthcheck source
-func (h *TCPHealthcheck) SetSource(source Source) {
+func (h *TCPHealthcheck) SetSource(source string) {
 	h.Config.Base.Source = source
 }
 

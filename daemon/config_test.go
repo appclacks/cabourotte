@@ -9,9 +9,9 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"cabourotte/exporter"
-	"cabourotte/healthcheck"
-	"cabourotte/http"
+	"github.com/mcorbin/cabourotte/exporter"
+	"github.com/mcorbin/cabourotte/healthcheck"
+	"github.com/mcorbin/cabourotte/http"
 )
 
 func TestUnmarshalConfig(t *testing.T) {

@@ -15,9 +15,9 @@ import (
 	prom "github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 
-	"cabourotte/healthcheck"
-	"cabourotte/memorystore"
-	"cabourotte/prometheus"
+	"github.com/mcorbin/cabourotte/healthcheck"
+	"github.com/mcorbin/cabourotte/memorystore"
+	"github.com/mcorbin/cabourotte/prometheus"
 )
 
 // Component the http server component

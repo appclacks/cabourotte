@@ -10,9 +10,9 @@ import (
 	"go.uber.org/zap"
 	"gopkg.in/tomb.v2"
 
-	"cabourotte/healthcheck"
-	"cabourotte/memorystore"
-	"cabourotte/prometheus"
+	"github.com/mcorbin/cabourotte/healthcheck"
+	"github.com/mcorbin/cabourotte/memorystore"
+	"github.com/mcorbin/cabourotte/prometheus"
 )
 
 // Exporter the exporter interface

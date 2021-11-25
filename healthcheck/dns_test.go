@@ -7,7 +7,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"cabourotte/prometheus"
+	"github.com/mcorbin/cabourotte/prometheus"
 )
 
 func TestDNSExecuteSuccess(t *testing.T) {

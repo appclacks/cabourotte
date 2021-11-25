@@ -14,7 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 
-	"cabourotte/healthcheck"
+	"github.com/mcorbin/cabourotte/healthcheck"
 )
 
 // HTTPConfiguration The configuration for the HTTP exporter.

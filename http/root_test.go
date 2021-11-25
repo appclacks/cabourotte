@@ -10,9 +10,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"cabourotte/healthcheck"
-	"cabourotte/memorystore"
-	"cabourotte/prometheus"
+	"github.com/mcorbin/cabourotte/healthcheck"
+	"github.com/mcorbin/cabourotte/memorystore"
+	"github.com/mcorbin/cabourotte/prometheus"
 )
 
 func TestStartStop(t *testing.T) {
