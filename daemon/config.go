@@ -23,28 +23,6 @@ type Configuration struct {
 // DefaultBufferSize the default siez for the buffer containing healthchecks results
 const DefaultBufferSize = 5000
 
-// configChecksNames returns a map containing the checks managed by the
-// configuration file
-func (configuration *Configuration) configChecksNames() map[string]bool {
-	checks := make(map[string]bool)
-	for i := range configuration.CommandChecks {
-		checks[configuration.CommandChecks[i].Base.Name] = true
-	}
-	for i := range configuration.DNSChecks {
-		checks[configuration.DNSChecks[i].Base.Name] = true
-	}
-	for i := range configuration.TCPChecks {
-		checks[configuration.TCPChecks[i].Base.Name] = true
-	}
-	for i := range configuration.HTTPChecks {
-		checks[configuration.HTTPChecks[i].Base.Name] = true
-	}
-	for i := range configuration.TLSChecks {
-		checks[configuration.TLSChecks[i].Base.Name] = true
-	}
-	return checks
-}
-
 // UnmarshalYAML Parse a configuration from YAML.
 func (configuration *Configuration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	chanSize := uint(DefaultBufferSize)

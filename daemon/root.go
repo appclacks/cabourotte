@@ -98,7 +98,7 @@ func (c *Component) Stop() error {
 // ReloadHealthchecks reloads the healthchecks from a configuration
 func (c *Component) ReloadHealthchecks(daemonConfig *Configuration) error {
 	// contains the checks which were just added
-	currentConfigChecks := c.Config.configChecksNames()
+	currentConfigChecks := c.Healthcheck.SourceChecksNames(healthcheck.SourceConfig)
 	newChecks := make(map[string]bool)
 	for i := range daemonConfig.CommandChecks {
 		config := &daemonConfig.CommandChecks[i]

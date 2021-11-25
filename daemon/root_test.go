@@ -158,6 +158,7 @@ func TestReload(t *testing.T) {
 			Base: healthcheck.Base{
 				Name:     "new-dns-check",
 				Interval: healthcheck.Duration(time.Second * 10),
+				Source:   healthcheck.SourceAPI,
 			},
 		})
 	err = component.Healthcheck.AddCheck(dnsCheck)
