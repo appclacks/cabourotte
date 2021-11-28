@@ -10,7 +10,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 
-	"cabourotte/healthcheck"
+	"github.com/mcorbin/cabourotte/healthcheck"
 )
 
 // BasicResponse a type for HTTP responses

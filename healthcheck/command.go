@@ -67,7 +67,7 @@ func (h *CommandHealthcheck) Base() Base {
 }
 
 // SetSource set the healthcheck source
-func (h *CommandHealthcheck) SetSource(source Source) {
+func (h *CommandHealthcheck) SetSource(source string) {
 	h.Config.Base.Source = source
 }
 

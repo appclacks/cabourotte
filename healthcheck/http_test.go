@@ -13,7 +13,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"cabourotte/prometheus"
+	"github.com/mcorbin/cabourotte/prometheus"
 )
 
 func TestIsSuccessfulOK(t *testing.T) {
@@ -124,7 +124,7 @@ func TestHTTPExecuteRegexpSuccess(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		count++
 		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte("cabourotte !"))
+		_, err := w.Write([]byte("github.com/mcorbin/cabourotte/ !"))
 		if err != nil {
 			t.Fatalf("Error writing :\n%v", err)
 		}
@@ -135,7 +135,7 @@ func TestHTTPExecuteRegexpSuccess(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting HTTP server port :\n%v", err)
 	}
-	r := regexp.MustCompile("cabourotte*")
+	r := regexp.MustCompile("github.com/mcorbin/cabourotte/*")
 	regexp := Regexp(*r)
 	h := HTTPHealthcheck{
 		Logger: zap.NewExample(),
@@ -168,7 +168,7 @@ func TestHTTPExecuteRegexpFailure(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		count++
 		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte("cabourotte !"))
+		_, err := w.Write([]byte("github.com/mcorbin/cabourotte/ !"))
 		if err != nil {
 			t.Fatalf("Error writing :\n%v", err)
 		}

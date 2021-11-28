@@ -7,11 +7,12 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 
-	"cabourotte/exporter"
-	"cabourotte/healthcheck"
-	"cabourotte/http"
-	"cabourotte/memorystore"
-	"cabourotte/prometheus"
+	"github.com/mcorbin/cabourotte/discovery"
+	"github.com/mcorbin/cabourotte/exporter"
+	"github.com/mcorbin/cabourotte/healthcheck"
+	"github.com/mcorbin/cabourotte/http"
+	"github.com/mcorbin/cabourotte/memorystore"
+	"github.com/mcorbin/cabourotte/prometheus"
 )
 
 // Component is the component which will manage the HTTP server and the program
@@ -24,6 +25,7 @@ type Component struct {
 	Healthcheck *healthcheck.Component
 	Exporter    *exporter.Component
 	Prometheus  *prometheus.Prometheus
+	Discovery   *discovery.Component
 	lock        sync.RWMutex
 	ChanResult  chan *healthcheck.Result
 }
@@ -62,6 +64,14 @@ func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "Fail to start the exporter component")
 	}
+	discoveryComponent, err := discovery.New(logger, config.Discovery, checkComponent)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Fail to create the service discovery component")
+	}
+	err = discoveryComponent.Start()
+	if err != nil {
+		return nil, errors.Wrapf(err, "Fail to start the service discovery component")
+	}
 	component := Component{
 		MemoryStore: memstore,
 		ChanResult:  chanResult,
@@ -70,6 +80,7 @@ func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 		HTTP:        http,
 		Logger:      logger,
 		Exporter:    exporterComponent,
+		Discovery:   discoveryComponent,
 		Healthcheck: checkComponent,
 	}
 	err = component.ReloadHealthchecks(config)
@@ -84,7 +95,11 @@ func (c *Component) Stop() error {
 	c.Logger.Info("Stopping the Cabourotte daemon")
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	err := c.HTTP.Stop()
+	err := c.Discovery.Stop()
+	if err != nil {
+		return errors.Wrapf(err, "Fail to stop the service discovery component")
+	}
+	err = c.HTTP.Stop()
 	if err != nil {
 		return errors.Wrapf(err, "Fail to stop the HTTP server")
 	}
@@ -92,13 +107,17 @@ func (c *Component) Stop() error {
 	if err != nil {
 		return errors.Wrapf(err, "Fail to stop the healthcheck component")
 	}
+	err = c.Exporter.Stop()
+	if err != nil {
+		return errors.Wrapf(err, "Fail to stop the exporter component")
+	}
 	return nil
 }
 
 // ReloadHealthchecks reloads the healthchecks from a configuration
 func (c *Component) ReloadHealthchecks(daemonConfig *Configuration) error {
 	// contains the checks which were just added
-	currentConfigChecks := c.Healthcheck.SourceChecksNames(healthcheck.SourceConfig)
+	oldChecks := c.Healthcheck.SourceChecksNames(healthcheck.SourceConfig)
 	newChecks := make(map[string]bool)
 	for i := range daemonConfig.CommandChecks {
 		config := &daemonConfig.CommandChecks[i]
@@ -145,25 +164,7 @@ func (c *Component) ReloadHealthchecks(daemonConfig *Configuration) error {
 			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Base().Name)
 		}
 	}
-	checks := c.Healthcheck.ListChecks()
-	for i := range checks {
-		check := checks[i]
-		// checks added by the API should not be removed
-		// on a reload if they are not in the new configuration
-		if _, ok := currentConfigChecks[check.Base().Name]; !ok {
-			continue
-		}
-		// if the newChecks map does not contain this healthcheck,
-		// it was not added and so should be removed
-		if _, ok := newChecks[check.Base().Name]; !ok {
-			err := c.Healthcheck.RemoveCheck(check.Base().Name)
-			if err != nil {
-				return errors.Wrapf(err, "Fail to remove check %s", check.Base().Name)
-			}
-		}
-
-	}
-	return nil
+	return c.Healthcheck.RemoveNonConfiguredHealthchecks(oldChecks, newChecks)
 }
 
 // Reload reloads the Cabourotte daemon. This function will remove or keep
@@ -194,5 +195,6 @@ func (c *Component) Reload(daemonConfig *Configuration) error {
 		c.HTTP = http
 	}
 	c.Config = daemonConfig
+	c.Logger.Info("Reloaded")
 	return nil
 }

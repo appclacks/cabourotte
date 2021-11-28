@@ -9,8 +9,8 @@ import (
 	"github.com/riemann/riemann-go-client"
 	"go.uber.org/zap"
 
-	"cabourotte/healthcheck"
-	"cabourotte/tls"
+	"github.com/mcorbin/cabourotte/healthcheck"
+	"github.com/mcorbin/cabourotte/tls"
 )
 
 // RiemannConfiguration the Riemann exporter configuration
@@ -157,12 +157,12 @@ func (c *RiemannExporter) Push(result *healthcheck.Result) error {
 		attributes[k] = v
 	}
 	event := &riemanngo.Event{
-		Service:     "cabourotte-healthcheck",
+		Service:     "github.com/mcorbin/cabourotte/-healthcheck",
 		Metric:      result.Duration,
 		Description: fmt.Sprintf("%s: %s", result.Summary, result.Message),
 		Time:        time.Unix(result.HealthcheckTimestamp, 0),
 		State:       state,
-		Tags:        []string{"cabourotte"},
+		Tags:        []string{"github.com/mcorbin/cabourotte/"},
 		TTL:         time.Duration(c.Config.TTL),
 		Attributes:  attributes,
 	}

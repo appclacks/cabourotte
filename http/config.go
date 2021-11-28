@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"cabourotte/healthcheck"
+	"github.com/mcorbin/cabourotte/healthcheck"
 )
 
 // BasicAuth basic auth for the configuration

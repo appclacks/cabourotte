@@ -5,7 +5,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"cabourotte/healthcheck"
+	"github.com/mcorbin/cabourotte/healthcheck"
 )
 
 func TestUnmarshalConfig(t *testing.T) {

@@ -78,7 +78,7 @@ func (h *TLSHealthcheck) Base() Base {
 }
 
 // SetSource set the healthcheck source
-func (h *TLSHealthcheck) SetSource(source Source) {
+func (h *TLSHealthcheck) SetSource(source string) {
 	h.Config.Base.Source = source
 }
 

@@ -35,11 +35,11 @@ type HTTPHealthcheckConfiguration struct {
 	Path       string            `json:"path,omitempty"`
 	SourceIP   IP                `json:"source-ip,omitempty" yaml:"source-ip,omitempty"`
 	BodyRegexp []Regexp          `json:"body-regexp,omitempty" yaml:"body-regexp,omitempty"`
-	Insecure   bool
-	Timeout    Duration `json:"timeout"`
-	Key        string   `json:"key,omitempty"`
-	Cert       string   `json:"cert,omitempty"`
-	Cacert     string   `json:"cacert,omitempty"`
+	Insecure   bool              `json:"insecure"`
+	Timeout    Duration          `json:"timeout"`
+	Key        string            `json:"key,omitempty"`
+	Cert       string            `json:"cert,omitempty"`
+	Cacert     string            `json:"cacert,omitempty"`
 }
 
 // Validate validates the healthcheck configuration
@@ -174,7 +174,7 @@ func (h *HTTPHealthcheck) Base() Base {
 }
 
 // SetSource set the healthcheck source
-func (h *HTTPHealthcheck) SetSource(source Source) {
+func (h *HTTPHealthcheck) SetSource(source string) {
 	h.Config.Base.Source = source
 }
 

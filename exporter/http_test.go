@@ -10,7 +10,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"cabourotte/healthcheck"
+	"github.com/mcorbin/cabourotte/healthcheck"
 )
 
 func TestHTTPExporter(t *testing.T) {

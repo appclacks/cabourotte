@@ -1,13 +1,14 @@
 package daemon
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
 	"go.uber.org/zap"
 
-	"cabourotte/healthcheck"
-	"cabourotte/http"
+	"github.com/mcorbin/cabourotte/healthcheck"
+	"github.com/mcorbin/cabourotte/http"
 )
 
 func TestNewStop(t *testing.T) {
@@ -52,8 +53,9 @@ func TestReload(t *testing.T) {
 		t.Fatalf("Fail to create the component\n%v", err)
 	}
 
-	if len(component.Healthcheck.ListChecks()) != 1 {
-		t.Fatalf("The healthcheck was not added correctly")
+	size := len(component.Healthcheck.ListChecks())
+	if size != 1 {
+		t.Fatalf(fmt.Sprintf("The healthcheck was not added correctly: %d", size))
 	}
 
 	err = component.Reload(&Configuration{
@@ -150,8 +152,9 @@ func TestReload(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to reload the component\n%v", err)
 	}
-	if len(component.Healthcheck.ListChecks()) != 4 {
-		t.Fatalf("The healthcheck was not added correctly")
+	size = len(component.Healthcheck.ListChecks())
+	if size != 4 {
+		t.Fatalf(fmt.Sprintf("The healthcheck was not added correctly: %d", size))
 	}
 	dnsCheck := healthcheck.NewDNSHealthcheck(zap.NewExample(),
 		&healthcheck.DNSHealthcheckConfiguration{

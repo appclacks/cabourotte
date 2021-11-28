@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"cabourotte/daemon"
+	"github.com/mcorbin/cabourotte/daemon"
 
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
@@ -30,6 +30,11 @@ func Main() {
 						Usage:    "Path to the configuration file",
 						Required: true,
 					},
+					&cli.BoolFlag{
+						Name:     "debug",
+						Usage:    "Enable debug logging",
+						Required: false,
+					},
 				},
 				Action: func(c *cli.Context) error {
 					file, err := ioutil.ReadFile(c.String("config"))
@@ -40,7 +45,11 @@ func Main() {
 					if err := yaml.Unmarshal(file, &config); err != nil {
 						return errors.Wrapf(err, "Fail to read the yaml config file")
 					}
-					logger, err := zap.NewProduction()
+					zapConfig := zap.NewProductionConfig()
+					if c.Bool("debug") {
+						zapConfig.Level.SetLevel(zap.DebugLevel)
+					}
+					logger, err := zapConfig.Build()
 					if err != nil {
 						return errors.Wrapf(err, "Fail to start the logger")
 					}
@@ -74,11 +83,11 @@ func Main() {
 								logger.Info(fmt.Sprintf("Received signal %s, reload", sig))
 								newFile, err := ioutil.ReadFile(c.String("config"))
 								if err != nil {
-									errChan <- err
+									logger.Error(err.Error())
 								} else {
 									var newConfig daemon.Configuration
 									if err := yaml.Unmarshal(newFile, &newConfig); err != nil {
-										errChan <- err
+										logger.Error(err.Error())
 									} else {
 										err := daemonComponent.Reload(&newConfig)
 										if err != nil {
