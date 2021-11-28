@@ -76,7 +76,7 @@ func (c *ServiceReconciler) Start() error {
 	}
 
 	c.t.Go(func() error {
-		ctx := c.t.Context(nil)
+		ctx := c.t.Context(context.TODO())
 		c.Logger.Info("Starting Kubernetes service listener")
 		if err := c.Manager.Start(ctx); err != nil {
 			c.Logger.Error(err.Error())

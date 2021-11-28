@@ -77,7 +77,7 @@ func (c *PodReconciler) Start() error {
 	}
 
 	c.t.Go(func() error {
-		ctx := c.t.Context(nil)
+		ctx := c.t.Context(context.TODO())
 		c.Logger.Info("starting Kubernetes pod listener")
 		if err := c.Manager.Start(ctx); err != nil {
 			c.Logger.Error(err.Error())

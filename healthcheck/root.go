@@ -198,7 +198,7 @@ func (c *Component) GetCheck(name string) (Healthcheck, error) {
 // healthcheck component the checks which exist in the first list but not in the
 // second one
 func (c *Component) RemoveNonConfiguredHealthchecks(oldChecks map[string]bool, newChecks map[string]bool) error {
-	for check, _ := range oldChecks {
+	for check := range oldChecks {
 		// checks which are present in both old and current config
 		// should be kept
 		if _, ok := newChecks[check]; ok {
