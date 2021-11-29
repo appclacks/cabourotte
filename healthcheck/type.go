@@ -106,6 +106,7 @@ func (p Protocol) MarshalJSON() ([]byte, error) {
 	return nil, errors.New(fmt.Sprintf("Unknown protocol %d", p))
 }
 
+// +kubebuilder:validation:type=string
 // Regexp alias for regexp.Regexp
 type Regexp regexp.Regexp
 
@@ -121,7 +122,7 @@ func (r *Regexp) UnmarshalText(text []byte) error {
 }
 
 // UnmarshalJSON unmarshal to json a Regexp
-func (r *Regexp) UnmarshalJSON(text []byte) error {
+func (r Regexp) UnmarshalJSON(text []byte) error {
 	return r.UnmarshalText(text)
 }
 
@@ -136,8 +137,8 @@ func (r *Regexp) MarshalText() ([]byte, error) {
 }
 
 // MarshalJSON marshal to json a Regexp
-func (r *Regexp) MarshalJSON() ([]byte, error) {
-	reg := regexp.Regexp(*r)
+func (r Regexp) MarshalJSON() ([]byte, error) {
+	reg := regexp.Regexp(r)
 	s := reg.String()
 	return json.Marshal(s)
 }
