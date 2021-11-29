@@ -137,8 +137,8 @@ func (r *Regexp) MarshalText() ([]byte, error) {
 }
 
 // MarshalJSON marshal to json a Regexp
-func (r Regexp) MarshalJSON() ([]byte, error) {
-	reg := regexp.Regexp(r)
+func (r *Regexp) MarshalJSON() ([]byte, error) {
+	reg := regexp.Regexp(*r)
 	s := reg.String()
 	return json.Marshal(s)
 }
