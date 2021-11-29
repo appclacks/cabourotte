@@ -143,6 +143,26 @@ func (r *Regexp) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s)
 }
 
+// DeepCopyInto implementation
+func (r *Regexp) DeepCopyInto(out *Regexp) {
+	if r != nil {
+		reg := regexp.Regexp(*r)
+		s := reg.String()
+		newReg, _ := regexp.Compile(s)
+		*out = Regexp(*newReg)
+	}
+}
+
+// DeepCopy implementation
+func (r *Regexp) DeepCopy() *Regexp {
+	if r == nil {
+		return nil
+	}
+	out := new(Regexp)
+	r.DeepCopyInto(out)
+	return out
+}
+
 // IP an alias for the IP type
 type IP net.IP
 
