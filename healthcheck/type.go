@@ -107,7 +107,7 @@ func (p Protocol) MarshalJSON() ([]byte, error) {
 }
 
 // +kubebuilder:validation:type=string
-// Regexp alias for regexp.Regexp
+// +kubebuilder:validation:Type=object
 type Regexp regexp.Regexp
 
 // UnmarshalText unmarshal a duration
