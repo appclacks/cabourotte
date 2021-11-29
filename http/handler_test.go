@@ -232,11 +232,11 @@ func TestBulkEndpoint(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating prometheus component :\n%v", err)
 	}
-	healthcheck, err := healthcheck.New(logger, make(chan *healthcheck.Result, 10), prom)
+	checkComponent, err := healthcheck.New(logger, make(chan *healthcheck.Result, 10), prom)
 	if err != nil {
 		t.Fatalf("Fail to create the healthcheck component\n%v", err)
 	}
-	component, err := New(zap.NewExample(), memorystore.NewMemoryStore(logger), prom, &Configuration{Host: "127.0.0.1", Port: 2001}, healthcheck)
+	component, err := New(zap.NewExample(), memorystore.NewMemoryStore(logger), prom, &Configuration{Host: "127.0.0.1", Port: 2001}, checkComponent)
 	if err != nil {
 		t.Fatalf("Fail to create the component\n%v", err)
 	}
@@ -246,7 +246,7 @@ func TestBulkEndpoint(t *testing.T) {
 	}
 
 	client := &http.Client{}
-	reqBody := `{"http-checks": [{"name":"baz","description":"bar","interval":"10m","target":"127.0.0.1","port":3000,"timeout":"10s","protocol":"http","valid-status":[200]}]}`
+	reqBody := `{"http-checks": [{"name":"baz","description":"bar","interval":"10m","target":"127.0.0.1","port":3000,"timeout":"10s","protocol":"http","valid-status":[200],"body-regexp":["test*"]}]}`
 	req, err := http.NewRequest("POST", "http://127.0.0.1:2001/healthcheck/bulk", bytes.NewBuffer([]byte(reqBody)))
 	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
@@ -268,8 +268,17 @@ func TestBulkEndpoint(t *testing.T) {
 	if !strings.Contains(body, "Healthchecks successfully added") {
 		t.Fatalf("Invalid body %s", body)
 	}
-	if len(healthcheck.Healthchecks) != 1 {
-		t.Fatalf("Healthchecks were not successfully created: %d", len(healthcheck.Healthchecks))
+	if len(checkComponent.Healthchecks) != 1 {
+		t.Fatalf("Healthchecks were not successfully created: %d", len(checkComponent.Healthchecks))
+	}
+	check, err := checkComponent.GetCheck("baz")
+	if err != nil {
+		t.Fatalf("Fail to get the check\n%v", err)
+	}
+	httpConfig := check.GetConfig().(*healthcheck.HTTPHealthcheckConfiguration)
+
+	if len(httpConfig.BodyRegexp) != 1 {
+		t.Fatalf("Invalid regexp configuration")
 	}
 	err = component.Stop()
 	if err != nil {

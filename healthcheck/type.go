@@ -120,11 +120,6 @@ func (r *Regexp) UnmarshalText(text []byte) error {
 	return nil
 }
 
-// UnmarshalJSON unmarshal to json a Regexp
-func (r *Regexp) UnmarshalJSON(text []byte) error {
-	return r.UnmarshalText(text)
-}
-
 // MarshalText marshals Regexp as string
 func (r *Regexp) MarshalText() ([]byte, error) {
 	if r != nil {
@@ -133,13 +128,6 @@ func (r *Regexp) MarshalText() ([]byte, error) {
 	}
 
 	return nil, nil
-}
-
-// MarshalJSON marshal to json a Regexp
-func (r *Regexp) MarshalJSON() ([]byte, error) {
-	reg := regexp.Regexp(*r)
-	s := reg.String()
-	return json.Marshal(s)
 }
 
 // IP an alias for the IP type
