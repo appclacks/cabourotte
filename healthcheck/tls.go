@@ -28,7 +28,7 @@ type TLSHealthcheckConfiguration struct {
 	Cert            string   `json:"cert,omitempty"`
 	Cacert          string   `json:"cacert,omitempty"`
 	ServerName      string   `json:"server-name,omitempty" yaml:"server-name"`
-	Insecure        bool
+	Insecure        bool     `json:"insecure"`
 	ExpirationDelay Duration `json:"expiration-delay" yaml:"expiration-delay"`
 }
 
