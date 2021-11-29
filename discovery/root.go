@@ -4,24 +4,28 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 
+	"github.com/mcorbin/cabourotte/discovery/kubernetes"
 	"github.com/mcorbin/cabourotte/healthcheck"
+	"github.com/mcorbin/cabourotte/prometheus"
 )
 
 // Component contains all service discovery instances
 type Component struct {
-	Logger            *zap.Logger
-	PodReconciler     *PodReconciler
-	ServiceReconciler *ServiceReconciler
+	Logger                *zap.Logger
+	PodReconciler         *kubernetes.PodReconciler
+	ServiceReconciler     *kubernetes.ServiceReconciler
+	HealthcheckReconciler *kubernetes.HealthcheckReconciler
+	Prometheus            *prometheus.Prometheus
 }
 
 // New creates the main component from its configuration
-func New(logger *zap.Logger, config Configuration, healthcheck *healthcheck.Component) (*Component, error) {
+func New(logger *zap.Logger, config Configuration, promComponent *prometheus.Prometheus, healthcheck *healthcheck.Component) (*Component, error) {
 	component := &Component{
 		Logger: logger,
 	}
 	if config.Kubernetes.Pod.Enabled {
 		logger.Info("Building Kubernetes pod reconciler")
-		podReconciler, err := NewPodReconciler(logger, healthcheck, &config.Kubernetes.Pod)
+		podReconciler, err := kubernetes.NewPodReconciler(logger, healthcheck, &config.Kubernetes.Pod)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Fail to create the Kubernetes pod reconciler component")
 		}
@@ -29,12 +33,21 @@ func New(logger *zap.Logger, config Configuration, healthcheck *healthcheck.Comp
 	}
 	if config.Kubernetes.Service.Enabled {
 		logger.Info("Building Kubernetes service reconciler")
-		serviceReconciler, err := NewServiceReconciler(logger, healthcheck, &config.Kubernetes.Service)
+		serviceReconciler, err := kubernetes.NewServiceReconciler(logger, healthcheck, &config.Kubernetes.Service)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Fail to create the Kubernetes pod reconciler component")
 		}
 		component.ServiceReconciler = serviceReconciler
 	}
+	if config.Kubernetes.CRD.Enabled {
+		logger.Info("Building Kubernetes CRD reconciler")
+		crdReconciler, err := kubernetes.NewHealthcheckReconciler(logger, healthcheck, &config.Kubernetes.CRD)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Fail to create the Kubernetes healthcheck reconciler component")
+		}
+		component.HealthcheckReconciler = crdReconciler
+	}
+
 	return component, nil
 }
 
@@ -52,6 +65,12 @@ func (c *Component) Start() error {
 			return err
 		}
 	}
+	if c.HealthcheckReconciler != nil {
+		err := c.HealthcheckReconciler.Start()
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -65,6 +84,12 @@ func (c *Component) Stop() error {
 	}
 	if c.ServiceReconciler != nil {
 		err := c.ServiceReconciler.Stop()
+		if err != nil {
+			return err
+		}
+	}
+	if c.HealthcheckReconciler != nil {
+		err := c.HealthcheckReconciler.Stop()
 		if err != nil {
 			return err
 		}

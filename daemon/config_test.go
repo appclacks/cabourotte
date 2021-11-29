@@ -354,7 +354,7 @@ exporters:
 	for _, c := range cases {
 		var result Configuration
 		if err := yaml.Unmarshal([]byte(c.in), &result); err != nil {
-			t.Fatalf("Unmarshal yaml error:\n%v", err)
+			t.Fatalf("Unmarshal yaml error:\n%v\n%v", err, c.in)
 		}
 		if !reflect.DeepEqual(result, c.want) {
 			t.Fatalf("Invalid configuration: \n%s\n%v\n%v", c.in, c.want, result)

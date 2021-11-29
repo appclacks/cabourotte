@@ -10,6 +10,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/mcorbin/cabourotte/discovery"
 	"github.com/mcorbin/cabourotte/healthcheck"
 	"github.com/mcorbin/cabourotte/memorystore"
 	"github.com/mcorbin/cabourotte/prometheus"
@@ -25,7 +26,7 @@ func TestStartStop(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to create the healthcheck component\n%v", err)
 	}
-	component, err := New(logger, memorystore.NewMemoryStore(logger), prom, &Configuration{Host: "127.0.0.1", Port: 2000}, healthcheck)
+	component, err := New(logger, memorystore.NewMemoryStore(logger), prom, &Configuration{Host: "127.0.0.1", Port: 2000}, &discovery.Configuration{}, healthcheck)
 	if err != nil {
 		t.Fatalf("Fail to create the component\n%v", err)
 	}
@@ -66,6 +67,7 @@ func TestStartStopTLS(t *testing.T) {
 			Cert:   "../test/cert.pem",
 			Cacert: "../test/cert.pem",
 		},
+		&discovery.Configuration{},
 		healthcheck,
 	)
 	if err != nil {

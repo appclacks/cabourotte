@@ -1,4 +1,4 @@
-package discovery
+package kubernetes
 
 import (
 	"fmt"
@@ -8,6 +8,12 @@ import (
 
 	"gopkg.in/yaml.v2"
 )
+
+func mergeLabels(base *healthcheck.Base, new map[string]string) {
+	for k, v := range new {
+		base.Labels[k] = v
+	}
+}
 
 func addCheck(healthcheckComponent *healthcheck.Component, logger *zap.Logger, newChecks map[string]bool, healthcheckType string, stringConfig string, target string, source string, labels map[string]string) error {
 	if healthcheckType == "http" {
@@ -20,12 +26,10 @@ func addCheck(healthcheckComponent *healthcheck.Component, logger *zap.Logger, n
 			config.Target = target
 		}
 		config.Base.Source = source
-		if config.Labels == nil {
-			config.Labels = make(map[string]string)
+		if config.Base.Labels == nil {
+			config.Base.Labels = make(map[string]string)
 		}
-		for k, v := range labels {
-			config.Labels[k] = v
-		}
+		mergeLabels(&config.Base, labels)
 		err = config.Validate()
 		if err != nil {
 			return err
@@ -48,10 +52,8 @@ func addCheck(healthcheckComponent *healthcheck.Component, logger *zap.Logger, n
 		if config.Labels == nil {
 			config.Labels = make(map[string]string)
 		}
+		mergeLabels(&config.Base, labels)
 		config.Base.Source = source
-		for k, v := range labels {
-			config.Labels[k] = v
-		}
 		err = config.Validate()
 		if err != nil {
 			return err
@@ -75,9 +77,7 @@ func addCheck(healthcheckComponent *healthcheck.Component, logger *zap.Logger, n
 		if config.Labels == nil {
 			config.Labels = make(map[string]string)
 		}
-		for k, v := range labels {
-			config.Labels[k] = v
-		}
+		mergeLabels(&config.Base, labels)
 		err = config.Validate()
 		if err != nil {
 			return err
@@ -101,9 +101,7 @@ func addCheck(healthcheckComponent *healthcheck.Component, logger *zap.Logger, n
 		if config.Labels == nil {
 			config.Labels = make(map[string]string)
 		}
-		for k, v := range labels {
-			config.Labels[k] = v
-		}
+		mergeLabels(&config.Base, labels)
 		err = config.Validate()
 		if err != nil {
 			return err
@@ -124,9 +122,7 @@ func addCheck(healthcheckComponent *healthcheck.Component, logger *zap.Logger, n
 		if config.Labels == nil {
 			config.Labels = make(map[string]string)
 		}
-		for k, v := range labels {
-			config.Labels[k] = v
-		}
+		mergeLabels(&config.Base, labels)
 		err = config.Validate()
 		if err != nil {
 			return err

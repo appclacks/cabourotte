@@ -25,21 +25,35 @@ type HTTPHealthcheckConfiguration struct {
 	Base        `json:",inline" yaml:",inline"`
 	ValidStatus []uint `json:"valid-status" yaml:"valid-status"`
 	// can be an IP or a domain
-	Target     string            `json:"target"`
-	Method     string            `json:"method"`
-	Port       uint              `json:"port"`
-	Redirect   bool              `json:"redirect"`
-	Body       string            `json:"body,omitempty"`
-	Headers    map[string]string `json:"headers,omitempty"`
-	Protocol   Protocol          `json:"protocol"`
-	Path       string            `json:"path,omitempty"`
-	SourceIP   IP                `json:"source-ip,omitempty" yaml:"source-ip,omitempty"`
-	BodyRegexp []Regexp          `json:"body-regexp,omitempty" yaml:"body-regexp,omitempty"`
-	Insecure   bool              `json:"insecure"`
-	Timeout    Duration          `json:"timeout"`
-	Key        string            `json:"key,omitempty"`
-	Cert       string            `json:"cert,omitempty"`
-	Cacert     string            `json:"cacert,omitempty"`
+	Target string `json:"target"`
+	// +kubebuilder:validation:Optional
+	Method string `json:"method"`
+	Port   uint   `json:"port"`
+	// +kubebuilder:validation:Optional
+	Redirect bool `json:"redirect"`
+	// +kubebuilder:validation:Optional
+	Body string `json:"body,omitempty"`
+	// +kubebuilder:validation:Optional
+	Headers map[string]string `json:"headers,omitempty"`
+	// +kubebuilder:validation:Optional
+	Protocol Protocol `json:"protocol"`
+	// +kubebuilder:validation:Optional
+	Path string `json:"path,omitempty"`
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:Type=string
+	SourceIP IP `json:"source-ip,omitempty" yaml:"source-ip,omitempty"`
+	// +kubebuilder:validation:Optional
+	BodyRegexp []Regexp `json:"body-regexp,omitempty" yaml:"body-regexp,omitempty"`
+	// +kubebuilder:validation:Optional
+	Insecure bool `json:"insecure"`
+	// +kubebuilder:validation:Type=string
+	Timeout Duration `json:"timeout"`
+	// +kubebuilder:validation:Optional
+	Key string `json:"key,omitempty"
+// +kubebuilder:validation:Optional`
+	Cert string `json:"cert,omitempty"`
+	// +kubebuilder:validation:Optional
+	Cacert string `json:"cacert,omitempty"`
 }
 
 // Validate validates the healthcheck configuration

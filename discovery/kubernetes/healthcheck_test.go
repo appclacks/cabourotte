@@ -1,6 +1,7 @@
-package discovery
+package kubernetes
 
 import (
+	"reflect"
 	"testing"
 
 	"go.uber.org/zap"
@@ -24,8 +25,9 @@ func TestAddHealthcheck(t *testing.T) {
 		t.Fatalf("Fail to start the component\n%v", err)
 	}
 	newChecks := make(map[string]bool)
+	labels := map[string]string{"foo": "bar"}
 	configString := "{\"name\":\"mcorbin-http-check\",\"description\":\"http healthcheck example\",\"target\":\"mcorbin.fr\",\"interval\":\"5s\",\"timeout\": \"3s\",\"port\":443,\"protocol\":\"https\",\"valid-status\":[200]}"
-	err = addCheck(component, logger, newChecks, "http", configString, "", healthcheck.SourceKubernetesPod, nil)
+	err = addCheck(component, logger, newChecks, "http", configString, "", healthcheck.SourceKubernetesPod, labels)
 	if err != nil {
 		t.Fatalf("Fail to add the check\n%v", err)
 	}
@@ -40,6 +42,9 @@ func TestAddHealthcheck(t *testing.T) {
 	config := check.GetConfig().(*healthcheck.HTTPHealthcheckConfiguration)
 	if config.Target != "mcorbin.fr" {
 		t.Fatalf("Invalid target %s", config.Target)
+	}
+	if !reflect.DeepEqual(config.Labels, labels) {
+		t.Fatalf("Invalid labels")
 	}
 
 	configString = "{\"name\":\"mcorbin-tcp-check\",\"description\":\"tcp healthcheck example\",\"interval\":\"5s\",\"timeout\": \"3s\",\"port\":443}"

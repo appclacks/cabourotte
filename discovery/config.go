@@ -1,26 +1,10 @@
 package discovery
 
-// KubernetesPod pod discovery
-type KubernetesPod struct {
-	Labels    map[string]string
-	Enabled   bool
-	Namespace string
-}
-
-// KubernetesService service discovery
-type KubernetesService struct {
-	Labels    map[string]string
-	Enabled   bool
-	Namespace string
-}
-
-// KubernetesConfiguration Kubernetes service discovery
-type KubernetesConfiguration struct {
-	Pod     KubernetesPod
-	Service KubernetesService
-}
+import (
+	"github.com/mcorbin/cabourotte/discovery/kubernetes"
+)
 
 // Configuration the service discovery mechanisms configuration
 type Configuration struct {
-	Kubernetes KubernetesConfiguration
+	Kubernetes kubernetes.KubernetesConfiguration
 }

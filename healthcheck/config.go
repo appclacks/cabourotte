@@ -9,16 +9,23 @@ const (
 	SourceKubernetesPod string = "kubernetes-pod"
 	// SourceKubernetesService the check was created from a service pod
 	SourceKubernetesService string = "kubernetes-service"
+	// SourceKubernetesCRD the check was created from a service pod
+	SourceKubernetesCRD string = "kubernetes-crd"
 )
 
 // Base shared fields between healthchecks
 type Base struct {
-	Name        string            `json:"name"`
-	Description string            `json:"description"`
-	Interval    Duration          `json:"interval"`
-	OneOff      bool              `json:"one-off"`
-	Source      string            `json:"source"`
-	Labels      map[string]string `json:"labels,omitempty"`
+	Name string `json:"name"`
+	// +kubebuilder:validation:Optional
+	Description string `json:"description"`
+	// +kubebuilder:validation:Type=string
+	Interval Duration `json:"interval"`
+	// +kubebuilder:validation:Optional
+	OneOff bool `json:"one-off"`
+	// +kubebuilder:validation:Optional
+	Source string `json:"source"`
+	// +kubebuilder:validation:Optional
+	Labels map[string]string `json:"labels,omitempty"`
 }
 
 // SourceChecksNames returns all checks managed by the given source
