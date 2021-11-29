@@ -125,6 +125,16 @@ func (r *Regexp) UnmarshalJSON(text []byte) error {
 	return r.UnmarshalText(text)
 }
 
+// MarshalText marshals Regexp as string
+func (r *Regexp) MarshalText() ([]byte, error) {
+	if r != nil {
+		reg := regexp.Regexp(*r)
+		return []byte(reg.String()), nil
+	}
+
+	return nil, nil
+}
+
 // MarshalJSON marshal to json a Regexp
 func (r *Regexp) MarshalJSON() ([]byte, error) {
 	reg := regexp.Regexp(*r)
