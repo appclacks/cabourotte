@@ -8,52 +8,29 @@ metadata:
 spec:
   dns-checks:
     - name: "mcorbin-dns-check"
-    # The healthcheck description
       description: "dns healthcheck example"
-    # The healthcheck domain
       domain: "mcorbin.fr"
-    # The healthcheck interval
       interval: "5s"
-    # A list of IPs (v4 or v6) which will be compared to the
-    # DNS lookup results. The healthcheck will fail if the IPs defined
-    # in this list are not returned
-    # Labels for this healthcheck. It will be used in logging and in
-    # exporters (optional)
       labels:
         environment: prod
   http-checks:
     - name: "mcorbin-http-check"
-      # The healthcheck description
       description: "http healthcheck example"
-      # The list of HTTP status codes to consider the healthcheck successful
       valid-status:
         - 200
         - 201
-      # The healthcheck target. It can be an IP (v4 or v6) or a domain
       target: "www.mcorbin.fr"
-      # The target port
       port: 443
-      # The protocol (http or https)
       protocol: "https"
-      # The HTTP path of the healthcheck
       path: "/"
-      # The healthcheck timeout
       timeout: 5s
-      # The healthcheck interval
       interval: 10s
-      # The HTTP method to use (optional, default GET. Possible values are POST, PUT, GET, HEAD)
       method: "GET"
-      # Follow redirect (optional, default false)
       redirect: true
-      # Extra headers to add to the request (optional)
       headers:
         foo: "bar"
-      # Body to pass to the request (optional)
       body: "my request body"
-      # A list of regular expression. The response body should match them (optional)
       body-regexp:
         - "DOCTYPE"
-    # Labels for this healthcheck. It will be used in logging and in
-    # exporters (optional)
       labels:
         environment: prod
