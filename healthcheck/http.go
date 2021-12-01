@@ -49,8 +49,8 @@ type HTTPHealthcheckConfiguration struct {
 	// +kubebuilder:validation:Type=string
 	Timeout Duration `json:"timeout"`
 	// +kubebuilder:validation:Optional
-	Key string `json:"key,omitempty"
-// +kubebuilder:validation:Optional`
+	Key string `json:"key,omitempty"`
+	// +kubebuilder:validation:Optional`
 	Cert string `json:"cert,omitempty"`
 	// +kubebuilder:validation:Optional
 	Cacert string `json:"cacert,omitempty"`
