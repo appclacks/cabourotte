@@ -20,15 +20,25 @@ import (
 type TLSHealthcheckConfiguration struct {
 	Base `json:",inline" yaml:",inline"`
 	// can be an IP or a domain
-	Target          string   `json:"target"`
-	Port            uint     `json:"port"`
-	SourceIP        IP       `json:"source-ip,omitempty" yaml:"source-ip,omitempty"`
-	Timeout         Duration `json:"timeout"`
-	Key             string   `json:"key,omitempty"`
-	Cert            string   `json:"cert,omitempty"`
-	Cacert          string   `json:"cacert,omitempty"`
-	ServerName      string   `json:"server-name,omitempty" yaml:"server-name"`
-	Insecure        bool     `json:"insecure"`
+	Target string `json:"target"`
+	Port   uint   `json:"port"`
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:Type=string
+	SourceIP IP `json:"source-ip,omitempty" yaml:"source-ip,omitempty"`
+	// +kubebuilder:validation:Type=string
+	Timeout Duration `json:"timeout"`
+	// +kubebuilder:validation:Optional
+	Key string `json:"key,omitempty"`
+	// +kubebuilder:validation:Optional
+	Cert string `json:"cert,omitempty"`
+	// +kubebuilder:validation:Optional
+	Cacert string `json:"cacert,omitempty"`
+	// +kubebuilder:validation:Optional
+	ServerName string `json:"server-name,omitempty" yaml:"server-name"`
+	// +kubebuilder:validation:Optional
+	Insecure bool `json:"insecure"`
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:Type=string
 	ExpirationDelay Duration `json:"expiration-delay" yaml:"expiration-delay"`
 }
 

@@ -1,0 +1,36 @@
+apiVersion: cabourotte.mcorbin.fr/v1
+kind: Healthcheck
+metadata:
+  name: healthcheck-sample
+  namespace: default
+  labels:
+    foo: "trololo"
+spec:
+  dns-checks:
+    - name: "mcorbin-dns-check"
+      description: "dns healthcheck example"
+      domain: "mcorbin.fr"
+      interval: "5s"
+      labels:
+        environment: prod
+  http-checks:
+    - name: "mcorbin-http-check"
+      description: "http healthcheck example"
+      valid-status:
+        - 200
+        - 201
+      target: "www.mcorbin.fr"
+      port: 443
+      protocol: "https"
+      path: "/"
+      timeout: 5s
+      interval: 10s
+      method: "GET"
+      redirect: true
+      headers:
+        foo: "bar"
+      body: "my request body"
+      body-regexp:
+        - "DOCTYPE"
+      labels:
+        environment: prod

@@ -48,7 +48,7 @@ func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "Fail to start the healthcheck component")
 	}
-	http, err := http.New(logger, memstore, prom, &config.HTTP, checkComponent)
+	http, err := http.New(logger, memstore, prom, &config.HTTP, &config.Discovery, checkComponent)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Fail to create the HTTP server")
 	}
@@ -64,7 +64,7 @@ func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "Fail to start the exporter component")
 	}
-	discoveryComponent, err := discovery.New(logger, config.Discovery, checkComponent)
+	discoveryComponent, err := discovery.New(logger, config.Discovery, prom, checkComponent)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Fail to create the service discovery component")
 	}
@@ -184,7 +184,7 @@ func (c *Component) Reload(daemonConfig *Configuration) error {
 		if err != nil {
 			return errors.Wrapf(err, "Fail to stop the HTTP server")
 		}
-		http, err := http.New(c.Logger, c.MemoryStore, c.Prometheus, &daemonConfig.HTTP, c.Healthcheck)
+		http, err := http.New(c.Logger, c.MemoryStore, c.Prometheus, &daemonConfig.HTTP, &daemonConfig.Discovery, c.Healthcheck)
 		if err != nil {
 			return errors.Wrapf(err, "Fail to create the HTTP server")
 		}

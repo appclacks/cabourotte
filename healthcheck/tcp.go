@@ -17,11 +17,15 @@ import (
 type TCPHealthcheckConfiguration struct {
 	Base `json:",inline" yaml:",inline"`
 	// can be an IP or a domain
-	Target     string   `json:"target"`
-	Port       uint     `json:"port"`
-	SourceIP   IP       `json:"source-ip,omitempty" yaml:"source-ip,omitempty"`
-	Timeout    Duration `json:"timeout"`
-	ShouldFail bool     `json:"should-fail" yaml:"should-fail"`
+	Target string `json:"target"`
+	Port   uint   `json:"port"`
+	// +kubebuilder:validation:Optiona
+	// +kubebuilder:validation:Type=string
+	SourceIP IP `json:"source-ip,omitempty" yaml:"source-ip,omitempty"`
+	// +kubebuilder:validation:Type=string
+	Timeout Duration `json:"timeout"`
+	// +kubebuilder:validation:Optional
+	ShouldFail bool `json:"should-fail" yaml:"should-fail"`
 }
 
 // Validate validates the healthcheck configuration
