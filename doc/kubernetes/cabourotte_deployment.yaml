@@ -52,7 +52,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
       - name: cabourotte
-        image: mcorbin/cabourotte:v0.11.0
+        image: mcorbin/cabourotte:v0.14.0
         imagePullPolicy: IfNotPresent
         args:
           - daemon

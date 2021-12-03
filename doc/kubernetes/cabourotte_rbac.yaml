@@ -25,17 +25,10 @@ rules:
     verbs:
       - get
   - apiGroups:
-      - v1
+      - ""
     resources:
-      - service
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - v1
-    resources:
-      - pod
+      - pods
+      - services
     verbs:
       - get
       - list
