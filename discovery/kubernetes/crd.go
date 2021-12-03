@@ -21,16 +21,17 @@ import (
 // HealthcheckReconciler reconciles a Healthcheck object
 type HealthcheckReconciler struct {
 	client.Client
-	Scheme      *runtime.Scheme
-	t           tomb.Tomb
-	Manager     ctrl.Manager
-	Healthcheck *healthcheck.Component
-	Config      *KubernetesCRD
-	Logger      *zap.Logger
+	Scheme                *runtime.Scheme
+	t                     tomb.Tomb
+	Manager               ctrl.Manager
+	DisableCommandsChecks bool
+	Healthcheck           *healthcheck.Component
+	Config                *KubernetesCRD
+	Logger                *zap.Logger
 }
 
 // NewHealthcheckReconciler build a pod reconciler component
-func NewHealthcheckReconciler(logger *zap.Logger, healthcheck *healthcheck.Component, config *KubernetesCRD) (*HealthcheckReconciler, error) {
+func NewHealthcheckReconciler(logger *zap.Logger, healthcheck *healthcheck.Component, config *KubernetesCRD, disableCommandsChecks bool) (*HealthcheckReconciler, error) {
 	scheme := runtime.NewScheme()
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(cabourottemcorbinfrv1.AddToScheme(scheme))
@@ -49,12 +50,13 @@ func NewHealthcheckReconciler(logger *zap.Logger, healthcheck *healthcheck.Compo
 		return nil, errors.Wrapf(err, "fail to create the Kubernetes pod controller manager")
 	}
 	reconciler := HealthcheckReconciler{
-		Client:      manager.GetClient(),
-		Scheme:      manager.GetScheme(),
-		Manager:     manager,
-		Logger:      logger,
-		Config:      config,
-		Healthcheck: healthcheck,
+		Client:                manager.GetClient(),
+		Scheme:                manager.GetScheme(),
+		Manager:               manager,
+		Logger:                logger,
+		Config:                config,
+		Healthcheck:           healthcheck,
+		DisableCommandsChecks: disableCommandsChecks,
 	}
 	if err = reconciler.SetupWithManager(manager); err != nil {
 
@@ -117,6 +119,9 @@ func (c *HealthcheckReconciler) reconcileCRDs(crd *cabourottemcorbinfrv1.Healthc
 			newChecks[dnsCheckConfig.Base.Name] = true
 		}
 		for _, commandCheckConfig := range item.Spec.CommandChecks {
+			if c.DisableCommandsChecks {
+				return ctrl.Result{}, fmt.Errorf("Command checks are not allowed on Healthcheck %s", crdName)
+			}
 			err := commandCheckConfig.Validate()
 			if err != nil {
 				return ctrl.Result{}, err

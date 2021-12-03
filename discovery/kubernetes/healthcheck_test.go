@@ -2,6 +2,7 @@ package kubernetes
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"go.uber.org/zap"
@@ -27,7 +28,7 @@ func TestAddHealthcheck(t *testing.T) {
 	newChecks := make(map[string]bool)
 	labels := map[string]string{"foo": "bar"}
 	configString := "{\"name\":\"mcorbin-http-check\",\"description\":\"http healthcheck example\",\"target\":\"mcorbin.fr\",\"interval\":\"5s\",\"timeout\": \"3s\",\"port\":443,\"protocol\":\"https\",\"valid-status\":[200]}"
-	err = addCheck(component, logger, newChecks, "http", configString, "", healthcheck.SourceKubernetesPod, labels)
+	err = addCheck(component, logger, newChecks, "http", configString, "", healthcheck.SourceKubernetesPod, labels, false)
 	if err != nil {
 		t.Fatalf("Fail to add the check\n%v", err)
 	}
@@ -48,7 +49,7 @@ func TestAddHealthcheck(t *testing.T) {
 	}
 
 	configString = "{\"name\":\"mcorbin-tcp-check\",\"description\":\"tcp healthcheck example\",\"interval\":\"5s\",\"timeout\": \"3s\",\"port\":443}"
-	err = addCheck(component, logger, newChecks, "tcp", configString, "test.mcorbin.fr", healthcheck.SourceKubernetesPod, nil)
+	err = addCheck(component, logger, newChecks, "tcp", configString, "test.mcorbin.fr", healthcheck.SourceKubernetesPod, nil, false)
 	if err != nil {
 		t.Fatalf("Fail to add the check\n%v", err)
 	}
@@ -63,5 +64,14 @@ func TestAddHealthcheck(t *testing.T) {
 	tcpConfig := check.GetConfig().(*healthcheck.TCPHealthcheckConfiguration)
 	if tcpConfig.Target != "test.mcorbin.fr" {
 		t.Fatalf("Invalid target %s", tcpConfig.Target)
+	}
+
+	configString = "{\"name\":\"mcorbin-command-check\",\"description\":\"command healthcheck example\",\"interval\":\"5s\",\"timeout\": \"3s\",\"command\":\"ls\"}"
+	err = addCheck(component, logger, newChecks, "command", configString, "", healthcheck.SourceKubernetesPod, nil, true)
+	if err == nil {
+		t.Fatalf("Was expecting an error: commands checks are disabled\n%v", err)
+	}
+	if !strings.Contains(err.Error(), "Command checks are not allowed") {
+		t.Fatalf("Invalid error message %s", err.Error())
 	}
 }

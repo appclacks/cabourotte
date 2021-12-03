@@ -15,7 +15,7 @@ func mergeLabels(base *healthcheck.Base, new map[string]string) {
 	}
 }
 
-func addCheck(healthcheckComponent *healthcheck.Component, logger *zap.Logger, newChecks map[string]bool, healthcheckType string, stringConfig string, target string, source string, labels map[string]string) error {
+func addCheck(healthcheckComponent *healthcheck.Component, logger *zap.Logger, newChecks map[string]bool, healthcheckType string, stringConfig string, target string, source string, labels map[string]string, disableCommandsChecks bool) error {
 	if healthcheckType == "http" {
 		var config healthcheck.HTTPHealthcheckConfiguration
 		err := yaml.Unmarshal([]byte(stringConfig), &config)
@@ -113,6 +113,9 @@ func addCheck(healthcheckComponent *healthcheck.Component, logger *zap.Logger, n
 		}
 		newChecks[config.Base.Name] = true
 	} else if healthcheckType == "command" {
+		if disableCommandsChecks {
+			return fmt.Errorf("Command checks are not allowed")
+		}
 		var config healthcheck.CommandHealthcheckConfiguration
 		err := yaml.Unmarshal([]byte(stringConfig), &config)
 		if err != nil {

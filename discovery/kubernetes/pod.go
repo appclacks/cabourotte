@@ -27,16 +27,17 @@ const (
 // PodReconciler main pod reconciler component
 type PodReconciler struct {
 	client.Client
-	t           tomb.Tomb
-	Manager     ctrl.Manager
-	Config      *KubernetesPod
-	Healthcheck *healthcheck.Component
-	Logger      *zap.Logger
-	Controller  controller.Controller
+	t                     tomb.Tomb
+	Manager               ctrl.Manager
+	Config                *KubernetesPod
+	DisableCommandsChecks bool
+	Healthcheck           *healthcheck.Component
+	Logger                *zap.Logger
+	Controller            controller.Controller
 }
 
 // NewPodReconciler build a pod reconciler component
-func NewPodReconciler(logger *zap.Logger, healthcheck *healthcheck.Component, config *KubernetesPod) (*PodReconciler, error) {
+func NewPodReconciler(logger *zap.Logger, healthcheck *healthcheck.Component, config *KubernetesPod, disableCommandsChecks bool) (*PodReconciler, error) {
 	kubeConfig, err := ctrl.GetConfig()
 	if err != nil {
 		return nil, errors.Wrapf(err, "fail to get the Kubernetes client configuration")
@@ -50,11 +51,12 @@ func NewPodReconciler(logger *zap.Logger, healthcheck *healthcheck.Component, co
 		return nil, errors.Wrapf(err, "fail to create the Kubernetes pod controller manager")
 	}
 	reconciler := PodReconciler{
-		Client:      manager.GetClient(),
-		Manager:     manager,
-		Logger:      logger,
-		Config:      config,
-		Healthcheck: healthcheck,
+		Client:                manager.GetClient(),
+		Manager:               manager,
+		Logger:                logger,
+		Config:                config,
+		Healthcheck:           healthcheck,
+		DisableCommandsChecks: disableCommandsChecks,
 	}
 	controller, err := controller.New("pod-controller", manager, controller.Options{
 		Reconciler: &reconciler,
@@ -122,7 +124,7 @@ func (c *PodReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 		c.Logger.Debug(fmt.Sprintf("Pod %s detected in phase %s and terminating %t", podName, phase, terminating))
 		if phase == corev1.PodRunning && !terminating && healthcheckType != "" {
 			healthcheckConfig := item.ObjectMeta.Annotations[configAnnotation]
-			err = addCheck(c.Healthcheck, c.Logger, newChecks, healthcheckType, healthcheckConfig, item.Status.PodIP, healthcheck.SourceKubernetesPod, healthcheckLabels)
+			err = addCheck(c.Healthcheck, c.Logger, newChecks, healthcheckType, healthcheckConfig, item.Status.PodIP, healthcheck.SourceKubernetesPod, healthcheckLabels, c.DisableCommandsChecks)
 			if err != nil {
 				return ctrl.Result{}, errors.Wrapf(err, "Fail to add healthcheck for pod %s", podName)
 			}

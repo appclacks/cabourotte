@@ -25,7 +25,7 @@ func New(logger *zap.Logger, config Configuration, promComponent *prometheus.Pro
 	}
 	if config.Kubernetes.Pod.Enabled {
 		logger.Info("Building Kubernetes pod reconciler")
-		podReconciler, err := kubernetes.NewPodReconciler(logger, healthcheck, &config.Kubernetes.Pod)
+		podReconciler, err := kubernetes.NewPodReconciler(logger, healthcheck, &config.Kubernetes.Pod, config.Kubernetes.DisableCommandsChecks)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Fail to create the Kubernetes pod reconciler component")
 		}
@@ -33,7 +33,7 @@ func New(logger *zap.Logger, config Configuration, promComponent *prometheus.Pro
 	}
 	if config.Kubernetes.Service.Enabled {
 		logger.Info("Building Kubernetes service reconciler")
-		serviceReconciler, err := kubernetes.NewServiceReconciler(logger, healthcheck, &config.Kubernetes.Service)
+		serviceReconciler, err := kubernetes.NewServiceReconciler(logger, healthcheck, &config.Kubernetes.Service, config.Kubernetes.DisableCommandsChecks)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Fail to create the Kubernetes pod reconciler component")
 		}
@@ -41,7 +41,7 @@ func New(logger *zap.Logger, config Configuration, promComponent *prometheus.Pro
 	}
 	if config.Kubernetes.CRD.Enabled {
 		logger.Info("Building Kubernetes CRD reconciler")
-		crdReconciler, err := kubernetes.NewHealthcheckReconciler(logger, healthcheck, &config.Kubernetes.CRD)
+		crdReconciler, err := kubernetes.NewHealthcheckReconciler(logger, healthcheck, &config.Kubernetes.CRD, config.Kubernetes.DisableCommandsChecks)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Fail to create the Kubernetes healthcheck reconciler component")
 		}

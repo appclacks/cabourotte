@@ -26,16 +26,17 @@ const (
 // ServiceReconciler main service reconciler component
 type ServiceReconciler struct {
 	client.Client
-	t           tomb.Tomb
-	Manager     ctrl.Manager
-	Config      *KubernetesService
-	Healthcheck *healthcheck.Component
-	Logger      *zap.Logger
-	Controller  controller.Controller
+	t                     tomb.Tomb
+	Manager               ctrl.Manager
+	Config                *KubernetesService
+	DisableCommandsChecks bool
+	Healthcheck           *healthcheck.Component
+	Logger                *zap.Logger
+	Controller            controller.Controller
 }
 
 // NewServiceReconciler build a service reconciler component
-func NewServiceReconciler(logger *zap.Logger, healthcheck *healthcheck.Component, config *KubernetesService) (*ServiceReconciler, error) {
+func NewServiceReconciler(logger *zap.Logger, healthcheck *healthcheck.Component, config *KubernetesService, disableCommandsChecks bool) (*ServiceReconciler, error) {
 	kubeConfig, err := ctrl.GetConfig()
 	if err != nil {
 		return nil, errors.Wrapf(err, "fail to get the Kubernetes client configuration")
@@ -49,11 +50,12 @@ func NewServiceReconciler(logger *zap.Logger, healthcheck *healthcheck.Component
 		return nil, errors.Wrapf(err, "fail to create the Kubernetes service controller manager")
 	}
 	reconciler := ServiceReconciler{
-		Client:      manager.GetClient(),
-		Manager:     manager,
-		Logger:      logger,
-		Config:      config,
-		Healthcheck: healthcheck,
+		Client:                manager.GetClient(),
+		Manager:               manager,
+		Logger:                logger,
+		Config:                config,
+		Healthcheck:           healthcheck,
+		DisableCommandsChecks: disableCommandsChecks,
 	}
 	controller, err := controller.New("service-controller", manager, controller.Options{
 		Reconciler: &reconciler,
@@ -126,7 +128,7 @@ func (c *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			} else {
 				defaultTarget = fmt.Sprintf("%s.%s.svc", item.ObjectMeta.Name, item.ObjectMeta.Namespace)
 			}
-			err = addCheck(c.Healthcheck, c.Logger, newChecks, healthcheckType, healthcheckConfig, defaultTarget, healthcheck.SourceKubernetesService, healthcheckLabels)
+			err = addCheck(c.Healthcheck, c.Logger, newChecks, healthcheckType, healthcheckConfig, defaultTarget, healthcheck.SourceKubernetesService, healthcheckLabels, c.DisableCommandsChecks)
 			if err != nil {
 				c.Logger.Error(err.Error())
 				return ctrl.Result{}, errors.Wrapf(err, "Fail to add healthcheck for service %s", serviceName)

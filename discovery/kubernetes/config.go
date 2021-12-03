@@ -23,7 +23,8 @@ type KubernetesService struct {
 
 // KubernetesConfiguration Kubernetes service discovery
 type KubernetesConfiguration struct {
-	CRD     KubernetesCRD
-	Pod     KubernetesPod
-	Service KubernetesService
+	DisableCommandsChecks bool `yaml:"disable-commands-checks"`
+	CRD                   KubernetesCRD
+	Pod                   KubernetesPod
+	Service               KubernetesService
 }
