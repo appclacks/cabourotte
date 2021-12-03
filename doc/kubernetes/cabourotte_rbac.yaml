@@ -48,8 +48,9 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: cabourotte
-    apiGroup: rbac.authorization.k8s.io
-  roleRef:
-    kind: ClusterRole
-    name: cabourotte-discovery
-    apiGroup: rbac.authorization.k8s.io
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: cabourotte-discovery
+  apiGroup: rbac.authorization.k8s.io
+

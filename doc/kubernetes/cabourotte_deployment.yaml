@@ -9,6 +9,14 @@ data:
     http:
       host: "0.0.0.0"
       port: 9013
+    discovery:
+      kubernetes:
+        service:
+          enabled: true
+        pods:
+          enabled: true
+        crd:
+          enabled: true
 ---
 apiVersion: apps/v1
 kind: Deployment
