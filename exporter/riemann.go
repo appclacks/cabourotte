@@ -157,12 +157,12 @@ func (c *RiemannExporter) Push(result *healthcheck.Result) error {
 		attributes[k] = v
 	}
 	event := &riemanngo.Event{
-		Service:     "github.com/mcorbin/cabourotte/-healthcheck",
+		Service:     "cabourotte-healthcheck",
 		Metric:      result.Duration,
 		Description: fmt.Sprintf("%s: %s", result.Summary, result.Message),
 		Time:        time.Unix(result.HealthcheckTimestamp, 0),
 		State:       state,
-		Tags:        []string{"github.com/mcorbin/cabourotte/"},
+		Tags:        []string{"cabourotte"},
 		TTL:         time.Duration(c.Config.TTL),
 		Attributes:  attributes,
 	}
