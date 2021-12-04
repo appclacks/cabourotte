@@ -2,11 +2,8 @@ package exporter
 
 import (
 	"bytes"
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"time"
@@ -15,6 +12,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/mcorbin/cabourotte/healthcheck"
+	"github.com/mcorbin/cabourotte/tls"
 )
 
 // HTTPConfiguration The configuration for the HTTP exporter.
@@ -66,7 +64,10 @@ func (c *HTTPConfiguration) UnmarshalYAML(unmarshal func(interface{}) error) err
 // NewHTTPExporter creates a new HTTP exporter
 func NewHTTPExporter(logger *zap.Logger, config *HTTPConfiguration) (*HTTPExporter, error) {
 	protocol := "http"
-	tlsConfig := &tls.Config{}
+	tlsConfig, err := tls.GetTLSConfig(config.Key, config.Cert, config.Cacert, config.Insecure)
+	if err != nil {
+		return nil, err
+	}
 	if config.Protocol == healthcheck.HTTPS {
 		protocol = "https"
 	}
@@ -75,27 +76,6 @@ func NewHTTPExporter(logger *zap.Logger, config *HTTPConfiguration) (*HTTPExport
 		protocol,
 		net.JoinHostPort(config.Host, fmt.Sprintf("%d", config.Port)),
 		config.Path)
-	if config.Key != "" {
-		cert, err := tls.LoadX509KeyPair(config.Cert, config.Key)
-		if err != nil {
-			return nil, errors.Wrapf(err, "Fail to load certificates")
-		}
-		tlsConfig.Certificates = []tls.Certificate{cert}
-	}
-	if config.Cacert != "" {
-		caCert, err := ioutil.ReadFile(config.Cacert)
-		if err != nil {
-			return nil, errors.Wrapf(err, "Fail to load the ca certificate")
-		}
-		caCertPool := x509.NewCertPool()
-		result := caCertPool.AppendCertsFromPEM(caCert)
-		if !result {
-			return nil, fmt.Errorf("fail to read ca certificate for exporter %s", config.Name)
-		}
-		tlsConfig.RootCAs = caCertPool
-
-	}
-	tlsConfig.InsecureSkipVerify = config.Insecure
 	transport := &http.Transport{
 		TLSClientConfig: tlsConfig,
 	}
