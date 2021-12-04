@@ -3,6 +3,7 @@ package healthcheck
 import (
 	"fmt"
 	"reflect"
+	"sort"
 	"sync"
 	"time"
 
@@ -172,7 +173,7 @@ func (c *Component) RemoveCheck(name string) error {
 	return c.removeCheck(name)
 }
 
-// ListChecks returns the healthchecks currently configured
+// ListChecks returns the healthchecks currently configured, sorted by name
 func (c *Component) ListChecks() []Healthcheck {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
@@ -181,6 +182,9 @@ func (c *Component) ListChecks() []Healthcheck {
 		wrapper := c.Healthchecks[i]
 		result = append(result, wrapper.healthcheck)
 	}
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Base().Name < result[j].Base().Name
+	})
 	return result
 }
 

@@ -13,6 +13,7 @@ type Result struct {
 	HealthcheckTimestamp int64             `json:"healthcheck-timestamp"`
 	Message              string            `json:"message"`
 	Duration             float64           `json:"duration"`
+	Source               string            `json:"source"`
 }
 
 // Equals implements Equals for Result
@@ -35,6 +36,9 @@ func (r Result) Equals(v Result) bool {
 	if r.Duration != v.Duration {
 		return false
 	}
+	if r.Source != v.Source {
+		return false
+	}
 	if len(r.Labels) != len(v.Labels) {
 		return false
 	}
@@ -49,12 +53,17 @@ func (r Result) Equals(v Result) bool {
 // NewResult build a a new result for an healthcheck
 func NewResult(healthcheck Healthcheck, duration float64, err error) *Result {
 	now := time.Now()
+	source := "configuration"
+	if healthcheck.Base().Source != "" {
+		source = healthcheck.Base().Source
+	}
 	result := Result{
 		Name:                 healthcheck.Base().Name,
 		Summary:              healthcheck.Summary(),
 		Labels:               healthcheck.Base().Labels,
 		HealthcheckTimestamp: now.Unix(),
 		Duration:             duration,
+		Source:               source,
 	}
 	if err != nil {
 		result.Success = false

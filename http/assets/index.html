@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cabourotte</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <style>
+      .healthcheck {
+          border: 1px dashed grey;
+          margin: 10px;
+      }
+      .check-tag {
+          margin: 4px;
+      }
+      .subtitle-success {
+          color: green
+      }
+      .subtitle-failure {
+          color: red;
+      }
+      .error-msg {
+          margin-top: 5px;
+          display: none;
+      }
+      .button-error {
+          margin-top: 10px;
+      }
+    </style>
+    <script>
+      function show(element) {
+          var x = document.getElementById(element);
+          if ((x.style.display === "none") || (x.style.display === "")) {
+              x.style.display = "block";
+          } else {
+              x.style.display = "none";
+          }
+      }
+    </script>
+  </head>
+  <body>
+  <section class="section">
+    <div class="container">
+      <h1 class="title">Healthchecks</h1>
+      {{ range $i, $c := .}}
+      {{ if eq ( mod $i 4 ) 0 }}
+      <div class="columns">
+      {{ end }}
+        <div class="column is-one-quarter healthcheck">
+          <h2 class="subtitle">{{ .Name }}</h2>
+          <h2 class="subtitle {{ if .Success}}subtitle-success{{else}}subtitle-failure{{end}}">{{ if .Success }}Success{{else}}Failure{{end}}</h2>
+          <ul>
+            <li><b>Summary</b>: {{.Summary }}</li>
+            <li><b>Source</b>: {{.Source }}</li>
+            <li><b>Timestamp</b>: {{ formatts .HealthcheckTimestamp }}</li>
+            <li><b>Duration</b>: {{ .Duration }} seconds</li>
+          </ul>
+            {{ if .Labels }}<br/>
+            {{ range $key, $value := .Labels }}
+            <span class="tag is-info is-medium check-tag">{{ $key }} = {{ $value }}</span>
+            {{ end }}
+            {{ end }}
+            {{ if not .Success }}
+            <button class="button is-danger button-error" onclick="show('error-{{ $i }}')">Show/Hide error message</button>
+            <span class="error-msg" id="error-{{ $i }}"><br/>{{ .Message }}</span>
+            {{ end }}
+        </div>
+      {{ if or (last $i $) (eq ( mod $i 4 ) 3) }}
+      </div>
+      {{ end }}
+      {{ end }}
+    </div>
+  </section>
+  </body>
+</html>
