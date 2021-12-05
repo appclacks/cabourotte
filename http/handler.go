@@ -183,6 +183,8 @@ func (c *Component) handlers() {
 
 		c.Server.POST("/healthcheck/bulk", func(ec echo.Context) error {
 			var payload BulkPayload
+			newChecks := make(map[string]bool)
+			oldChecks := c.healthcheck.SourceChecksNames(healthcheck.SourceAPI)
 			if err := ec.Bind(&payload); err != nil {
 				msg := fmt.Sprintf("Fail to add healthchecks. Invalid JSON: %s", err.Error())
 				c.Logger.Error(msg)
@@ -194,40 +196,55 @@ func (c *Component) handlers() {
 				c.Logger.Error(msg)
 				return ec.JSON(http.StatusBadRequest, &BasicResponse{Message: msg})
 			}
-			for _, config := range payload.HTTPChecks {
+			for i := range payload.HTTPChecks {
+				config := payload.HTTPChecks[i]
 				healthcheck := healthcheck.NewHTTPHealthcheck(c.Logger, &config)
 				err := c.addCheck(ec, healthcheck)
 				if err != nil {
 					return c.addCheckError(ec, healthcheck, err)
 				}
+				newChecks[config.Base.Name] = true
 			}
-			for _, config := range payload.TCPChecks {
+			for i := range payload.TCPChecks {
+				config := payload.TCPChecks[i]
 				healthcheck := healthcheck.NewTCPHealthcheck(c.Logger, &config)
 				err := c.addCheck(ec, healthcheck)
 				if err != nil {
 					return c.addCheckError(ec, healthcheck, err)
 				}
+				newChecks[config.Base.Name] = true
 			}
-			for _, config := range payload.DNSChecks {
+			for i := range payload.DNSChecks {
+				config := payload.DNSChecks[i]
 				healthcheck := healthcheck.NewDNSHealthcheck(c.Logger, &config)
 				err := c.addCheck(ec, healthcheck)
 				if err != nil {
 					return c.addCheckError(ec, healthcheck, err)
 				}
+				newChecks[config.Base.Name] = true
 			}
-			for _, config := range payload.TLSChecks {
+			for i := range payload.TLSChecks {
+				config := payload.TLSChecks[i]
 				healthcheck := healthcheck.NewTLSHealthcheck(c.Logger, &config)
 				err := c.addCheck(ec, healthcheck)
 				if err != nil {
 					return c.addCheckError(ec, healthcheck, err)
 				}
+				newChecks[config.Base.Name] = true
 			}
-			for _, config := range payload.CommandChecks {
+			for i := range payload.CommandChecks {
+				config := payload.CommandChecks[i]
 				healthcheck := healthcheck.NewCommandHealthcheck(c.Logger, &config)
 				err := c.addCheck(ec, healthcheck)
 				if err != nil {
 					return c.addCheckError(ec, healthcheck, err)
 				}
+				newChecks[config.Base.Name] = true
+			}
+			err = c.healthcheck.RemoveNonConfiguredHealthchecks(oldChecks, newChecks)
+			if err != nil {
+				c.Logger.Error(err.Error())
+				return ec.JSON(http.StatusInternalServerError, &BasicResponse{Message: err.Error()})
 			}
 			return ec.JSON(http.StatusCreated, &BasicResponse{Message: "Healthchecks successfully added"})
 		})

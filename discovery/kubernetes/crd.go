@@ -104,78 +104,83 @@ func (c *HealthcheckReconciler) reconcileCRDs(crd *cabourottemcorbinfrv1.Healthc
 		crdName := item.ObjectMeta.Name
 		c.Logger.Info(fmt.Sprintf("Reconciling healthcheck CRD %s", crdName))
 		checksLabels := item.ObjectMeta.Labels
-		for _, dnsCheckConfig := range item.Spec.DNSChecks {
-			err := dnsCheckConfig.Validate()
+		for i := range item.Spec.DNSChecks {
+			config := item.Spec.DNSChecks[i]
+			mergeLabels(&config.Base, checksLabels)
+			config.Base.Source = healthcheck.SourceKubernetesCRD
+			err := config.Validate()
 			if err != nil {
 				return ctrl.Result{}, err
 			}
-			mergeLabels(&dnsCheckConfig.Base, checksLabels)
-			dnsCheckConfig.Base.Source = healthcheck.SourceKubernetesCRD
-			check := healthcheck.NewDNSHealthcheck(c.Logger, &dnsCheckConfig)
+			check := healthcheck.NewDNSHealthcheck(c.Logger, &config)
 			err = c.Healthcheck.AddCheck(check)
 			if err != nil {
 				return ctrl.Result{}, err
 			}
-			newChecks[dnsCheckConfig.Base.Name] = true
+			newChecks[config.Base.Name] = true
 		}
-		for _, commandCheckConfig := range item.Spec.CommandChecks {
+		for i := range item.Spec.CommandChecks {
+			config := item.Spec.CommandChecks[i]
 			if c.DisableCommandsChecks {
 				return ctrl.Result{}, fmt.Errorf("Command checks are not allowed on Healthcheck %s", crdName)
 			}
-			err := commandCheckConfig.Validate()
+			mergeLabels(&config.Base, checksLabels)
+			config.Base.Source = healthcheck.SourceKubernetesCRD
+			err := config.Validate()
 			if err != nil {
 				return ctrl.Result{}, err
 			}
-			mergeLabels(&commandCheckConfig.Base, checksLabels)
-			commandCheckConfig.Base.Source = healthcheck.SourceKubernetesCRD
-			check := healthcheck.NewCommandHealthcheck(c.Logger, &commandCheckConfig)
+			check := healthcheck.NewCommandHealthcheck(c.Logger, &config)
 			err = c.Healthcheck.AddCheck(check)
 			if err != nil {
 				return ctrl.Result{}, err
 			}
-			newChecks[commandCheckConfig.Base.Name] = true
+			newChecks[config.Base.Name] = true
 		}
-		for _, tcpCheckConfig := range item.Spec.TCPChecks {
-			err := tcpCheckConfig.Validate()
+		for i := range item.Spec.TCPChecks {
+			config := item.Spec.TCPChecks[i]
+			mergeLabels(&config.Base, checksLabels)
+			config.Base.Source = healthcheck.SourceKubernetesCRD
+			err := config.Validate()
 			if err != nil {
 				return ctrl.Result{}, err
 			}
-			mergeLabels(&tcpCheckConfig.Base, checksLabels)
-			tcpCheckConfig.Base.Source = healthcheck.SourceKubernetesCRD
-			check := healthcheck.NewTCPHealthcheck(c.Logger, &tcpCheckConfig)
+			check := healthcheck.NewTCPHealthcheck(c.Logger, &config)
 			err = c.Healthcheck.AddCheck(check)
 			if err != nil {
 				return ctrl.Result{}, err
 			}
-			newChecks[tcpCheckConfig.Base.Name] = true
+			newChecks[config.Base.Name] = true
 		}
-		for _, httpCheckConfig := range item.Spec.HTTPChecks {
-			err := httpCheckConfig.Validate()
+		for i := range item.Spec.HTTPChecks {
+			config := item.Spec.HTTPChecks[i]
+			mergeLabels(&config.Base, checksLabels)
+			config.Base.Source = healthcheck.SourceKubernetesCRD
+			err := config.Validate()
 			if err != nil {
 				return ctrl.Result{}, err
 			}
-			mergeLabels(&httpCheckConfig.Base, checksLabels)
-			httpCheckConfig.Base.Source = healthcheck.SourceKubernetesCRD
-			check := healthcheck.NewHTTPHealthcheck(c.Logger, &httpCheckConfig)
+			check := healthcheck.NewHTTPHealthcheck(c.Logger, &config)
 			err = c.Healthcheck.AddCheck(check)
 			if err != nil {
 				return ctrl.Result{}, err
 			}
-			newChecks[httpCheckConfig.Base.Name] = true
+			newChecks[config.Base.Name] = true
 		}
-		for _, tlsCheckConfig := range item.Spec.TLSChecks {
-			err := tlsCheckConfig.Validate()
+		for i := range item.Spec.TLSChecks {
+			config := item.Spec.TLSChecks[i]
+			mergeLabels(&config.Base, checksLabels)
+			config.Base.Source = healthcheck.SourceKubernetesCRD
+			err := config.Validate()
 			if err != nil {
 				return ctrl.Result{}, err
 			}
-			mergeLabels(&tlsCheckConfig.Base, checksLabels)
-			tlsCheckConfig.Base.Source = healthcheck.SourceKubernetesCRD
-			check := healthcheck.NewTLSHealthcheck(c.Logger, &tlsCheckConfig)
+			check := healthcheck.NewTLSHealthcheck(c.Logger, &config)
 			err = c.Healthcheck.AddCheck(check)
 			if err != nil {
 				return ctrl.Result{}, err
 			}
-			newChecks[tlsCheckConfig.Base.Name] = true
+			newChecks[config.Base.Name] = true
 		}
 	}
 	err := c.Healthcheck.RemoveNonConfiguredHealthchecks(oldChecks, newChecks)

@@ -113,7 +113,8 @@ func (c *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	oldChecks := c.Healthcheck.SourceChecksNames(healthcheck.SourceKubernetesService)
 	newChecks := make(map[string]bool)
 
-	for _, item := range services.Items {
+	for i := range services.Items {
+		item := services.Items[i]
 		terminating := item.ObjectMeta.DeletionTimestamp != nil
 		serviceName := item.ObjectMeta.Name
 		healthcheckType := item.ObjectMeta.Annotations[typeAnnotation]

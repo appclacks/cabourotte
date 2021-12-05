@@ -115,7 +115,8 @@ func (c *PodReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 	newChecks := make(map[string]bool)
 	c.Logger.Debug("Reconciling pods")
 
-	for _, item := range pods.Items {
+	for i := range pods.Items {
+		item := pods.Items[i]
 		phase := item.Status.Phase
 		terminating := item.ObjectMeta.DeletionTimestamp != nil
 		podName := item.ObjectMeta.Name
