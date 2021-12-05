@@ -3,9 +3,14 @@ package http
 import (
 	"bytes"
 	"crypto/subtle"
+	"embed"
 	"fmt"
+	"io/fs"
 	"net/http"
+	"reflect"
+	"strings"
 	"text/template"
+	"time"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -29,6 +34,9 @@ func (c *Component) addCheck(ec echo.Context, check healthcheck.Healthcheck) err
 	}
 	return nil
 }
+
+//go:embed assets
+var embededFiles embed.FS
 
 // oneOff executes an one-off healthcheck and returns its result
 func (c *Component) oneOff(ec echo.Context, healthcheck healthcheck.Healthcheck) error {
@@ -70,6 +78,7 @@ func (c *Component) handleCheck(ec echo.Context, healthcheck healthcheck.Healthc
 
 // handlers configures the handlers for the http server component
 func (c *Component) handlers() {
+	fsys, _ := fs.Sub(embededFiles, "assets")
 	c.Server.Use(c.countResponse)
 	if c.Config.BasicAuth.Username != "" {
 		c.Server.Use(middleware.BasicAuth(func(username, password string, ctx echo.Context) (bool, error) {
@@ -260,19 +269,61 @@ func (c *Component) handlers() {
 			return ec.JSON(http.StatusOK, result)
 
 		})
-
 		c.Server.GET("/frontend", func(ec echo.Context) error {
-			tmpl, err := template.New("frontend").Parse(frontendTemplate)
+			err := ec.Redirect(http.StatusFound, "/frontend/index.html")
+			return err
+		})
+		c.Server.GET("/frontend/*", func(ec echo.Context) error {
+			path := strings.TrimPrefix(ec.Request().URL.Path, "/frontend/")
+
+			if path == "" {
+				path = "index.html"
+			}
+
+			c.Logger.Info(path)
+			file, err := fsys.Open(path)
 			if err != nil {
-				c.Logger.Error(err.Error())
 				return ec.JSON(http.StatusInternalServerError, &BasicResponse{Message: err.Error()})
 			}
-			var tmplBytes bytes.Buffer
-			if err := tmpl.Execute(&tmplBytes, c.MemoryStore.List()); err != nil {
-				c.Logger.Error(err.Error())
+			stat, err := file.Stat()
+			if err != nil {
 				return ec.JSON(http.StatusInternalServerError, &BasicResponse{Message: err.Error()})
 			}
-			return ec.HTML(http.StatusOK, tmplBytes.String())
+			size := stat.Size()
+			buffer := make([]byte, size)
+			_, err = file.Read(buffer)
+			if err != nil {
+				return ec.JSON(http.StatusInternalServerError, &BasicResponse{Message: err.Error()})
+			}
+			if path == "index.html" {
+				tmpl := template.New("frontend")
+				tmpl.Funcs(template.FuncMap{
+					"last": func(x int, a interface{}) bool {
+						return x == reflect.ValueOf(a).Len()-1
+					},
+					"mod": func(i, j int) int { return i % j },
+					"formatts": func(ts int64) string {
+						tm := time.Unix(ts, 0)
+						return tm.Format("2006/01/02 15:04:05")
+					},
+				})
+
+				tmpl, err = tmpl.Parse(string(buffer))
+				if err != nil {
+					c.Logger.Error(err.Error())
+					return ec.JSON(http.StatusInternalServerError, &BasicResponse{Message: err.Error()})
+				}
+				var tmplBytes bytes.Buffer
+				if err := tmpl.Execute(&tmplBytes, c.MemoryStore.List()); err != nil {
+					c.Logger.Error(err.Error())
+					return ec.JSON(http.StatusInternalServerError, &BasicResponse{Message: err.Error()})
+				}
+				return ec.HTML(http.StatusOK, tmplBytes.String())
+
+			} else {
+				return ec.HTML(http.StatusOK, string(buffer))
+			}
+
 		})
 	}
 
