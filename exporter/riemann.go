@@ -152,6 +152,7 @@ func (c *RiemannExporter) Push(result *healthcheck.Result) error {
 	}
 	attributes := map[string]string{
 		"healthcheck": result.Name,
+		"source":      result.Source,
 	}
 	for k, v := range result.Labels {
 		attributes[k] = v
