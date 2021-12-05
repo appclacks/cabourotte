@@ -109,5 +109,15 @@ func (p *BulkPayload) Validate() error {
 			return errors.New(msg)
 		}
 	}
+	for _, config := range p.CommandChecks {
+		err := config.Validate()
+		if config.Base.OneOff {
+			return errors.New(oneOffErrorMsg)
+		}
+		if err != nil {
+			msg := fmt.Sprintf("Invalid healthcheck configuration: %s", err.Error())
+			return errors.New(msg)
+		}
+	}
 	return nil
 }
