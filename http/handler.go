@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+	"sync"
 	"text/template"
 	"time"
 
@@ -95,6 +96,7 @@ func (c *Component) handlers() {
 	echo.NotFoundHandler = func(ec echo.Context) error {
 		return ec.JSON(http.StatusNotFound, &BasicResponse{Message: "not found"})
 	}
+	var bulkLock sync.RWMutex
 	if !c.Config.DisableHealthcheckAPI {
 		c.Server.POST("/healthcheck/dns", func(ec echo.Context) error {
 			var config healthcheck.DNSHealthcheckConfiguration
@@ -182,6 +184,8 @@ func (c *Component) handlers() {
 		})
 
 		c.Server.POST("/healthcheck/bulk", func(ec echo.Context) error {
+			bulkLock.Lock()
+			defer bulkLock.Unlock()
 			var payload BulkPayload
 			newChecks := make(map[string]bool)
 			oldChecks := c.healthcheck.SourceChecksNames(healthcheck.SourceAPI)
