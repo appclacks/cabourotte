@@ -218,7 +218,7 @@ func TestOneOffCheck(t *testing.T) {
 		t.Fatalf("Fail to read the body\n%v", err)
 	}
 	body := string(bodyBytes)
-	if !strings.Contains(body, "One-off healthcheck baz successfully executed") {
+	if !strings.Contains(body, "success") {
 		t.Fatalf("Invalid body %s", body)
 	}
 	err = component.Stop()
