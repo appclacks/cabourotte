@@ -116,55 +116,14 @@ func (c *Component) Stop() error {
 
 // ReloadHealthchecks reloads the healthchecks from a configuration
 func (c *Component) ReloadHealthchecks(daemonConfig *Configuration) error {
-	// contains the checks which were just added
-	oldChecks := c.Healthcheck.SourceChecksNames(healthcheck.SourceConfig)
-	newChecks := make(map[string]bool)
-	for i := range daemonConfig.CommandChecks {
-		config := &daemonConfig.CommandChecks[i]
-		newChecks[config.Base.Name] = true
-		newCheck := healthcheck.NewCommandHealthcheck(c.Logger, config)
-		err := c.Healthcheck.AddCheck(newCheck)
-		if err != nil {
-			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Base().Name)
-		}
-	}
-	for i := range daemonConfig.DNSChecks {
-		config := &daemonConfig.DNSChecks[i]
-		newChecks[config.Base.Name] = true
-		newCheck := healthcheck.NewDNSHealthcheck(c.Logger, config)
-		err := c.Healthcheck.AddCheck(newCheck)
-		if err != nil {
-			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Base().Name)
-		}
-	}
-	for i := range daemonConfig.HTTPChecks {
-		config := &daemonConfig.HTTPChecks[i]
-		newChecks[config.Base.Name] = true
-		newCheck := healthcheck.NewHTTPHealthcheck(c.Logger, config)
-		err := c.Healthcheck.AddCheck(newCheck)
-		if err != nil {
-			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Base().Name)
-		}
-	}
-	for i := range daemonConfig.TCPChecks {
-		config := &daemonConfig.TCPChecks[i]
-		newChecks[config.Base.Name] = true
-		newCheck := healthcheck.NewTCPHealthcheck(c.Logger, config)
-		err := c.Healthcheck.AddCheck(newCheck)
-		if err != nil {
-			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Base().Name)
-		}
-	}
-	for i := range daemonConfig.TLSChecks {
-		config := &daemonConfig.TLSChecks[i]
-		newChecks[config.Base.Name] = true
-		newCheck := healthcheck.NewTLSHealthcheck(c.Logger, config)
-		err := c.Healthcheck.AddCheck(newCheck)
-		if err != nil {
-			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Base().Name)
-		}
-	}
-	return c.Healthcheck.RemoveNonConfiguredHealthchecks(oldChecks, newChecks)
+	return c.Healthcheck.ReloadForSource(
+		healthcheck.SourceConfig,
+		nil,
+		daemonConfig.CommandChecks,
+		daemonConfig.DNSChecks,
+		daemonConfig.TCPChecks,
+		daemonConfig.HTTPChecks,
+		daemonConfig.TLSChecks)
 }
 
 // Reload reloads the Cabourotte daemon. This function will remove or keep

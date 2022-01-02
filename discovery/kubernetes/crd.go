@@ -98,92 +98,44 @@ func (c *HealthcheckReconciler) Stop() error {
 
 func (c *HealthcheckReconciler) reconcileCRDs(crd *cabourottemcorbinfrv1.HealthcheckList) (ctrl.Result, error) {
 	c.Logger.Debug("Reconciling CRD")
-	newChecks := make(map[string]bool)
-	oldChecks := c.Healthcheck.SourceChecksNames(healthcheck.SourceKubernetesCRD)
+	var command []healthcheck.CommandHealthcheckConfiguration
+	var dns []healthcheck.DNSHealthcheckConfiguration
+	var tcp []healthcheck.TCPHealthcheckConfiguration
+	var http []healthcheck.HTTPHealthcheckConfiguration
+	var tls []healthcheck.TLSHealthcheckConfiguration
+
 	for _, item := range crd.Items {
 		crdName := item.ObjectMeta.Name
 		c.Logger.Info(fmt.Sprintf("Reconciling healthcheck CRD %s", crdName))
 		checksLabels := item.ObjectMeta.Labels
 		for i := range item.Spec.DNSChecks {
 			config := item.Spec.DNSChecks[i]
-			mergeLabels(&config.Base, checksLabels)
-			config.Base.Source = healthcheck.SourceKubernetesCRD
-			err := config.Validate()
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-			check := healthcheck.NewDNSHealthcheck(c.Logger, &config)
-			err = c.Healthcheck.AddCheck(check)
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-			newChecks[config.Base.Name] = true
+			healthcheck.MergeLabels(&config.Base, checksLabels)
+			dns = append(dns, config)
+
 		}
 		for i := range item.Spec.CommandChecks {
 			config := item.Spec.CommandChecks[i]
-			if c.DisableCommandsChecks {
-				return ctrl.Result{}, fmt.Errorf("Command checks are not allowed on Healthcheck %s", crdName)
-			}
-			mergeLabels(&config.Base, checksLabels)
-			config.Base.Source = healthcheck.SourceKubernetesCRD
-			err := config.Validate()
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-			check := healthcheck.NewCommandHealthcheck(c.Logger, &config)
-			err = c.Healthcheck.AddCheck(check)
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-			newChecks[config.Base.Name] = true
+			healthcheck.MergeLabels(&config.Base, checksLabels)
+			command = append(command, config)
 		}
 		for i := range item.Spec.TCPChecks {
 			config := item.Spec.TCPChecks[i]
-			mergeLabels(&config.Base, checksLabels)
-			config.Base.Source = healthcheck.SourceKubernetesCRD
-			err := config.Validate()
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-			check := healthcheck.NewTCPHealthcheck(c.Logger, &config)
-			err = c.Healthcheck.AddCheck(check)
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-			newChecks[config.Base.Name] = true
+			healthcheck.MergeLabels(&config.Base, checksLabels)
+			tcp = append(tcp, config)
 		}
 		for i := range item.Spec.HTTPChecks {
 			config := item.Spec.HTTPChecks[i]
-			mergeLabels(&config.Base, checksLabels)
-			config.Base.Source = healthcheck.SourceKubernetesCRD
-			err := config.Validate()
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-			check := healthcheck.NewHTTPHealthcheck(c.Logger, &config)
-			err = c.Healthcheck.AddCheck(check)
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-			newChecks[config.Base.Name] = true
+			healthcheck.MergeLabels(&config.Base, checksLabels)
+			http = append(http, config)
 		}
 		for i := range item.Spec.TLSChecks {
 			config := item.Spec.TLSChecks[i]
-			mergeLabels(&config.Base, checksLabels)
-			config.Base.Source = healthcheck.SourceKubernetesCRD
-			err := config.Validate()
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-			check := healthcheck.NewTLSHealthcheck(c.Logger, &config)
-			err = c.Healthcheck.AddCheck(check)
-			if err != nil {
-				return ctrl.Result{}, err
-			}
-			newChecks[config.Base.Name] = true
+			healthcheck.MergeLabels(&config.Base, checksLabels)
+			tls = append(tls, config)
 		}
 	}
-	err := c.Healthcheck.RemoveNonConfiguredHealthchecks(oldChecks, newChecks)
+	err := c.Healthcheck.ReloadForSource(healthcheck.SourceKubernetesCRD, map[string]string{}, command, dns, tcp, http, tls)
 	if err != nil {
 		return ctrl.Result{}, err
 	}

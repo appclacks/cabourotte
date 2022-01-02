@@ -9,6 +9,8 @@ import (
 
 	"gopkg.in/yaml.v2"
 
+	"github.com/mcorbin/cabourotte/discovery"
+	dhttp "github.com/mcorbin/cabourotte/discovery/http"
 	"github.com/mcorbin/cabourotte/exporter"
 	"github.com/mcorbin/cabourotte/healthcheck"
 	"github.com/mcorbin/cabourotte/http"
@@ -26,12 +28,26 @@ func TestUnmarshalConfig(t *testing.T) {
 http:
   host: "127.0.0.1"
   port: 2000
+discovery:
+  http:
+    host: "127.0.0.1"
+    path: "/"
+    port: 30000
+    interval: 10
 `,
 			want: Configuration{
 				ResultBuffer: DefaultBufferSize,
 				HTTP: http.Configuration{
 					Host: "127.0.0.1",
 					Port: 2000,
+				},
+				Discovery: discovery.Configuration{
+					HTTP: dhttp.Configuration{
+						Host:     "127.0.0.1",
+						Port:     30000,
+						Path:     "/",
+						Interval: 10,
+					},
 				},
 			},
 		},
