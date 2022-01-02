@@ -9,12 +9,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func mergeLabels(base *healthcheck.Base, new map[string]string) {
-	for k, v := range new {
-		base.Labels[k] = v
-	}
-}
-
 func addCheck(healthcheckComponent *healthcheck.Component, logger *zap.Logger, newChecks map[string]bool, healthcheckType string, stringConfig string, target string, source string, labels map[string]string, disableCommandsChecks bool) error {
 	if healthcheckType == "http" {
 		var config healthcheck.HTTPHealthcheckConfiguration
@@ -29,7 +23,7 @@ func addCheck(healthcheckComponent *healthcheck.Component, logger *zap.Logger, n
 		if config.Base.Labels == nil {
 			config.Base.Labels = make(map[string]string)
 		}
-		mergeLabels(&config.Base, labels)
+		healthcheck.MergeLabels(&config.Base, labels)
 		err = config.Validate()
 		if err != nil {
 			return err
@@ -52,7 +46,7 @@ func addCheck(healthcheckComponent *healthcheck.Component, logger *zap.Logger, n
 		if config.Labels == nil {
 			config.Labels = make(map[string]string)
 		}
-		mergeLabels(&config.Base, labels)
+		healthcheck.MergeLabels(&config.Base, labels)
 		config.Base.Source = source
 		err = config.Validate()
 		if err != nil {
@@ -77,7 +71,7 @@ func addCheck(healthcheckComponent *healthcheck.Component, logger *zap.Logger, n
 		if config.Labels == nil {
 			config.Labels = make(map[string]string)
 		}
-		mergeLabels(&config.Base, labels)
+		healthcheck.MergeLabels(&config.Base, labels)
 		err = config.Validate()
 		if err != nil {
 			return err
@@ -101,7 +95,7 @@ func addCheck(healthcheckComponent *healthcheck.Component, logger *zap.Logger, n
 		if config.Labels == nil {
 			config.Labels = make(map[string]string)
 		}
-		mergeLabels(&config.Base, labels)
+		healthcheck.MergeLabels(&config.Base, labels)
 		err = config.Validate()
 		if err != nil {
 			return err
@@ -125,7 +119,7 @@ func addCheck(healthcheckComponent *healthcheck.Component, logger *zap.Logger, n
 		if config.Labels == nil {
 			config.Labels = make(map[string]string)
 		}
-		mergeLabels(&config.Base, labels)
+		healthcheck.MergeLabels(&config.Base, labels)
 		err = config.Validate()
 		if err != nil {
 			return err

@@ -142,7 +142,7 @@ func (c *HTTPExporter) Push(result *healthcheck.Result) error {
 	}
 	req, err := http.NewRequest("POST", c.URL, bytes.NewBuffer(jsonBytes))
 	if err != nil {
-		return errors.Wrapf(err, "HTTP exporter: fail to send healthchecks to %s", c.URL)
+		return errors.Wrapf(err, "HTTP exporter: fail to create request for %s", c.URL)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := c.Client.Do(req)

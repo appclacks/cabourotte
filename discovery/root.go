@@ -4,6 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 
+	dhttp "github.com/mcorbin/cabourotte/discovery/http"
 	"github.com/mcorbin/cabourotte/discovery/kubernetes"
 	"github.com/mcorbin/cabourotte/healthcheck"
 	"github.com/mcorbin/cabourotte/prometheus"
@@ -15,6 +16,7 @@ type Component struct {
 	PodReconciler         *kubernetes.PodReconciler
 	ServiceReconciler     *kubernetes.ServiceReconciler
 	HealthcheckReconciler *kubernetes.HealthcheckReconciler
+	HTTPDiscovery         *dhttp.HTTPDiscovery
 	Prometheus            *prometheus.Prometheus
 }
 
@@ -47,7 +49,14 @@ func New(logger *zap.Logger, config Configuration, promComponent *prometheus.Pro
 		}
 		component.HealthcheckReconciler = crdReconciler
 	}
-
+	if config.HTTP.Host != "" {
+		logger.Info("Enabling HTTP discovery")
+		httpDiscovery, err := dhttp.New(logger, &config.HTTP, healthcheck, promComponent)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Fail to create the HTTP discovery component")
+		}
+		component.HTTPDiscovery = httpDiscovery
+	}
 	return component, nil
 }
 
@@ -71,6 +80,12 @@ func (c *Component) Start() error {
 			return err
 		}
 	}
+	if c.HTTPDiscovery != nil {
+		err := c.HTTPDiscovery.Start()
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -90,6 +105,12 @@ func (c *Component) Stop() error {
 	}
 	if c.HealthcheckReconciler != nil {
 		err := c.HealthcheckReconciler.Stop()
+		if err != nil {
+			return err
+		}
+	}
+	if c.HTTPDiscovery != nil {
+		err := c.HTTPDiscovery.Stop()
 		if err != nil {
 			return err
 		}

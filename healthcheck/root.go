@@ -219,3 +219,100 @@ func (c *Component) RemoveNonConfiguredHealthchecks(oldChecks map[string]bool, n
 	}
 	return nil
 }
+
+// MergeLabels merge labels from a base and a map of string
+func MergeLabels(base *Base, new map[string]string) {
+	for k, v := range new {
+		base.Labels[k] = v
+	}
+
+}
+
+func (c *Component) ReloadForSource(
+	source string,
+	commonLabels map[string]string,
+	command []CommandHealthcheckConfiguration,
+	dns []DNSHealthcheckConfiguration,
+	tcp []TCPHealthcheckConfiguration,
+	http []HTTPHealthcheckConfiguration,
+	tls []TLSHealthcheckConfiguration) error {
+
+	oldChecks := c.SourceChecksNames(source)
+	newChecks := make(map[string]bool)
+	for i := range command {
+		config := &command[i]
+		MergeLabels(&config.Base, commonLabels)
+		config.Base.Source = source
+		newChecks[config.Base.Name] = true
+		err := config.Validate()
+		if err != nil {
+			return err
+		}
+		newCheck := NewCommandHealthcheck(c.Logger, config)
+		err = c.AddCheck(newCheck)
+		if err != nil {
+			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Base().Name)
+		}
+	}
+	for i := range dns {
+		config := &dns[i]
+		MergeLabels(&config.Base, commonLabels)
+		config.Base.Source = source
+		newChecks[config.Base.Name] = true
+		err := config.Validate()
+		if err != nil {
+			return err
+		}
+		newCheck := NewDNSHealthcheck(c.Logger, config)
+		err = c.AddCheck(newCheck)
+		if err != nil {
+			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Base().Name)
+		}
+	}
+	for i := range http {
+		config := &http[i]
+		MergeLabels(&config.Base, commonLabels)
+		config.Base.Source = source
+		newChecks[config.Base.Name] = true
+		err := config.Validate()
+		if err != nil {
+			return err
+		}
+		newCheck := NewHTTPHealthcheck(c.Logger, config)
+		err = c.AddCheck(newCheck)
+		if err != nil {
+			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Base().Name)
+		}
+	}
+	for i := range tcp {
+		config := &tcp[i]
+		MergeLabels(&config.Base, commonLabels)
+		config.Base.Source = source
+		newChecks[config.Base.Name] = true
+		err := config.Validate()
+		if err != nil {
+			return err
+		}
+		newCheck := NewTCPHealthcheck(c.Logger, config)
+		err = c.AddCheck(newCheck)
+		if err != nil {
+			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Base().Name)
+		}
+	}
+	for i := range tls {
+		config := &tls[i]
+		MergeLabels(&config.Base, commonLabels)
+		config.Base.Source = source
+		newChecks[config.Base.Name] = true
+		err := config.Validate()
+		if err != nil {
+			return err
+		}
+		newCheck := NewTLSHealthcheck(c.Logger, config)
+		err = c.AddCheck(newCheck)
+		if err != nil {
+			return errors.Wrapf(err, "Fail to add healthcheck %s", newCheck.Base().Name)
+		}
+	}
+	return c.RemoveNonConfiguredHealthchecks(oldChecks, newChecks)
+}

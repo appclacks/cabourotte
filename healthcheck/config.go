@@ -11,6 +11,8 @@ const (
 	SourceKubernetesService string = "kubernetes-service"
 	// SourceKubernetesCRD the check was created from a service pod
 	SourceKubernetesCRD string = "kubernetes-crd"
+	// SourceHTTPDiscovery the check was created from the http discovery mechanism
+	SourceHTTPDiscovery string = "http-discovery"
 )
 
 // Base shared fields between healthchecks
