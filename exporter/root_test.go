@@ -77,6 +77,7 @@ func TestStartStop(t *testing.T) {
 	if !success {
 		t.Fatalf("The request counter is invalid")
 	}
+	close(chanResult)
 	err = component.Stop()
 	if err != nil {
 		t.Fatalf("Error stopping the component :\n%v", err)

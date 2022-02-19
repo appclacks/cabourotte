@@ -39,7 +39,8 @@ type Component struct {
 	gaugeTick         *time.Ticker
 	lock              sync.RWMutex
 
-	t tomb.Tomb
+	t  tomb.Tomb
+	wg sync.WaitGroup
 }
 
 // New creates a new exporter component
@@ -107,71 +108,71 @@ func (c *Component) Start() error {
 			c.Logger.Error(fmt.Sprintf("fail to create the exporter %s: %s", exporter.Name(), err.Error()))
 		}
 	}
+	c.wg.Add(1)
 	c.t.Go(func() error {
 		for {
 			select {
 			case <-c.gaugeTick.C:
 				c.chanResultGauge.WithLabelValues().Set(float64(len(c.ChanResult)))
 			case <-c.t.Dying():
+				c.Logger.Info("Stopping exporters metrics")
 				return nil
 			}
 		}
 	})
-	c.t.Go(func() error {
-		for {
-			select {
-			case message := <-c.ChanResult:
-				c.MemoryStore.Add(message)
-				if message.Success {
-					c.Logger.Info("Healthcheck successful",
-						zap.String("name", message.Name),
-						zap.Reflect("labels", message.Labels),
-						zap.Int64("healthcheck-timestamp", message.HealthcheckTimestamp),
-					)
-				} else {
-					c.Logger.Error("healthcheck failed",
-						zap.String("name", message.Name),
-						zap.Reflect("labels", message.Labels),
-						zap.String("cause", message.Message),
-						zap.Int64("healthcheck-timestamp", message.HealthcheckTimestamp),
-					)
-				}
-				c.lock.Lock()
-				for k := range c.Exporters {
-					exporter := c.Exporters[k]
-					if exporter.IsStarted() {
-						start := time.Now()
-						err := exporter.Push(message)
-						duration := time.Since(start)
-						status := "success"
-						name := exporter.Name()
-						if err != nil {
-							c.Logger.Error(fmt.Sprintf("Failed to push healthchecks result for exporter %s: %s", name, err.Error()))
-							status = "failure"
-							err := exporter.Stop()
-							if err != nil {
-								// do not return error
-								// on purpose
-								c.Logger.Error(fmt.Sprintf("Fail to close the exporter %s: %s", name, err.Error()))
-							}
-						}
-						c.exporterHistogram.With(prom.Labels{"name": name, "status": status}).Observe(duration.Seconds())
-					}
-					if !exporter.IsStarted() {
-						err := exporter.Reconnect()
+	go func() {
+		defer c.wg.Done()
+		for message := range c.ChanResult {
+			c.MemoryStore.Add(message)
+			if message.Success {
+				c.Logger.Info("Healthcheck successful",
+					zap.String("name", message.Name),
+					zap.Reflect("labels", message.Labels),
+					zap.Int64("healthcheck-timestamp", message.HealthcheckTimestamp),
+				)
+			} else {
+				c.Logger.Error("healthcheck failed",
+					zap.String("name", message.Name),
+					zap.Reflect("labels", message.Labels),
+					zap.String("cause", message.Message),
+					zap.Int64("healthcheck-timestamp", message.HealthcheckTimestamp),
+				)
+			}
+			c.lock.Lock()
+			for k := range c.Exporters {
+				exporter := c.Exporters[k]
+				if exporter.IsStarted() {
+					start := time.Now()
+					err := exporter.Push(message)
+					duration := time.Since(start)
+					status := "success"
+					name := exporter.Name()
+					if err != nil {
+						c.Logger.Error(fmt.Sprintf("Failed to push healthchecks result for exporter %s: %s", name, err.Error()))
+						status = "failure"
+						err := exporter.Stop()
 						if err != nil {
 							// do not return error
 							// on purpose
-							c.Logger.Error(fmt.Sprintf("fail to reconnect the exporter %s: %s", exporter.Name(), err.Error()))
+							c.Logger.Error(fmt.Sprintf("Fail to close the exporter %s: %s", name, err.Error()))
 						}
 					}
+					c.exporterHistogram.With(prom.Labels{"name": name, "status": status}).Observe(duration.Seconds())
 				}
-				c.lock.Unlock()
-			case <-c.t.Dying():
-				return nil
+				if !exporter.IsStarted() {
+					err := exporter.Reconnect()
+					if err != nil {
+						// do not return error
+						// on purpose
+						c.Logger.Error(fmt.Sprintf("fail to reconnect the exporter %s: %s", exporter.Name(), err.Error()))
+					}
+				}
 			}
+			c.lock.Unlock()
 		}
-	})
+		c.Logger.Info("Exporter routine stopped")
+
+	}()
 	// nothing to do
 	return nil
 }
@@ -181,6 +182,7 @@ func (c *Component) Stop() error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	c.t.Kill(nil)
+	c.wg.Wait()
 	err := c.t.Wait()
 	if err != nil {
 		return err

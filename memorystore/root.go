@@ -17,8 +17,8 @@ type MemoryStore struct {
 	TTL     time.Duration
 	Logger  *zap.Logger
 	Results map[string]*healthcheck.Result
+	Tick    *time.Ticker
 
-	Tick *time.Ticker
 	t    tomb.Tomb
 	lock sync.RWMutex
 }

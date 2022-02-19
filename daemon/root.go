@@ -107,6 +107,7 @@ func (c *Component) Stop() error {
 	if err != nil {
 		return errors.Wrapf(err, "Fail to stop the healthcheck component")
 	}
+	close(c.ChanResult)
 	err = c.Exporter.Stop()
 	if err != nil {
 		return errors.Wrapf(err, "Fail to stop the exporter component")
