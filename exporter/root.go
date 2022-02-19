@@ -115,7 +115,7 @@ func (c *Component) Start() error {
 			case <-c.gaugeTick.C:
 				c.chanResultGauge.WithLabelValues().Set(float64(len(c.ChanResult)))
 			case <-c.t.Dying():
-				c.Logger.Info("Stopping exporters metrics")
+				c.Logger.Info("Exporters metrics stopped")
 				return nil
 			}
 		}
@@ -138,7 +138,6 @@ func (c *Component) Start() error {
 					zap.Int64("healthcheck-timestamp", message.HealthcheckTimestamp),
 				)
 			}
-			c.lock.Lock()
 			for k := range c.Exporters {
 				exporter := c.Exporters[k]
 				if exporter.IsStarted() {
@@ -168,7 +167,6 @@ func (c *Component) Start() error {
 					}
 				}
 			}
-			c.lock.Unlock()
 		}
 		c.Logger.Info("Exporter routine stopped")
 
@@ -182,8 +180,8 @@ func (c *Component) Stop() error {
 	c.Logger.Info("Stopping exporters")
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	c.t.Kill(nil)
 	c.wg.Wait()
+	c.t.Kill(nil)
 	err := c.t.Wait()
 	if err != nil {
 		return err
