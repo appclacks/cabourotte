@@ -179,6 +179,7 @@ func (c *Component) Start() error {
 
 // Stop the exporters
 func (c *Component) Stop() error {
+	c.Logger.Info("Stopping exporters")
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	c.t.Kill(nil)

@@ -117,6 +117,7 @@ func (c *Component) Stop() error {
 			return errors.Wrap(err, "Fail to stop the healthcheck component")
 		}
 	}
+	c.Logger.Info("All healthchecks stopped")
 	return nil
 }
 
