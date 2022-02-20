@@ -2,6 +2,7 @@ package healthcheck
 
 import (
 	"fmt"
+	"math/rand"
 	"reflect"
 	"sort"
 	"sync"
@@ -47,6 +48,8 @@ func (c *Component) startWrapper(w *Wrapper) {
 	w.healthcheck.LogInfo("Starting healthcheck")
 	w.Tick = time.NewTicker(time.Duration(w.healthcheck.Base().Interval))
 	w.t.Go(func() error {
+		wait := rand.Intn(4000)
+		time.Sleep(time.Duration(wait) * time.Millisecond)
 		for {
 			select {
 			case <-w.Tick.C:
