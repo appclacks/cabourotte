@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/labstack/echo"
@@ -32,6 +33,7 @@ type Component struct {
 	Prometheus       *prometheus.Prometheus
 	requestHistogram *prom.HistogramVec
 	responseCounter  *prom.CounterVec
+	wg               sync.WaitGroup
 }
 
 // New creates a new HTTP component
@@ -107,6 +109,17 @@ func New(logger *zap.Logger, memstore *memorystore.MemoryStore, promComponent *p
 	return &component, nil
 }
 
+// func (c *Component) saveAPIHealthchecks() error {
+// 	if err != nil {
+// 		return errors.Wrap(err, "fail marshal to YAML API healthchecks")
+// 	}
+// 	err = os.WriteFile(c.Config.APIHealthchecksConfigPath, d, 0640)
+// 	if err != nil {
+// 		return errors.Wrapf(err, "fail to write API healthchecks in file %s", c.Config.APIHealthchecksConfigPath)
+// 	}
+// 	return nil
+// }
+
 // Start starts the http server
 func (c *Component) Start() error {
 	address := fmt.Sprintf("%s:%d", c.Config.Host, c.Config.Port)
@@ -121,6 +134,7 @@ func (c *Component) Start() error {
 		return errors.Wrapf(err, "fail to register the Prometheus HTTP request histogram")
 	}
 	go func() {
+		defer c.wg.Done()
 		var err error
 		if c.Config.Cert != "" {
 			c.Logger.Info("TLS enabled")
@@ -138,6 +152,7 @@ func (c *Component) Start() error {
 			os.Exit(2)
 		}
 	}()
+	c.wg.Add(1)
 	// todo: remove this, causes issues in tests
 	time.Sleep(300 * time.Millisecond)
 	return nil
@@ -151,6 +166,7 @@ func (c *Component) Stop() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	err := c.Server.Shutdown(ctx)
+	c.wg.Wait()
 	if err != nil {
 		c.Logger.Error(err.Error())
 		return err

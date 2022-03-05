@@ -158,3 +158,39 @@ func TestGetCheck(t *testing.T) {
 		t.Fatalf("The healthcheck should be missing, and so GetCheck returns an error")
 	}
 }
+
+func TestMergeLabels(t *testing.T) {
+	b := Base{
+		Labels: nil,
+	}
+	MergeLabels(&b, map[string]string{})
+	if b.Labels == nil {
+		t.Fatalf("Merge failed")
+	}
+	if len(b.Labels) != 0 {
+		t.Fatalf("Merge failed")
+	}
+	b = Base{
+		Labels: map[string]string{},
+	}
+	MergeLabels(&b, nil)
+	if len(b.Labels) != 0 {
+		t.Fatalf("Merge failed")
+	}
+	b = Base{
+		Labels: map[string]string{"a": "b"},
+	}
+	MergeLabels(&b, map[string]string{
+		"foo": "bar",
+	})
+	if len(b.Labels) != 2 {
+		t.Fatalf("Merge failed")
+	}
+	if b.Labels["a"] != "b" {
+		t.Fatalf("Merge failed")
+	}
+	if b.Labels["foo"] != "bar" {
+		t.Fatalf("Merge failed")
+	}
+
+}

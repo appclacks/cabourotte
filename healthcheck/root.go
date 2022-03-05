@@ -226,8 +226,13 @@ func (c *Component) RemoveNonConfiguredHealthchecks(oldChecks map[string]bool, n
 
 // MergeLabels merge labels from a base and a map of string
 func MergeLabels(base *Base, new map[string]string) {
-	for k, v := range new {
-		base.Labels[k] = v
+	if new != nil && base.Labels != nil {
+		for k, v := range new {
+			base.Labels[k] = v
+		}
+	}
+	if new != nil && base.Labels == nil {
+		base.Labels = new
 	}
 
 }
