@@ -15,8 +15,6 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"sigs.k8s.io/controller-runtime/pkg/metrics"
 
 	"github.com/mcorbin/cabourotte/healthcheck"
 )
@@ -357,7 +355,4 @@ func (c *Component) handlers() {
 	})
 
 	c.Server.GET("/metrics", echo.WrapHandler(c.Prometheus.Handler()))
-	if c.DiscoveryConfig.Kubernetes.Pod.Enabled || c.DiscoveryConfig.Kubernetes.Service.Enabled || c.DiscoveryConfig.Kubernetes.CRD.Enabled {
-		c.Server.GET("/discovery/kubernetes/metrics", echo.WrapHandler(promhttp.HandlerFor(metrics.Registry, promhttp.HandlerOpts{})))
-	}
 }
