@@ -149,7 +149,7 @@ func TestHandlers(t *testing.T) {
 			t.Fatalf("Fail to read the body\n%v", err)
 		}
 		body := string(bodyBytes)
-		expected := fmt.Sprintf(`{"message":"Successfully deleted healthcheck %s"}`, c)
+		expected := fmt.Sprintf(`{"messages":["Successfully deleted healthcheck %s"]}`, c)
 		if !strings.Contains(body, expected) {
 			t.Fatalf("Invalid error message\n%s\n%s", expected, body)
 		}

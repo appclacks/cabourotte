@@ -22,7 +22,13 @@ import (
 
 // BasicResponse a type for HTTP responses
 type BasicResponse struct {
-	Message string `json:"message"`
+	Messages []string `json:"messages"`
+}
+
+func newResponse(msg string) *BasicResponse {
+	return &BasicResponse{
+		Messages: []string{msg},
+	}
 }
 
 // addCheck adds a periodic healthcheck to the healthcheck component.
@@ -54,7 +60,7 @@ func (c *Component) oneOff(ec echo.Context, healthcheck healthcheck.Healthcheck)
 	}
 	msg := fmt.Sprintf("One-off healthcheck %s successfully executed", healthcheck.Base().Name)
 	c.Logger.Info(msg)
-	return ec.JSON(http.StatusCreated, &BasicResponse{Message: msg})
+	return ec.JSON(http.StatusCreated, newResponse(msg))
 }
 
 func (c *Component) addCheckError(ec echo.Context, healthcheck healthcheck.Healthcheck, err error) error {
@@ -71,7 +77,7 @@ func (c *Component) handleCheck(ec echo.Context, healthcheck healthcheck.Healthc
 	if err != nil {
 		return c.addCheckError(ec, healthcheck, err)
 	}
-	return ec.JSON(http.StatusCreated, &BasicResponse{Message: "Healthcheck successfully added"})
+	return ec.JSON(http.StatusCreated, newResponse("Healthcheck successfully added"))
 }
 
 // handlers configures the handlers for the http server component
@@ -235,7 +241,7 @@ func (c *Component) handlers() {
 			if err != nil {
 				return corbierror.Wrap(err, "Internal error", corbierror.Internal, true)
 			}
-			return ec.JSON(http.StatusCreated, &BasicResponse{Message: "Healthchecks successfully added"})
+			return ec.JSON(http.StatusCreated, newResponse("Healthchecks successfully added"))
 		})
 
 		c.Server.GET("/healthcheck", func(ec echo.Context) error {
@@ -258,7 +264,7 @@ func (c *Component) handlers() {
 				msg := fmt.Sprintf("Fail to start the healthcheck: %s", err.Error())
 				return corbierror.New(msg, corbierror.Internal, true)
 			}
-			return ec.JSON(http.StatusOK, &BasicResponse{Message: fmt.Sprintf("Successfully deleted healthcheck %s", name)})
+			return ec.JSON(http.StatusOK, newResponse(fmt.Sprintf("Successfully deleted healthcheck %s", name)))
 		})
 	}
 	if !c.Config.DisableResultAPI {
