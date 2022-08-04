@@ -13,7 +13,6 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/mcorbin/cabourotte/discovery"
 	"github.com/mcorbin/cabourotte/healthcheck"
 	"github.com/mcorbin/cabourotte/memorystore"
 	"github.com/mcorbin/cabourotte/prometheus"
@@ -30,7 +29,7 @@ func TestHandlers(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to create the healthcheck component\n%v", err)
 	}
-	component, err := New(logger, memstore, prom, &Configuration{Host: "127.0.0.1", Port: 2001}, &discovery.Configuration{}, healthcheck)
+	component, err := New(logger, memstore, prom, &Configuration{Host: "127.0.0.1", Port: 2001}, healthcheck)
 	if err != nil {
 		t.Fatalf("Fail to create the component\n%v", err)
 	}
@@ -177,7 +176,7 @@ func TestOneOffCheck(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to create the healthcheck component\n%v", err)
 	}
-	component, err := New(zap.NewExample(), memorystore.NewMemoryStore(logger), prom, &Configuration{Host: "127.0.0.1", Port: 2001}, &discovery.Configuration{}, healthcheck)
+	component, err := New(zap.NewExample(), memorystore.NewMemoryStore(logger), prom, &Configuration{Host: "127.0.0.1", Port: 2001}, healthcheck)
 	if err != nil {
 		t.Fatalf("Fail to create the component\n%v", err)
 	}
@@ -237,7 +236,7 @@ func TestBulkEndpoint(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to create the healthcheck component\n%v", err)
 	}
-	component, err := New(zap.NewExample(), memorystore.NewMemoryStore(logger), prom, &Configuration{Host: "127.0.0.1", Port: 2001}, &discovery.Configuration{}, checkComponent)
+	component, err := New(zap.NewExample(), memorystore.NewMemoryStore(logger), prom, &Configuration{Host: "127.0.0.1", Port: 2001}, checkComponent)
 	if err != nil {
 		t.Fatalf("Fail to create the component\n%v", err)
 	}
@@ -313,7 +312,6 @@ func TestBasicAuth(t *testing.T) {
 				Username: "foobar",
 				Password: "mypassword",
 			}},
-		&discovery.Configuration{},
 		healthcheck)
 	if err != nil {
 		t.Fatalf("Fail to create the component\n%v", err)

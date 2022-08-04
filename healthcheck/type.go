@@ -11,7 +11,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// +kubebuilder:validation:Type=string
 // Duration an alias for the duration type
 type Duration time.Duration
 
@@ -58,7 +57,6 @@ func (d *Duration) MarshalJSON() ([]byte, error) {
 	return json.Marshal(duration.String())
 }
 
-// +kubebuilder:validation:Type=string
 // Protocol is the healthcheck http protocol
 type Protocol int
 
@@ -116,8 +114,6 @@ func (p Protocol) MarshalJSON() ([]byte, error) {
 	return nil, errors.New(fmt.Sprintf("Unknown protocol %d", p))
 }
 
-// +kubebuilder:validation:type=string
-// +kubebuilder:validation:Type=object
 type Regexp regexp.Regexp
 
 // UnmarshalText unmarshal a duration
@@ -176,7 +172,6 @@ func (r *Regexp) DeepCopy() *Regexp {
 	return out
 }
 
-// +kubebuilder:validation:Type=string
 // IP an alias for the IP type
 type IP net.IP
 

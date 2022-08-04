@@ -16,7 +16,6 @@ import (
 	prom "github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 
-	"github.com/mcorbin/cabourotte/discovery"
 	"github.com/mcorbin/cabourotte/healthcheck"
 	"github.com/mcorbin/cabourotte/memorystore"
 	"github.com/mcorbin/cabourotte/prometheus"
@@ -26,7 +25,6 @@ import (
 type Component struct {
 	MemoryStore      *memorystore.MemoryStore
 	Config           *Configuration
-	DiscoveryConfig  *discovery.Configuration
 	Logger           *zap.Logger
 	healthcheck      *healthcheck.Component
 	Server           *echo.Echo
@@ -37,7 +35,7 @@ type Component struct {
 }
 
 // New creates a new HTTP component
-func New(logger *zap.Logger, memstore *memorystore.MemoryStore, promComponent *prometheus.Prometheus, config *Configuration, discoveryConfig *discovery.Configuration, healthcheck *healthcheck.Component) (*Component, error) {
+func New(logger *zap.Logger, memstore *memorystore.MemoryStore, promComponent *prometheus.Prometheus, config *Configuration, healthcheck *healthcheck.Component) (*Component, error) {
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
@@ -97,7 +95,6 @@ func New(logger *zap.Logger, memstore *memorystore.MemoryStore, promComponent *p
 
 	component := Component{
 		MemoryStore:      memstore,
-		DiscoveryConfig:  discoveryConfig,
 		Config:           config,
 		Server:           e,
 		Logger:           logger,

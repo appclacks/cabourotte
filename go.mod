@@ -27,9 +27,6 @@ require (
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.23.4 // indirect
-	k8s.io/apimachinery v0.23.4
-	sigs.k8s.io/controller-runtime v0.11.1
 )
 
 require github.com/mcorbin/corbierror v0.0.0-20220804210425-326e0b6f18e4
@@ -37,21 +34,13 @@ require github.com/mcorbin/corbierror v0.0.0-20220804210425-326e0b6f18e4
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
-	github.com/go-logr/logr v1.2.2 // indirect
-	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
-	github.com/google/gofuzz v1.2.0 // indirect
-	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
-	gopkg.in/inf.v0 v0.9.1 // indirect
-	k8s.io/klog/v2 v2.40.1 // indirect
-	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
-	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
+	go.uber.org/goleak v1.1.12 // indirect
+	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 )

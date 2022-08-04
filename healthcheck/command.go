@@ -14,12 +14,10 @@ import (
 
 // CommandHealthcheckConfiguration defines a COMMAND healthcheck configuration
 type CommandHealthcheckConfiguration struct {
-	Base    `json:",inline" yaml:",inline"`
-	Command string `json:"command"`
-	// +kubebuilder:validation:Optional
+	Base      `json:",inline" yaml:",inline"`
+	Command   string   `json:"command"`
 	Arguments []string `json:"arguments"`
-	// +kubebuilder:validation:Type=string
-	Timeout Duration `json:"timeout"`
+	Timeout   Duration `json:"timeout"`
 }
 
 // CommandHealthcheck defines an HTTP healthcheck

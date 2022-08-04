@@ -12,8 +12,7 @@ import (
 
 // DNSHealthcheckConfiguration defines a DNS healthcheck configuration
 type DNSHealthcheckConfiguration struct {
-	Base `json:",inline" yaml:",inline"`
-	// +kubebuilder:validation:Optional
+	Base        `json:",inline" yaml:",inline"`
 	ExpectedIPs []IP   `json:"expected-ips,omitempty" yaml:"expected-ips,omitempty"`
 	Domain      string `json:"domain"`
 }
