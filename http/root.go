@@ -109,17 +109,6 @@ func New(logger *zap.Logger, memstore *memorystore.MemoryStore, promComponent *p
 	return &component, nil
 }
 
-// func (c *Component) saveAPIHealthchecks() error {
-// 	if err != nil {
-// 		return errors.Wrap(err, "fail marshal to YAML API healthchecks")
-// 	}
-// 	err = os.WriteFile(c.Config.APIHealthchecksConfigPath, d, 0640)
-// 	if err != nil {
-// 		return errors.Wrapf(err, "fail to write API healthchecks in file %s", c.Config.APIHealthchecksConfigPath)
-// 	}
-// 	return nil
-// }
-
 // Start starts the http server
 func (c *Component) Start() error {
 	address := fmt.Sprintf("%s:%d", c.Config.Host, c.Config.Port)

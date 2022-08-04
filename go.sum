@@ -204,6 +204,10 @@ github.com/mattn/go-isatty v0.0.14/go.mod h1:7GGIvUiUoEMVVmxf/4nioHXj79iQHKdU27k
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
 github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 h1:I0XW9+e1XWDxdcEniV4rQAIOPUGDq67JSCiRCgGCZLI=
 github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369/go.mod h1:BSXmuO+STAnVfrANrmjBb36TMTDstsz7MSK+HVaYKv4=
+github.com/mcorbin/corbierror v0.0.0-20220804210110-953d7e77e1de h1:YyodIh3ZkLEFUZbCnxgS4HW8D5wZ2T8NwbmhyGfsIbs=
+github.com/mcorbin/corbierror v0.0.0-20220804210110-953d7e77e1de/go.mod h1:miAgs+xMtGcIImpUTpWnAYe328HefqAthld7zowU0fA=
+github.com/mcorbin/corbierror v0.0.0-20220804210425-326e0b6f18e4 h1:0yi/SF1RKEvE71DxcUhfAHWzknoYk6dYh09C9AacOf8=
+github.com/mcorbin/corbierror v0.0.0-20220804210425-326e0b6f18e4/go.mod h1:miAgs+xMtGcIImpUTpWnAYe328HefqAthld7zowU0fA=
 github.com/mitchellh/mapstructure v1.1.2/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
 github.com/moby/spdystream v0.2.0/go.mod h1:f7i0iNDQJ059oMTcWxx8MA/zKFIuD/lY+0GqbN2Wy8c=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=

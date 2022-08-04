@@ -54,6 +54,9 @@ github.com/mattn/go-isatty
 # github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369
 ## explicit; go 1.9
 github.com/matttproud/golang_protobuf_extensions/pbutil
+# github.com/mcorbin/corbierror v0.0.0-20220804210425-326e0b6f18e4
+## explicit; go 1.18
+github.com/mcorbin/corbierror
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 ## explicit
 github.com/modern-go/concurrent

@@ -32,6 +32,8 @@ require (
 	sigs.k8s.io/controller-runtime v0.11.1
 )
 
+require github.com/mcorbin/corbierror v0.0.0-20220804210425-326e0b6f18e4
+
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect

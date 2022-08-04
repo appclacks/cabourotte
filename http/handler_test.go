@@ -272,8 +272,8 @@ func TestBulkEndpoint(t *testing.T) {
 	if len(checkComponent.Healthchecks) != 1 {
 		t.Fatalf("Healthchecks were not successfully created: %d", len(checkComponent.Healthchecks))
 	}
-	check, err := checkComponent.GetCheck("baz")
-	if err != nil {
+	check := checkComponent.GetCheck("baz")
+	if check == nil {
 		t.Fatalf("Fail to get the check\n%v", err)
 	}
 	httpConfig := check.GetConfig().(*healthcheck.HTTPHealthcheckConfiguration)

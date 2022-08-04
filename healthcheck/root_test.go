@@ -149,12 +149,12 @@ func TestGetCheck(t *testing.T) {
 	if len(component.Healthchecks) != 1 {
 		t.Fatalf("The healthcheck was not added")
 	}
-	_, err = component.GetCheck("foo")
-	if err != nil {
+	check := component.GetCheck("foo")
+	if check == nil {
 		t.Fatalf("The healthcheck was not found")
 	}
-	_, err = component.GetCheck("notfound")
-	if err == nil {
+	check = component.GetCheck("notfound")
+	if check != nil {
 		t.Fatalf("The healthcheck should be missing, and so GetCheck returns an error")
 	}
 }

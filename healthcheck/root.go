@@ -193,13 +193,13 @@ func (c *Component) ListChecks() []Healthcheck {
 }
 
 // GetCheck returns a check if it exists, otherwise an error.
-func (c *Component) GetCheck(name string) (Healthcheck, error) {
+func (c *Component) GetCheck(name string) Healthcheck {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 	if existingWrapper, ok := c.Healthchecks[name]; ok {
-		return existingWrapper.healthcheck, nil
+		return existingWrapper.healthcheck
 	}
-	return nil, fmt.Errorf("Healthcheck %s not found", name)
+	return nil
 }
 
 // RemoveNonConfiguredHealthchecks takes two list of healthchecks. Delete from the
