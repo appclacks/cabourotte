@@ -11,25 +11,29 @@ import (
 	"sync"
 	"time"
 
-	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	prom "github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 
-	"github.com/mcorbin/cabourotte/discovery"
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/mcorbin/cabourotte/healthcheck"
 	"github.com/mcorbin/cabourotte/memorystore"
 	"github.com/mcorbin/cabourotte/prometheus"
+	"github.com/mcorbin/fizz"
+	"github.com/mcorbin/fizz/openapi"
+	"github.com/mcorbin/gadgeto/tonic"
 )
 
 // Component the http server component
 type Component struct {
 	MemoryStore      *memorystore.MemoryStore
 	Config           *Configuration
-	DiscoveryConfig  *discovery.Configuration
 	Logger           *zap.Logger
 	healthcheck      *healthcheck.Component
-	Server           *echo.Echo
+	Router           *gin.Engine
+	Fizz             *fizz.Fizz
+	Server           *http.Server
 	Prometheus       *prometheus.Prometheus
 	requestHistogram *prom.HistogramVec
 	responseCounter  *prom.CounterVec
@@ -37,10 +41,8 @@ type Component struct {
 }
 
 // New creates a new HTTP component
-func New(logger *zap.Logger, memstore *memorystore.MemoryStore, promComponent *prometheus.Prometheus, config *Configuration, discoveryConfig *discovery.Configuration, healthcheck *healthcheck.Component) (*Component, error) {
-	e := echo.New()
-	e.HideBanner = true
-	e.HidePort = true
+func New(logger *zap.Logger, memstore *memorystore.MemoryStore, promComponent *prometheus.Prometheus, config *Configuration, healthcheck *healthcheck.Component) (*Component, error) {
+	gin.SetMode(gin.ReleaseMode)
 	if config.Cert != "" {
 		caCert, err := ioutil.ReadFile(config.Cacert)
 		if err != nil {
@@ -97,7 +99,6 @@ func New(logger *zap.Logger, memstore *memorystore.MemoryStore, promComponent *p
 
 	component := Component{
 		MemoryStore:      memstore,
-		DiscoveryConfig:  discoveryConfig,
 		Config:           config,
 		Server:           e,
 		Logger:           logger,

@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/mcorbin/cabourotte/healthcheck"
+	"github.com/mcorbin/httpgo"
 )
 
 // BasicAuth basic auth for the configuration
@@ -17,14 +18,12 @@ type BasicAuth struct {
 
 // Configuration the HTTP server configuration
 type Configuration struct {
-	Host                  string
-	Port                  uint32
-	DisableHealthcheckAPI bool `yaml:"disable-healthcheck-api,omitempty"`
-	DisableResultAPI      bool `yaml:"disable-result-api,omitempty"`
+	HTTP                  http.Configuration `yaml:"inline" json:"inline"`
+	DisableHealthcheckAPI bool               `yaml:"disable-healthcheck-api,omitempty"`
+	DisableResultAPI      bool               `yaml:"disable-result-api,omitempty"`
 	Key                   string
 	Cert                  string
-	BasicAuth             BasicAuth `yaml:"basic-auth"`
-	AllowedCN             []string  `yaml:"allowed-cn"`
+	AllowedCN             []string `yaml:"allowed-cn"`
 	Cacert                string
 }
 
@@ -35,13 +34,6 @@ func (c *Configuration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	if err := unmarshal(&raw); err != nil {
 		return errors.Wrap(err, "Unable to read HTTP configuration")
 	}
-	ip := net.ParseIP(raw.Host)
-	if ip == nil {
-		return errors.New("Invalid IP address for the HTTP server")
-	}
-	if raw.Port == 0 {
-		return errors.New("Invalid Port for the HTTP server")
-	}
 	if (raw.Cert != "" && raw.Key == "") || (raw.Cert == "" && raw.Key != "") {
 		return errors.New("The cert and key options should be configured together")
 	}
@@ -49,8 +41,8 @@ func (c *Configuration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		(raw.Key == "" && raw.Cert == "" && raw.Cacert == "")) {
 		return errors.New("Invalid certificates")
 	}
-	if (raw.BasicAuth.Username == "" && raw.BasicAuth.Password != "") ||
-		(raw.BasicAuth.Username != "" && raw.BasicAuth.Password == "") {
+	if (raw.HTTP.BasicAuth.Username == "" && raw.HTTP.BasicAuth.Password != "") ||
+		(raw.HTTP.BasicAuth.Username != "" && raw.HTTP.BasicAuth.Password == "") {
 		return errors.New("Invalid Basic Auth configuration")
 	}
 	*c = Configuration(raw)
