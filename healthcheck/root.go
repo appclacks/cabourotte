@@ -62,11 +62,16 @@ func (c *Component) startWrapper(w *Wrapper) {
 					duration.Seconds(),
 					err)
 				status := "failure"
+				owner := ""
+				labelOwner, ok := result.Labels["owner"]
+				if ok {
+					owner = labelOwner
+				}
 				if result.Success {
 					status = "success"
 				}
-				c.resultHistogram.With(prom.Labels{"name": w.healthcheck.Base().Name}).Observe(duration.Seconds())
-				c.resultCounter.With(prom.Labels{"name": w.healthcheck.Base().Name, "status": status}).Inc()
+				c.resultHistogram.With(prom.Labels{"name": w.healthcheck.Base().Name, "owner": owner}).Observe(duration.Seconds())
+				c.resultCounter.With(prom.Labels{"name": w.healthcheck.Base().Name, "status": status, "owner": owner}).Inc()
 				c.ChanResult <- result
 			case <-w.t.Dying():
 				return nil
@@ -85,7 +90,7 @@ func New(logger *zap.Logger, chanResult chan *Result, promComponent *prometheus.
 		Help:    "Time to execute a healthcheck.",
 		Buckets: buckets,
 	},
-		[]string{"name"},
+		[]string{"name", "owner"},
 	)
 
 	counter := prom.NewCounterVec(
@@ -93,7 +98,7 @@ func New(logger *zap.Logger, chanResult chan *Result, promComponent *prometheus.
 			Name: "healthcheck_total",
 			Help: "Count the number of healthchecks executions.",
 		},
-		[]string{"name", "status"})
+		[]string{"name", "status", "owner"})
 
 	err := promComponent.Register(histo)
 	if err != nil {
