@@ -38,6 +38,7 @@ type Component struct {
 	Logger          *zap.Logger
 	Healthchecks    map[string]*Wrapper
 	resultHistogram *prom.HistogramVec
+	resultCounter   *prom.CounterVec
 	lock            sync.RWMutex
 
 	ChanResult chan *Result
@@ -64,7 +65,8 @@ func (c *Component) startWrapper(w *Wrapper) {
 				if result.Success {
 					status = "success"
 				}
-				c.resultHistogram.With(prom.Labels{"name": w.healthcheck.Base().Name, "status": status}).Observe(duration.Seconds())
+				c.resultHistogram.With(prom.Labels{"name": w.healthcheck.Base().Name}).Observe(duration.Seconds())
+				c.resultCounter.With(prom.Labels{"name": w.healthcheck.Base().Name, "status": status}).Inc()
 				c.ChanResult <- result
 			case <-w.t.Dying():
 				return nil
@@ -76,20 +78,33 @@ func (c *Component) startWrapper(w *Wrapper) {
 // New creates a new Healthcheck component
 func New(logger *zap.Logger, chanResult chan *Result, promComponent *prometheus.Prometheus) (*Component, error) {
 	buckets := []float64{
-		0.05, 0.1, 0.2, 0.4, 0.8, 1,
-		1.5, 2, 3, 5}
+		0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 1,
+		2.5, 5, 7.5, 10}
 	histo := prom.NewHistogramVec(prom.HistogramOpts{
 		Name:    "healthcheck_duration_seconds",
 		Help:    "Time to execute a healthcheck.",
 		Buckets: buckets,
 	},
-		[]string{"name", "status"},
+		[]string{"name"},
 	)
+
+	counter := prom.NewCounterVec(
+		prom.CounterOpts{
+			Name: "healthcheck_total",
+			Help: "Count the number of healthchecks executions.",
+		},
+		[]string{"name", "status"})
+
 	err := promComponent.Register(histo)
 	if err != nil {
-		return nil, errors.Wrapf(err, "fail to register the healthcheck result Prometheus histogram")
+		return nil, errors.Wrapf(err, "fail to register the healthcheck results Prometheus histogram")
+	}
+	err = promComponent.Register(counter)
+	if err != nil {
+		return nil, errors.Wrapf(err, "fail to register the healthcheck results Prometheus counter")
 	}
 	component := Component{
+		resultCounter:   counter,
 		resultHistogram: histo,
 		Logger:          logger,
 		Healthchecks:    make(map[string]*Wrapper),
