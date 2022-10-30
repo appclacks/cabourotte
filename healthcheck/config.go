@@ -5,12 +5,6 @@ const (
 	SourceConfig string = ""
 	// SourceAPI the check is managed by the API
 	SourceAPI string = "api"
-	// SourceKubernetesPod the check was created from a Kubernetes pod
-	SourceKubernetesPod string = "kubernetes-pod"
-	// SourceKubernetesService the check was created from a service pod
-	SourceKubernetesService string = "kubernetes-service"
-	// SourceKubernetesCRD the check was created from a service pod
-	SourceKubernetesCRD string = "kubernetes-crd"
 	// SourceHTTPDiscovery the check was created from the http discovery mechanism
 	SourceHTTPDiscovery string = "http-discovery"
 )
