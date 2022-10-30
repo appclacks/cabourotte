@@ -85,6 +85,10 @@ func (c *HTTPDiscovery) request() error {
 	if err != nil {
 		return errors.Wrapf(err, "HTTP discovery: fail to create request for %s", c.URL)
 	}
+	req.Header.Set("User-Agent", "Cabourotte")
+	for k, v := range c.Config.Headers {
+		req.Header.Set(k, v)
+	}
 	resp, err := c.Client.Do(req)
 	if err != nil {
 		return errors.Wrapf(err, "HTTP discovery: fail to send request to %s", c.URL)
