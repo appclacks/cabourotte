@@ -1,6 +1,7 @@
 package exporter
 
 import (
+	"reflect"
 	"testing"
 
 	"gopkg.in/yaml.v2"
@@ -85,7 +86,7 @@ insecure: true
 		if err := yaml.Unmarshal([]byte(c.in), &result); err != nil {
 			t.Fatalf("Unmarshal yaml error:\n%v", err)
 		}
-		if result != c.want {
+		if !reflect.DeepEqual(result, c.want) {
 			t.Fatalf("Invalid configuration: \n%s\n%v", c.in, c.want)
 		}
 	}
