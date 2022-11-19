@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/pkg/errors"
 )
@@ -20,7 +20,7 @@ func GetTLSConfig(keyPath string, certPath string, cacertPath string, insecure b
 		tlsConfig.Certificates = []tls.Certificate{cert}
 	}
 	if cacertPath != "" {
-		caCert, err := ioutil.ReadFile(cacertPath)
+		caCert, err := os.ReadFile(cacertPath)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Fail to load the ca certificate")
 		}

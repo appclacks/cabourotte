@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"gopkg.in/yaml.v2"
 
 	"github.com/mcorbin/cabourotte/daemon"
 
@@ -37,7 +38,7 @@ func Main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
-					file, err := ioutil.ReadFile(c.String("config"))
+					file, err := os.ReadFile(c.String("config"))
 					if err != nil {
 						return errors.Wrapf(err, "fail to read the configuration file")
 					}

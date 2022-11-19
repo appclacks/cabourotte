@@ -3,7 +3,7 @@ package http
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"time"
@@ -97,7 +97,7 @@ func (c *HTTPDiscovery) request() error {
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("HTTP discovery: request failed, status %d", resp.StatusCode)
 	}
-	responseBody, err := ioutil.ReadAll(resp.Body)
+	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return errors.Wrapf(err, "Fail to read request body")
 	}
