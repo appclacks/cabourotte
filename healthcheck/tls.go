@@ -2,17 +2,15 @@ package healthcheck
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
+	cryptotls "crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net"
-	"os"
 	"time"
 
+	"github.com/mcorbin/cabourotte/tls"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
-
 	"gopkg.in/tomb.v2"
 )
 
@@ -37,7 +35,7 @@ type TLSHealthcheck struct {
 	Logger    *zap.Logger
 	Config    *TLSHealthcheckConfiguration
 	URL       string
-	TLSConfig *tls.Config
+	TLSConfig *cryptotls.Config
 
 	Tick *time.Ticker
 	t    tomb.Tomb
@@ -104,33 +102,10 @@ func (h *TLSHealthcheck) buildURL() {
 // Initialize the healthcheck.
 func (h *TLSHealthcheck) Initialize() error {
 	h.buildURL()
-	tlsConfig := &tls.Config{}
-	if h.Config.Key != "" {
-		cert, err := tls.LoadX509KeyPair(h.Config.Cert, h.Config.Key)
-		if err != nil {
-			return errors.Wrapf(err, "Fail to load certificates")
-		}
-
-		tlsConfig.Certificates = []tls.Certificate{cert}
+	tlsConfig, err := tls.GetTLSConfig(h.Config.Key, h.Config.Cert, h.Config.Cacert, h.Config.Insecure)
+	if err != nil {
+		return err
 	}
-	if h.Config.Cacert != "" {
-		caCert, err := os.ReadFile(h.Config.Cacert)
-		if err != nil {
-			return errors.Wrapf(err, "Fail to load the ca certificate")
-		}
-		caCertPool := x509.NewCertPool()
-		result := caCertPool.AppendCertsFromPEM(caCert)
-		if !result {
-			return fmt.Errorf("fail to read ca certificate for healthcheck %s", h.Config.Base.Name)
-		}
-		tlsConfig.RootCAs = caCertPool
-	}
-	if h.Config.ServerName != "" {
-		tlsConfig.ServerName = h.Config.ServerName
-	} else {
-		tlsConfig.ServerName = h.Config.Target
-	}
-	tlsConfig.InsecureSkipVerify = h.Config.Insecure
 	h.TLSConfig = tlsConfig
 	return nil
 }
@@ -189,7 +164,7 @@ func (h *TLSHealthcheck) Execute() error {
 		return errors.Wrapf(err, "TLS connection failed on %s", h.URL)
 	}
 	defer conn.Close()
-	tlsConn := tls.Client(conn, h.TLSConfig)
+	tlsConn := cryptotls.Client(conn, h.TLSConfig)
 	defer tlsConn.Close()
 	err = tlsConn.Handshake()
 	if err != nil {
