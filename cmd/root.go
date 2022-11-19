@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -82,7 +81,7 @@ func Main() {
 								errChan <- nil
 							case syscall.SIGHUP:
 								logger.Info(fmt.Sprintf("Received signal %s, reload", sig))
-								newFile, err := ioutil.ReadFile(c.String("config"))
+								newFile, err := os.ReadFile(c.String("config"))
 								if err != nil {
 									logger.Error(err.Error())
 								} else {

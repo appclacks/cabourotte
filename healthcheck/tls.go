@@ -6,8 +6,8 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net"
+	"os"
 	"time"
 
 	"github.com/pkg/errors"
@@ -114,7 +114,7 @@ func (h *TLSHealthcheck) Initialize() error {
 		tlsConfig.Certificates = []tls.Certificate{cert}
 	}
 	if h.Config.Cacert != "" {
-		caCert, err := ioutil.ReadFile(h.Config.Cacert)
+		caCert, err := os.ReadFile(h.Config.Cacert)
 		if err != nil {
 			return errors.Wrapf(err, "Fail to load the ca certificate")
 		}

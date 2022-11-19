@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"os"
 	"regexp"
 	"time"
 
@@ -143,7 +144,7 @@ func (h *HTTPHealthcheck) Initialize() error {
 		tlsConfig.Certificates = []tls.Certificate{cert}
 	}
 	if h.Config.Cacert != "" {
-		caCert, err := ioutil.ReadFile(h.Config.Cacert)
+		caCert, err := os.ReadFile(h.Config.Cacert)
 		if err != nil {
 			return errors.Wrapf(err, "Fail to load the ca certificate")
 		}
