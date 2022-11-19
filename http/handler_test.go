@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -83,7 +83,7 @@ func TestHandlers(t *testing.T) {
 		t.Fatalf("Fail to get the healthchecks\n%v", err)
 	}
 	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Fail to read the body\n%v", err)
 	}
@@ -103,7 +103,7 @@ func TestHandlers(t *testing.T) {
 		t.Fatalf("Fail to get the healthchecks\n%v", err)
 	}
 	defer resp.Body.Close()
-	bodyBytes, err = ioutil.ReadAll(resp.Body)
+	bodyBytes, err = io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Fail to read the body\n%v", err)
 	}
@@ -120,7 +120,7 @@ func TestHandlers(t *testing.T) {
 	if resp.StatusCode != http.StatusNotFound {
 		t.Fatalf("Was expecting a 404 response, got %d", resp.StatusCode)
 	}
-	bodyBytes, err = ioutil.ReadAll(resp.Body)
+	bodyBytes, err = io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Fail to read the body\n%v", err)
 	}
@@ -143,7 +143,7 @@ func TestHandlers(t *testing.T) {
 			t.Fatalf("HTTP request failed, status %d", resp.StatusCode)
 		}
 		defer resp.Body.Close()
-		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
 			t.Fatalf("Fail to read the body\n%v", err)
 		}
@@ -212,7 +212,7 @@ func TestOneOffCheck(t *testing.T) {
 		t.Fatalf("The target server was not reached: %d", count)
 	}
 	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Fail to read the body\n%v", err)
 	}
@@ -260,7 +260,7 @@ func TestBulkEndpoint(t *testing.T) {
 		t.Fatalf("HTTP request failed, status %d", resp.StatusCode)
 	}
 	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Fail to read the body\n%v", err)
 	}

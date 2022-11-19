@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -246,7 +246,7 @@ func (h *HTTPHealthcheck) Execute() error {
 		return errors.Wrapf(err, "HTTP request failed")
 	}
 	defer response.Body.Close()
-	responseBody, err := ioutil.ReadAll(response.Body)
+	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
 		return errors.Wrapf(err, "Fail to read request body")
 	}

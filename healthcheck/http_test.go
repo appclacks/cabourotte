@@ -1,7 +1,7 @@
 package healthcheck
 
 import (
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -72,7 +72,7 @@ func TestHTTPExecuteGetSuccess(t *testing.T) {
 			if r.Header.Get("Foo") == "Bar" && r.Header.Get("User-agent") == "Cabourotte" {
 				headersOK = true
 			}
-			bodyBytes, _ := ioutil.ReadAll(r.Body)
+			bodyBytes, _ := io.ReadAll(r.Body)
 			body := string(bodyBytes)
 			if body == expectedBody {
 				bodyOK = true
@@ -368,7 +368,7 @@ func TestHTTPExecuteSourceIP(t *testing.T) {
 		if r.Header.Get("Foo") == "Bar" && r.Header.Get("User-agent") == "Cabourotte" {
 			headersOK = true
 		}
-		bodyBytes, _ := ioutil.ReadAll(r.Body)
+		bodyBytes, _ := io.ReadAll(r.Body)
 		body := string(bodyBytes)
 		if body == expectedBody {
 			bodyOK = true
@@ -433,7 +433,7 @@ func TestHTTPExecutePostSuccess(t *testing.T) {
 			if r.Header.Get("Foo") == "Bar" && r.Header.Get("User-agent") == "Cabourotte" {
 				headersOK = true
 			}
-			bodyBytes, _ := ioutil.ReadAll(r.Body)
+			bodyBytes, _ := io.ReadAll(r.Body)
 			body := string(bodyBytes)
 			if body == expectedBody {
 				bodyOK = true

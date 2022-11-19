@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"sync"
@@ -40,7 +39,7 @@ func New(logger *zap.Logger, memstore *memorystore.MemoryStore, promComponent *p
 	e.HideBanner = true
 	e.HidePort = true
 	if config.Cert != "" {
-		caCert, err := ioutil.ReadFile(config.Cacert)
+		caCert, err := os.ReadFile(config.Cacert)
 		if err != nil {
 			return nil, errors.Wrap(err, "fail to read the ca certificate")
 		}
@@ -53,12 +52,12 @@ func New(logger *zap.Logger, memstore *memorystore.MemoryStore, promComponent *p
 			ClientAuth: tls.RequireAndVerifyClientCert,
 		}
 
-		serverCert, err := ioutil.ReadFile(config.Cert)
+		serverCert, err := os.ReadFile(config.Cert)
 		if err != nil {
 			return nil, errors.Wrap(err, "fail to read the certificate cert")
 		}
 
-		serverKey, err := ioutil.ReadFile(config.Key)
+		serverKey, err := os.ReadFile(config.Key)
 		if err != nil {
 			return nil, errors.Wrap(err, "fail to read the certificate key")
 		}
