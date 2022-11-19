@@ -22,9 +22,10 @@ type HTTPConfiguration struct {
 	Path     string
 	Port     uint32
 	Protocol healthcheck.Protocol
-	Key      string `json:"key,omitempty"`
-	Cert     string `json:"cert,omitempty"`
-	Cacert   string `json:"cacert,omitempty"`
+	Headers  map[string]string `json:"headers,omitempty"`
+	Key      string            `json:"key,omitempty"`
+	Cert     string            `json:"cert,omitempty"`
+	Cacert   string            `json:"cacert,omitempty"`
 	Insecure bool
 }
 
@@ -145,6 +146,9 @@ func (c *HTTPExporter) Push(result *healthcheck.Result) error {
 		return errors.Wrapf(err, "HTTP exporter: fail to create request for %s", c.URL)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	for k, v := range c.Config.Headers {
+		req.Header.Set(k, v)
+	}
 	resp, err := c.Client.Do(req)
 	if err != nil {
 		return errors.Wrapf(err, "HTTP exporter: fail to send healthchecks to %s", c.URL)
