@@ -59,9 +59,11 @@ http:
 dns-checks:
   - name: foo
     description: bar
+    timeout: 3s
     domain: mcorbin.fr
     interval: 10s
   - name: bar
+    timeout: 3s
     description: bar
     domain: mcorbin.fr
     expected-ips:
@@ -81,7 +83,8 @@ dns-checks:
 							Description: "bar",
 							Interval:    healthcheck.Duration(time.Second * 10),
 						},
-						Domain: "mcorbin.fr",
+						Timeout: healthcheck.Duration(3 * time.Second),
+						Domain:  "mcorbin.fr",
 					},
 					healthcheck.DNSHealthcheckConfiguration{
 						Base: healthcheck.Base{
@@ -89,8 +92,8 @@ dns-checks:
 							Description: "bar",
 							Interval:    healthcheck.Duration(time.Second * 10),
 						},
-						Domain: "mcorbin.fr",
-
+						Domain:  "mcorbin.fr",
+						Timeout: healthcheck.Duration(3 * time.Second),
 						ExpectedIPs: []healthcheck.IP{
 							healthcheck.IP(net.ParseIP("10.0.0.1")),
 							healthcheck.IP(net.ParseIP("10.0.0.2")),
@@ -107,6 +110,7 @@ http:
 dns-checks:
   - name: foo
     description: bar
+    timeout: 3s
     domain: mcorbin.fr
     interval: 10s
     labels:
@@ -237,7 +241,8 @@ exporters:
 								"environment": "prod",
 							},
 						},
-						Domain: "mcorbin.fr",
+						Timeout: healthcheck.Duration(3 * time.Second),
+						Domain:  "mcorbin.fr",
 					},
 				},
 				TCPChecks: []healthcheck.TCPHealthcheckConfiguration{
@@ -414,6 +419,7 @@ http:
   port: 2000
 dns-checks:
   - name: foo
+    timeout: 3s
     description: bar
     domain: mcorbin.fr
     interval: 1s

@@ -15,7 +15,8 @@ func TestDNSExecuteSuccess(t *testing.T) {
 		Logger: zap.NewExample(),
 		Config: &DNSHealthcheckConfiguration{
 			// it will hopefully resolve ^^
-			Domain: "mcorbin.fr",
+			Domain:  "mcorbin.fr",
+			Timeout: Duration(time.Second * 2),
 		},
 	}
 
@@ -29,7 +30,8 @@ func TestDNSExecuteFailure(t *testing.T) {
 	h := DNSHealthcheck{
 		Logger: zap.NewExample(),
 		Config: &DNSHealthcheckConfiguration{
-			Domain: "doesnotexist.mcorbin.fr",
+			Domain:  "doesnotexist.mcorbin.fr",
+			Timeout: Duration(time.Second * 2),
 		},
 	}
 
@@ -50,7 +52,8 @@ func TestDNSStartStop(t *testing.T) {
 				Interval:    Duration(time.Second * 5),
 				OneOff:      false,
 			},
-			Domain: "mcorbin.fr",
+			Timeout: Duration(time.Second * 2),
+			Domain:  "mcorbin.fr",
 		},
 	)
 	wrapper := NewWrapper(healthcheck)

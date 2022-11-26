@@ -1,20 +1,23 @@
 package healthcheck
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"time"
 
+	"net"
+
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
-	"net"
 )
 
 // DNSHealthcheckConfiguration defines a DNS healthcheck configuration
 type DNSHealthcheckConfiguration struct {
 	Base        `json:",inline" yaml:",inline"`
-	ExpectedIPs []IP   `json:"expected-ips,omitempty" yaml:"expected-ips,omitempty"`
-	Domain      string `json:"domain"`
+	Timeout     Duration `json:"timeout"`
+	ExpectedIPs []IP     `json:"expected-ips,omitempty" yaml:"expected-ips,omitempty"`
+	Domain      string   `json:"domain"`
 }
 
 // DNSHealthcheck defines an HTTP healthcheck
@@ -34,9 +37,15 @@ func (config *DNSHealthcheckConfiguration) Validate() error {
 	if config.Domain == "" {
 		return errors.New("The healthcheck domain is missing")
 	}
+	if config.Timeout == 0 {
+		return errors.New("The healthcheck timeout is missing")
+	}
 	if !config.Base.OneOff {
 		if config.Base.Interval < Duration(2*time.Second) {
 			return errors.New("The healthcheck interval should be greater than 2 second")
+		}
+		if config.Base.Interval < config.Timeout {
+			return errors.New("The healthcheck interval should be greater than the timeout")
 		}
 	}
 	return nil
@@ -123,10 +132,24 @@ func verifyIPs(expectedIPs []IP, lookupIPs []net.IP) error {
 	return nil
 }
 
+func (h *DNSHealthcheck) lookupIP() ([]net.IP, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(h.Config.Timeout))
+	defer cancel()
+	addrs, err := net.DefaultResolver.LookupIPAddr(ctx, h.Config.Domain)
+	if err != nil {
+		return nil, err
+	}
+	ips := make([]net.IP, len(addrs))
+	for i, ia := range addrs {
+		ips[i] = ia.IP
+	}
+	return ips, nil
+}
+
 // Execute executes an healthcheck on the given domain
 func (h *DNSHealthcheck) Execute() error {
 	h.LogDebug("start executing healthcheck")
-	ips, err := net.LookupIP(h.Config.Domain)
+	ips, err := h.lookupIP()
 	if err != nil {
 		return errors.Wrapf(err, "Fail to lookup IP for domain")
 	}

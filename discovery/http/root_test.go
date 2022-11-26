@@ -25,7 +25,8 @@ func TestRequest(t *testing.T) {
 					Description: "bar",
 					Interval:    healthcheck.Duration(time.Second * 10),
 				},
-				Domain: "mcorbin.fr",
+				Timeout: healthcheck.Duration(time.Second * 2),
+				Domain:  "mcorbin.fr",
 			},
 		},
 	}
@@ -37,7 +38,8 @@ func TestRequest(t *testing.T) {
 					Description: "bar",
 					Interval:    healthcheck.Duration(time.Second * 10),
 				},
-				Domain: "mcorbin.fr",
+				Timeout: healthcheck.Duration(time.Second * 2),
+				Domain:  "mcorbin.fr",
 			},
 		},
 		TCPChecks: []healthcheck.TCPHealthcheckConfiguration{

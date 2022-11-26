@@ -43,7 +43,7 @@ func TestHandlers(t *testing.T) {
 	}{
 		{
 			endpoint: "/healthcheck/dns",
-			payload:  `{"name":"foo","description":"bar","domain":"mcorbin.fr","interval":"10m","one-off":false}`,
+			payload:  `{"name":"foo","description":"bar","domain":"mcorbin.fr","interval":"10m","one-off":false, "timeout": "1s"}`,
 		},
 		{
 			endpoint: "/healthcheck/tcp",
