@@ -84,10 +84,10 @@ func (h *TLSHealthcheck) SetSource(source string) {
 func (h *TLSHealthcheck) Summary() string {
 	summary := ""
 	if h.Config.Base.Description != "" {
-		summary = fmt.Sprintf("%s on %s:%d", h.Config.Base.Description, h.Config.Target, h.Config.Port)
+		summary = fmt.Sprintf("TLS healthcheck %s on %s:%d", h.Config.Base.Description, h.Config.Target, h.Config.Port)
 
 	} else {
-		summary = fmt.Sprintf("on %s:%d", h.Config.Target, h.Config.Port)
+		summary = fmt.Sprintf("TLS healthcheck on %s:%d", h.Config.Target, h.Config.Port)
 	}
 
 	return summary

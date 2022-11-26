@@ -111,10 +111,10 @@ func (h *HTTPHealthcheck) buildURL() {
 func (h *HTTPHealthcheck) Summary() string {
 	summary := ""
 	if h.Config.Base.Description != "" {
-		summary = fmt.Sprintf("%s on %s:%d", h.Config.Base.Description, h.Config.Target, h.Config.Port)
+		summary = fmt.Sprintf("HTTP healthcheck %s on %s:%d", h.Config.Base.Description, h.Config.Target, h.Config.Port)
 
 	} else {
-		summary = fmt.Sprintf("on %s:%d", h.Config.Target, h.Config.Port)
+		summary = fmt.Sprintf("HTTP healthcheck on %s:%d", h.Config.Target, h.Config.Port)
 	}
 
 	return summary

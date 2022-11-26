@@ -69,10 +69,10 @@ func (h *TCPHealthcheck) buildURL() {
 func (h *TCPHealthcheck) Summary() string {
 	summary := ""
 	if h.Config.Base.Description != "" {
-		summary = fmt.Sprintf("%s on %s:%d", h.Config.Base.Description, h.Config.Target, h.Config.Port)
+		summary = fmt.Sprintf("TCP healthcheck %s on %s:%d", h.Config.Base.Description, h.Config.Target, h.Config.Port)
 
 	} else {
-		summary = fmt.Sprintf("on %s:%d", h.Config.Target, h.Config.Port)
+		summary = fmt.Sprintf("TCP healthcheck on %s:%d", h.Config.Target, h.Config.Port)
 	}
 
 	if h.Config.ShouldFail {

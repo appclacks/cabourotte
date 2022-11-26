@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"net"
@@ -75,10 +76,10 @@ func (h *DNSHealthcheck) SetSource(source string) {
 func (h *DNSHealthcheck) Summary() string {
 	summary := ""
 	if h.Config.Base.Description != "" {
-		summary = fmt.Sprintf("%s on %s", h.Config.Base.Description, h.Config.Domain)
+		summary = fmt.Sprintf("DNS healthcheck %s on %s", h.Config.Base.Description, h.Config.Domain)
 
 	} else {
-		summary = fmt.Sprintf("on %s", h.Config.Domain)
+		summary = fmt.Sprintf("DNS healthcheck on %s", h.Config.Domain)
 	}
 
 	return summary
@@ -123,11 +124,15 @@ func verifyIPs(expectedIPs []IP, lookupIPs []net.IP) error {
 		}
 	}
 	if len(notFound) != 0 {
-		l := ""
-		for _, notFound := range notFound {
-			l = l + "," + notFound
+		l := []string{}
+		for _, ip := range notFound {
+			l = append(l, ip)
 		}
-		return fmt.Errorf("Expected IP address not found. IPs found are %s", l)
+		lookup := []string{}
+		for _, ip := range lookupIPs {
+			lookup = append(lookup, ip.String())
+		}
+		return fmt.Errorf("The IP addresses %s were not found. The DNS result was %s ", strings.Join(l, ", "), strings.Join(lookup, ", "))
 	}
 	return nil
 }
