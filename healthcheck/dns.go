@@ -125,9 +125,7 @@ func verifyIPs(expectedIPs []IP, lookupIPs []net.IP) error {
 	}
 	if len(notFound) != 0 {
 		l := []string{}
-		for _, ip := range notFound {
-			l = append(l, ip)
-		}
+		l = append(l, notFound...)
 		lookup := []string{}
 		for _, ip := range lookupIPs {
 			lookup = append(lookup, ip.String())
