@@ -342,6 +342,10 @@ func TestHTTPStartStop(t *testing.T) {
 			Timeout:  Duration(time.Second * 3),
 		},
 	)
+	err := healthcheck.Initialize()
+	if err != nil {
+		t.Fatalf("Initialization error :\n%v", err)
+	}
 	wrapper := NewWrapper(healthcheck)
 	prom, err := prometheus.New()
 	if err != nil {
