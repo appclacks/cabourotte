@@ -52,27 +52,28 @@ func (c *Component) startWrapper(w *Wrapper) {
 		wait := rand.Intn(4000)
 		time.Sleep(time.Duration(wait) * time.Millisecond)
 		for {
+			start := time.Now()
+			err := w.healthcheck.Execute()
+			duration := time.Since(start)
+			result := NewResult(
+				w.healthcheck,
+				duration.Seconds(),
+				err)
+			status := "failure"
+			owner := ""
+			labelOwner, ok := result.Labels["owner"]
+			if ok {
+				owner = labelOwner
+			}
+			if result.Success {
+				status = "success"
+			}
+			c.resultHistogram.With(prom.Labels{"name": w.healthcheck.Base().Name, "owner": owner}).Observe(duration.Seconds())
+			c.resultCounter.With(prom.Labels{"name": w.healthcheck.Base().Name, "status": status, "owner": owner}).Inc()
+			c.ChanResult <- result
 			select {
 			case <-w.Tick.C:
-				start := time.Now()
-				err := w.healthcheck.Execute()
-				duration := time.Since(start)
-				result := NewResult(
-					w.healthcheck,
-					duration.Seconds(),
-					err)
-				status := "failure"
-				owner := ""
-				labelOwner, ok := result.Labels["owner"]
-				if ok {
-					owner = labelOwner
-				}
-				if result.Success {
-					status = "success"
-				}
-				c.resultHistogram.With(prom.Labels{"name": w.healthcheck.Base().Name, "owner": owner}).Observe(duration.Seconds())
-				c.resultCounter.With(prom.Labels{"name": w.healthcheck.Base().Name, "status": status, "owner": owner}).Inc()
-				c.ChanResult <- result
+				continue
 			case <-w.t.Dying():
 				return nil
 			}

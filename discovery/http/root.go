@@ -89,6 +89,13 @@ func (c *HTTPDiscovery) request() error {
 	for k, v := range c.Config.Headers {
 		req.Header.Set(k, v)
 	}
+	if len(c.Config.Query) != 0 {
+		q := req.URL.Query()
+		for k, v := range c.Config.Query {
+			q.Add(k, v)
+		}
+		req.URL.RawQuery = q.Encode()
+	}
 	resp, err := c.Client.Do(req)
 	if err != nil {
 		return errors.Wrapf(err, "HTTP discovery: fail to send request to %s", c.URL)

@@ -12,6 +12,7 @@ type Configuration struct {
 	Port     uint32
 	Protocol healthcheck.Protocol
 	Headers  map[string]string    `json:"headers,omitempty"`
+	Query    map[string]string    `json:"query,omitempty"`
 	Interval healthcheck.Duration `json:"interval"`
 	Key      string               `json:"key,omitempty"`
 	Cert     string               `json:"cert,omitempty"`
