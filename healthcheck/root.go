@@ -149,8 +149,8 @@ func (c *Component) Stop() error {
 func (c *Component) removeCheck(identifier string) error {
 	if existingWrapper, ok := c.Healthchecks[identifier]; ok {
 		existingWrapper.healthcheck.LogInfo("Stopping healthcheck")
-		c.resultHistogram.Delete(prom.Labels{"name": identifier, "status": "failure"})
-		c.resultHistogram.Delete(prom.Labels{"name": identifier, "status": "success"})
+		c.resultHistogram.DeletePartialMatch(prom.Labels{"name": identifier})
+		c.resultCounter.DeletePartialMatch(prom.Labels{"name": identifier})
 		err := existingWrapper.Stop()
 		if err != nil {
 			return errors.Wrapf(err, "Fail to stop healthcheck %s", existingWrapper.healthcheck.Base().Name)

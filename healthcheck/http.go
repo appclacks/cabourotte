@@ -251,12 +251,13 @@ func (h *HTTPHealthcheck) Execute() error {
 		return errors.Wrapf(err, "Fail to read request body")
 	}
 	responseBodyStr := string(responseBody)
+	maxMessageSize := 1000
+	message := responseBodyStr
+	if len(responseBodyStr) > maxMessageSize {
+		message = responseBodyStr[0:maxMessageSize]
+	}
 	if !h.isSuccessful(response) {
-		maxMessageSize := 1000
-		message := responseBodyStr
-		if len(responseBodyStr) > maxMessageSize {
-			message = responseBodyStr[0:maxMessageSize]
-		}
+
 		errorMsg := fmt.Sprintf("HTTP request failed: (status %d) => %s", response.StatusCode, html.EscapeString(message))
 		err = errors.New(errorMsg)
 		return err
@@ -264,7 +265,7 @@ func (h *HTTPHealthcheck) Execute() error {
 	for _, regex := range h.Config.BodyRegexp {
 		r := regexp.Regexp(regex)
 		if !r.MatchString(responseBodyStr) {
-			return fmt.Errorf("healthcheck body does not match regex %s: %s", r.String(), responseBodyStr)
+			return fmt.Errorf("healthcheck body does not match regex %s: %s", r.String(), message)
 		}
 	}
 	return nil
