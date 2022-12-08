@@ -67,7 +67,7 @@ func (c *Component) startWrapper(w *Wrapper) {
 			histoLabels := map[string]string{
 				"name": w.healthcheck.Base().Name,
 			}
-			for _, k := range c.healthchecksLabels { //nolint
+			for _, k := range c.healthchecksLabels {
 				histoLabels[k] = result.Labels[k]
 			}
 			c.resultHistogram.With(prom.Labels(histoLabels)).Observe(duration.Seconds())
@@ -75,7 +75,7 @@ func (c *Component) startWrapper(w *Wrapper) {
 				"name":   w.healthcheck.Base().Name,
 				"status": status,
 			}
-			for _, k := range c.healthchecksLabels { //nolint
+			for _, k := range c.healthchecksLabels {
 				counterLabels[k] = result.Labels[k]
 			}
 			c.resultCounter.With(prom.Labels(counterLabels)).Inc()
@@ -96,9 +96,7 @@ func New(logger *zap.Logger, chanResult chan *Result, promComponent *prometheus.
 		0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 1,
 		2.5, 5, 7.5, 10}
 	histoLabels := []string{"name"}
-	for _, k := range healthchecksLabels {
-		histoLabels = append(histoLabels, k)
-	}
+	histoLabels = append(histoLabels, healthchecksLabels...)
 	histo := prom.NewHistogramVec(prom.HistogramOpts{
 		Name:    "healthcheck_duration_seconds",
 		Help:    "Time to execute a healthcheck.",
@@ -107,9 +105,7 @@ func New(logger *zap.Logger, chanResult chan *Result, promComponent *prometheus.
 		histoLabels,
 	)
 	counterLabels := []string{"name", "status"}
-	for _, k := range healthchecksLabels {
-		counterLabels = append(counterLabels, k)
-	}
+	counterLabels = append(counterLabels, healthchecksLabels...)
 	counter := prom.NewCounterVec(
 		prom.CounterOpts{
 			Name: "healthcheck_total",
