@@ -13,6 +13,7 @@ import (
 type Configuration struct {
 	ResultBuffer  uint `yaml:"result-buffer"`
 	HTTP          http.Configuration
+	MetricsLabels []string                                      `yaml:"metrics-labels"`
 	CommandChecks []healthcheck.CommandHealthcheckConfiguration `yaml:"command-checks"`
 	DNSChecks     []healthcheck.DNSHealthcheckConfiguration     `yaml:"dns-checks"`
 	TCPChecks     []healthcheck.TCPHealthcheckConfiguration     `yaml:"tcp-checks"`

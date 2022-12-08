@@ -14,7 +14,7 @@ func TestStartStop(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating prometheus component :\n%v", err)
 	}
-	component, err := New(zap.NewExample(), make(chan *Result, 10), prom)
+	component, err := New(zap.NewExample(), make(chan *Result, 10), prom, []string{})
 	if err != nil {
 		t.Fatalf("Fail to create the component\n%v", err)
 	}
@@ -34,7 +34,7 @@ func TestAddRemoveCheck(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating prometheus component :\n%v", err)
 	}
-	component, err := New(logger, make(chan *Result, 10), prom)
+	component, err := New(logger, make(chan *Result, 10), prom, []string{})
 	if err != nil {
 		t.Fatalf("Fail to create the component\n%v", err)
 	}
@@ -120,7 +120,7 @@ func TestGetCheck(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating prometheus component :\n%v", err)
 	}
-	component, err := New(logger, make(chan *Result, 10), prom)
+	component, err := New(logger, make(chan *Result, 10), prom, []string{})
 	if err != nil {
 		t.Fatalf("Fail to create the component\n%v", err)
 	}

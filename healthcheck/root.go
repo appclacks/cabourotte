@@ -35,11 +35,12 @@ type Healthcheck interface {
 
 // Component is the component which will manage healthchecks
 type Component struct {
-	Logger          *zap.Logger
-	Healthchecks    map[string]*Wrapper
-	resultHistogram *prom.HistogramVec
-	resultCounter   *prom.CounterVec
-	lock            sync.RWMutex
+	Logger             *zap.Logger
+	Healthchecks       map[string]*Wrapper
+	resultHistogram    *prom.HistogramVec
+	resultCounter      *prom.CounterVec
+	lock               sync.RWMutex
+	healthchecksLabels []string
 
 	ChanResult chan *Result
 }
@@ -60,16 +61,24 @@ func (c *Component) startWrapper(w *Wrapper) {
 				duration.Seconds(),
 				err)
 			status := "failure"
-			owner := ""
-			labelOwner, ok := result.Labels["owner"]
-			if ok {
-				owner = labelOwner
-			}
 			if result.Success {
 				status = "success"
 			}
-			c.resultHistogram.With(prom.Labels{"name": w.healthcheck.Base().Name, "owner": owner}).Observe(duration.Seconds())
-			c.resultCounter.With(prom.Labels{"name": w.healthcheck.Base().Name, "status": status, "owner": owner}).Inc()
+			histoLabels := map[string]string{
+				"name": w.healthcheck.Base().Name,
+			}
+			for _, k := range c.healthchecksLabels {
+				histoLabels[k] = result.Labels[k]
+			}
+			c.resultHistogram.With(prom.Labels(histoLabels)).Observe(duration.Seconds())
+			counterLabels := map[string]string{
+				"name":   w.healthcheck.Base().Name,
+				"status": status,
+			}
+			for _, k := range c.healthchecksLabels {
+				counterLabels[k] = result.Labels[k]
+			}
+			c.resultCounter.With(prom.Labels(counterLabels)).Inc()
 			c.ChanResult <- result
 			select {
 			case <-w.Tick.C:
@@ -82,24 +91,31 @@ func (c *Component) startWrapper(w *Wrapper) {
 }
 
 // New creates a new Healthcheck component
-func New(logger *zap.Logger, chanResult chan *Result, promComponent *prometheus.Prometheus) (*Component, error) {
+func New(logger *zap.Logger, chanResult chan *Result, promComponent *prometheus.Prometheus, healthchecksLabels []string) (*Component, error) {
 	buckets := []float64{
 		0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 1,
 		2.5, 5, 7.5, 10}
+	histoLabels := []string{"name"}
+	for _, k := range healthchecksLabels {
+		histoLabels = append(histoLabels, k)
+	}
 	histo := prom.NewHistogramVec(prom.HistogramOpts{
 		Name:    "healthcheck_duration_seconds",
 		Help:    "Time to execute a healthcheck.",
 		Buckets: buckets,
 	},
-		[]string{"name", "owner"},
+		histoLabels,
 	)
-
+	counterLabels := []string{"name", "status"}
+	for _, k := range healthchecksLabels {
+		counterLabels = append(counterLabels, k)
+	}
 	counter := prom.NewCounterVec(
 		prom.CounterOpts{
 			Name: "healthcheck_total",
 			Help: "Count the number of healthchecks executions.",
 		},
-		[]string{"name", "status", "owner"})
+		counterLabels)
 
 	err := promComponent.Register(histo)
 	if err != nil {
@@ -110,11 +126,12 @@ func New(logger *zap.Logger, chanResult chan *Result, promComponent *prometheus.
 		return nil, errors.Wrapf(err, "fail to register the healthcheck results Prometheus counter")
 	}
 	component := Component{
-		resultCounter:   counter,
-		resultHistogram: histo,
-		Logger:          logger,
-		Healthchecks:    make(map[string]*Wrapper),
-		ChanResult:      chanResult,
+		resultCounter:      counter,
+		resultHistogram:    histo,
+		Logger:             logger,
+		Healthchecks:       make(map[string]*Wrapper),
+		ChanResult:         chanResult,
+		healthchecksLabels: healthchecksLabels,
 	}
 
 	return &component, nil
