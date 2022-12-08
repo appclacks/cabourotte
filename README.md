@@ -1,6 +1,9 @@
 # Cabourotte
 
-The documentation is available at [https://cabourotte.appclacks.fr/](https://cabourotte.appclacks.fr/)
+Cabourotte is a tool that can be configure to execute health checks on your infrastructure. +
+It's the tool used to execute health checks on the [Appclacks Clous platform](https://appclacks.com/). It's a free software that you can also install on your private infrastructure.
+
+The documentation is available at [https://cabourotte.appclacks.com/](https://cabourotte.appclacks.com/)
 
 IT infrastructures are complex. We have more and more equipments, machines, and services to manage. Infrastructures are also more dynamic, with services which can be scaled up and down depending on usage.
 
@@ -9,8 +12,6 @@ The rise of containers orchestrators also made networking more complex. On a net
 Cabourotte is a tool which allow you to execute healthchecks (HTTP(s), TCP, DNS, TLS including certificate expiration notice, arbitrary commands) on your infrastructure. It already supports various features including:
 
 - Configurable by using a YAML file, or by using the API. Using the API allows you to dynamically add, update, or remove healthchecks definitions. The API also allows you to list configured healthchecks and to get the latest status for each healthcheck.
-- Kubernetes service discovery: Cabourotte can automatically watches Kubernetes pods and services and configured healthchecks based on annotations on them.
-- Kubernetes Custom Resource Definition: you can configure your healthchecks using a Kubernetes CRD.
 - HTTP service discovery: You can easily integration Cabourotte with anything you want.
 - Prometheus integration: the healthchecks results and executions time are exposed on a Prometheus endpoint alongside various internal metrics.
 - Support exporters, which can be configured to push the healthchecks results to another systems.
