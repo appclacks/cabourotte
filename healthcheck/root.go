@@ -67,7 +67,7 @@ func (c *Component) startWrapper(w *Wrapper) {
 			histoLabels := map[string]string{
 				"name": w.healthcheck.Base().Name,
 			}
-			for _, k := range c.healthchecksLabels {
+			for _, k := range c.healthchecksLabels { //nolint
 				histoLabels[k] = result.Labels[k]
 			}
 			c.resultHistogram.With(prom.Labels(histoLabels)).Observe(duration.Seconds())
@@ -75,7 +75,7 @@ func (c *Component) startWrapper(w *Wrapper) {
 				"name":   w.healthcheck.Base().Name,
 				"status": status,
 			}
-			for _, k := range c.healthchecksLabels {
+			for _, k := range c.healthchecksLabels { //nolint
 				counterLabels[k] = result.Labels[k]
 			}
 			c.resultCounter.With(prom.Labels(counterLabels)).Inc()
