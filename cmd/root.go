@@ -45,6 +45,9 @@ func Main() {
 					if err := yaml.Unmarshal(file, &config); err != nil {
 						return errors.Wrapf(err, "Fail to read the yaml config file")
 					}
+					if config.HTTP.Host == "" {
+						return errors.New("Invalid HTTP server configuration")
+					}
 					zapConfig := zap.NewProductionConfig()
 					if c.Bool("debug") {
 						zapConfig.Level.SetLevel(zap.DebugLevel)
