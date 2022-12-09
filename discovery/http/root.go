@@ -22,6 +22,7 @@ import (
 type HTTPDiscovery struct {
 	Logger           *zap.Logger
 	requestHistogram *prom.HistogramVec
+	responseCounter  *prom.CounterVec
 	Healthcheck      *healthcheck.Component
 	URL              string
 	Config           *Configuration
@@ -48,23 +49,33 @@ func New(logger *zap.Logger, config *Configuration, checkComponent *healthcheck.
 	transport := &http.Transport{
 		TLSClientConfig: tlsConfig,
 	}
-
 	buckets := []float64{
-		0.05, 0.1, 0.2, 0.4, 0.8, 1,
-		1.5, 2, 3, 5}
+		0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 1,
+		2.5, 5, 7.5, 10}
 	histo := prom.NewHistogramVec(prom.HistogramOpts{
 		Name:    "http_discovery_duration_seconds",
 		Help:    "Time to execute the HTTP request for healthchecks discovery.",
 		Buckets: buckets,
 	},
-		[]string{"status"},
+		[]string{},
 	)
+	counter := prom.NewCounterVec(
+		prom.CounterOpts{
+			Name: "http_discovery_responses_total",
+			Help: "Count the number of HTTP responses for discovery requests.",
+		},
+		[]string{"status"})
 	err = promComponent.Register(histo)
 	if err != nil {
 		return nil, errors.Wrapf(err, "fail to register the http discovery request histogram")
 	}
+	err = promComponent.Register(counter)
+	if err != nil {
+		return nil, errors.Wrapf(err, "fail to register the http discovery response counter")
+	}
 	component := HTTPDiscovery{
 		Healthcheck:      checkComponent,
+		responseCounter:  counter,
 		requestHistogram: histo,
 		Logger:           logger,
 		Config:           config,
@@ -143,7 +154,8 @@ func (c *HTTPDiscovery) Start() error {
 					msg := fmt.Sprintf("HTTP discovery error: %s", err.Error())
 					c.Logger.Error(msg)
 				}
-				c.requestHistogram.With(prom.Labels{"status": status}).Observe(duration.Seconds())
+				c.requestHistogram.With(prom.Labels{}).Observe(duration.Seconds())
+				c.responseCounter.With(prom.Labels{"status": status}).Inc()
 			case <-c.t.Dying():
 				return nil
 			}
