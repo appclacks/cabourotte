@@ -7,6 +7,7 @@ import (
 )
 
 type Configuration struct {
+	Name     string
 	Host     string
 	Path     string
 	Port     uint32
@@ -34,6 +35,9 @@ func (configuration *Configuration) UnmarshalYAML(unmarshal func(interface{}) er
 	raw := rawConfiguration{}
 	if err := unmarshal(&raw); err != nil {
 		return errors.Wrap(err, "Unable to read HTTP discovery configuration")
+	}
+	if raw.Name == "" {
+		return errors.New("Invalid HTTP discovery data source name configuration")
 	}
 	if raw.Host == "" {
 		return errors.New("Invalid host for the HTTP exporter configuration")

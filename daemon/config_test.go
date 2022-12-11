@@ -30,10 +30,11 @@ http:
   port: 2000
 discovery:
   http:
-    host: "127.0.0.1"
-    path: "/"
-    port: 30000
-    interval: 10
+    - host: "127.0.0.1"
+      name: "foo"
+      path: "/"
+      port: 30000
+      interval: 10
 `,
 			want: Configuration{
 				ResultBuffer: DefaultBufferSize,
@@ -42,11 +43,14 @@ discovery:
 					Port: 2000,
 				},
 				Discovery: discovery.Configuration{
-					HTTP: dhttp.Configuration{
-						Host:     "127.0.0.1",
-						Port:     30000,
-						Path:     "/",
-						Interval: 10,
+					HTTP: []dhttp.Configuration{
+						{
+							Name:     "foo",
+							Host:     "127.0.0.1",
+							Port:     30000,
+							Path:     "/",
+							Interval: 10,
+						},
 					},
 				},
 			},

@@ -14,6 +14,7 @@ import (
 
 	"github.com/mcorbin/cabourotte/healthcheck"
 	"github.com/mcorbin/cabourotte/prometheus"
+	prom "github.com/prometheus/client_golang/prometheus"
 )
 
 func TestRequest(t *testing.T) {
@@ -59,6 +60,22 @@ func TestRequest(t *testing.T) {
 			},
 		},
 	}
+	buckets := []float64{
+		0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 1,
+		2.5, 5, 7.5, 10}
+	histo := prom.NewHistogramVec(prom.HistogramOpts{
+		Name:    "http_discovery_duration_seconds",
+		Help:    "Time to execute the HTTP request for healthchecks discovery.",
+		Buckets: buckets,
+	},
+		[]string{"name"},
+	)
+	counter := prom.NewCounterVec(
+		prom.CounterOpts{
+			Name: "http_discovery_responses_total",
+			Help: "Count the number of HTTP responses for discovery requests.",
+		},
+		[]string{"status", "name"})
 	prom, err := prometheus.New()
 	if err != nil {
 		t.Fatalf("Error creating prometheus component :\n%v", err)
@@ -103,7 +120,7 @@ func TestRequest(t *testing.T) {
 		Protocol: healthcheck.HTTP,
 		Interval: 10,
 	}
-	discovery, err := New(logger, &discoveryConfig, checkComponent, prom)
+	discovery, err := New(logger, &discoveryConfig, checkComponent, counter, histo)
 	if err != nil {
 		t.Fatalf("Fail to create the HTTP discovery component :\n%v", err)
 	}

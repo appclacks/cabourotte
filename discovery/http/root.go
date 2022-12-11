@@ -14,7 +14,6 @@ import (
 	"gopkg.in/tomb.v2"
 
 	"github.com/mcorbin/cabourotte/healthcheck"
-	"github.com/mcorbin/cabourotte/prometheus"
 	"github.com/mcorbin/cabourotte/tls"
 )
 
@@ -32,7 +31,7 @@ type HTTPDiscovery struct {
 }
 
 // New creates a new HTTP Discovery
-func New(logger *zap.Logger, config *Configuration, checkComponent *healthcheck.Component, promComponent *prometheus.Prometheus) (*HTTPDiscovery, error) {
+func New(logger *zap.Logger, config *Configuration, checkComponent *healthcheck.Component, counter *prom.CounterVec, histogram *prom.HistogramVec) (*HTTPDiscovery, error) {
 	protocol := "http"
 	tlsConfig, err := tls.GetTLSConfig(config.Key, config.Cert, config.Cacert, config.Insecure)
 	if err != nil {
@@ -49,34 +48,11 @@ func New(logger *zap.Logger, config *Configuration, checkComponent *healthcheck.
 	transport := &http.Transport{
 		TLSClientConfig: tlsConfig,
 	}
-	buckets := []float64{
-		0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 1,
-		2.5, 5, 7.5, 10}
-	histo := prom.NewHistogramVec(prom.HistogramOpts{
-		Name:    "http_discovery_duration_seconds",
-		Help:    "Time to execute the HTTP request for healthchecks discovery.",
-		Buckets: buckets,
-	},
-		[]string{},
-	)
-	counter := prom.NewCounterVec(
-		prom.CounterOpts{
-			Name: "http_discovery_responses_total",
-			Help: "Count the number of HTTP responses for discovery requests.",
-		},
-		[]string{"status"})
-	err = promComponent.Register(histo)
-	if err != nil {
-		return nil, errors.Wrapf(err, "fail to register the http discovery request histogram")
-	}
-	err = promComponent.Register(counter)
-	if err != nil {
-		return nil, errors.Wrapf(err, "fail to register the http discovery response counter")
-	}
+
 	component := HTTPDiscovery{
 		Healthcheck:      checkComponent,
 		responseCounter:  counter,
-		requestHistogram: histo,
+		requestHistogram: histogram,
 		Logger:           logger,
 		Config:           config,
 		URL:              url,
@@ -127,7 +103,7 @@ func (c *HTTPDiscovery) request() error {
 		return fmt.Errorf("HTTP Discovery: fail to convert the payload %s from json", string(responseBody))
 	}
 	return c.Healthcheck.ReloadForSource(
-		healthcheck.SourceHTTPDiscovery,
+		fmt.Sprintf("%s-%s", healthcheck.SourceHTTPDiscovery, c.Config.Name),
 		nil,
 		payload.CommandChecks,
 		payload.DNSChecks,
@@ -154,8 +130,8 @@ func (c *HTTPDiscovery) Start() error {
 					msg := fmt.Sprintf("HTTP discovery error: %s", err.Error())
 					c.Logger.Error(msg)
 				}
-				c.requestHistogram.With(prom.Labels{}).Observe(duration.Seconds())
-				c.responseCounter.With(prom.Labels{"status": status}).Inc()
+				c.requestHistogram.With(prom.Labels{"name": c.Config.Name}).Observe(duration.Seconds())
+				c.responseCounter.With(prom.Labels{"status": status, "name": c.Config.Name}).Inc()
 			case <-c.t.Dying():
 				return nil
 			}
