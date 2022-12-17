@@ -83,8 +83,8 @@ func (c *Component) handleCheck(ec echo.Context, healthcheck healthcheck.Healthc
 // handlers configures the handlers for the http server component
 func (c *Component) handlers() {
 	c.Server.HTTPErrorHandler = errorHandler(c.Logger)
+	c.Server.Use(c.metricMiddleware)
 	fsys, _ := fs.Sub(embededFiles, "assets")
-	c.Server.Use(c.countResponse)
 	if c.Config.BasicAuth.Username != "" {
 		c.Server.Use(middleware.BasicAuth(func(username, password string, ctx echo.Context) (bool, error) {
 			if subtle.ConstantTimeCompare([]byte(username),

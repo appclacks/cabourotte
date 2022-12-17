@@ -26,6 +26,10 @@ func New() (*Prometheus, error) {
 	if err != nil {
 		return nil, err
 	}
+	err = reg.Register(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+	if err != nil {
+		return nil, err
+	}
 	return p, nil
 }
 
