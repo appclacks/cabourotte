@@ -46,7 +46,7 @@ func (configuration *Configuration) UnmarshalYAML(unmarshal func(interface{}) er
 		return errors.New("Invalid port for the HTTP server")
 	}
 	if raw.Interval < 10 {
-		return errors.New("The interval should be greater or equal than 10")
+		return errors.New("The interval should be greater or equal than 10 seconds")
 	}
 	if !((raw.Key != "" && raw.Cert != "") ||
 		(raw.Key == "" && raw.Cert == "")) {
