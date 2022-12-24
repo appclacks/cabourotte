@@ -33,7 +33,7 @@ type HTTPDiscovery struct {
 // New creates a new HTTP Discovery
 func New(logger *zap.Logger, config *Configuration, checkComponent *healthcheck.Component, counter *prom.CounterVec, histogram *prom.HistogramVec) (*HTTPDiscovery, error) {
 	protocol := "http"
-	tlsConfig, err := tls.GetTLSConfig(config.Key, config.Cert, config.Cacert, config.Insecure)
+	tlsConfig, err := tls.GetTLSConfig(config.Key, config.Cert, config.Cacert, "", config.Insecure)
 	if err != nil {
 		return nil, err
 	}

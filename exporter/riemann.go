@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/riemann/riemann-go-client"
+	riemanngo "github.com/riemann/riemann-go-client"
 	"go.uber.org/zap"
 
 	"github.com/mcorbin/cabourotte/healthcheck"
@@ -64,7 +64,7 @@ func getClient(config *RiemannConfiguration) (riemanngo.Client, error) {
 	var client riemanngo.Client
 	url := net.JoinHostPort(config.Host, fmt.Sprintf("%d", config.Port))
 	if config.Key != "" || config.Cert != "" || config.Cacert != "" {
-		tlsConfig, err := tls.GetTLSConfig(config.Key, config.Cert, config.Cacert, config.Insecure)
+		tlsConfig, err := tls.GetTLSConfig(config.Key, config.Cert, config.Cacert, "", config.Insecure)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Fail to build the Riemann exporter tls configuration")
 		}

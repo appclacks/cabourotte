@@ -102,7 +102,7 @@ func (h *TLSHealthcheck) buildURL() {
 // Initialize the healthcheck.
 func (h *TLSHealthcheck) Initialize() error {
 	h.buildURL()
-	tlsConfig, err := tls.GetTLSConfig(h.Config.Key, h.Config.Cert, h.Config.Cacert, h.Config.Insecure)
+	tlsConfig, err := tls.GetTLSConfig(h.Config.Key, h.Config.Cert, h.Config.Cacert, h.Config.ServerName, h.Config.Insecure)
 	if err != nil {
 		return err
 	}

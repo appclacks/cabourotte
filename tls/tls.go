@@ -10,7 +10,7 @@ import (
 )
 
 // GetTLSConfig returns a tls configuration
-func GetTLSConfig(keyPath string, certPath string, cacertPath string, insecure bool) (*tls.Config, error) {
+func GetTLSConfig(keyPath string, certPath string, cacertPath string, serverName string, insecure bool) (*tls.Config, error) {
 	tlsConfig := &tls.Config{}
 	if keyPath != "" {
 		cert, err := tls.LoadX509KeyPair(certPath, keyPath)
@@ -31,6 +31,9 @@ func GetTLSConfig(keyPath string, certPath string, cacertPath string, insecure b
 		}
 		tlsConfig.RootCAs = caCertPool
 
+	}
+	if serverName != "" {
+		tlsConfig.ServerName = serverName
 	}
 	tlsConfig.InsecureSkipVerify = insecure
 	return tlsConfig, nil

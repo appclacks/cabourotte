@@ -65,7 +65,7 @@ func (c *HTTPConfiguration) UnmarshalYAML(unmarshal func(interface{}) error) err
 // NewHTTPExporter creates a new HTTP exporter
 func NewHTTPExporter(logger *zap.Logger, config *HTTPConfiguration) (*HTTPExporter, error) {
 	protocol := "http"
-	tlsConfig, err := tls.GetTLSConfig(config.Key, config.Cert, config.Cacert, config.Insecure)
+	tlsConfig, err := tls.GetTLSConfig(config.Key, config.Cert, config.Cacert, "", config.Insecure)
 	if err != nil {
 		return nil, err
 	}
