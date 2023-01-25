@@ -31,6 +31,7 @@ type HTTPHealthcheckConfiguration struct {
 	Port       uint              `json:"port"`
 	Redirect   bool              `json:"redirect"`
 	Body       string            `json:"body,omitempty"`
+	Query      map[string]string `json:"query,omitempty"`
 	Headers    map[string]string `json:"headers,omitempty"`
 	Protocol   Protocol          `json:"protocol"`
 	Path       string            `json:"path,omitempty"`
@@ -123,7 +124,7 @@ func (h *HTTPHealthcheck) Summary() string {
 // Initialize the healthcheck.
 func (h *HTTPHealthcheck) Initialize() error {
 	h.buildURL()
-	// tls is enabled
+
 	dialer := net.Dialer{}
 	tlsConfig := &tls.Config{}
 	if h.Config.SourceIP != nil {
@@ -241,6 +242,13 @@ func (h *HTTPHealthcheck) Execute() error {
 	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(h.Config.Timeout))
 	defer cancel()
 	req = req.WithContext(timeoutCtx)
+	if len(h.Config.Query) != 0 {
+		q := req.URL.Query()
+		for k, v := range h.Config.Query {
+			q.Add(k, v)
+		}
+		req.URL.RawQuery = q.Encode()
+	}
 	response, err := client.Do(req)
 	if err != nil {
 		return errors.Wrapf(err, "HTTP request failed")

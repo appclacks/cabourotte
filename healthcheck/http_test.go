@@ -484,3 +484,79 @@ func TestHTTPExecutePostSuccess(t *testing.T) {
 		t.Fatal("Invalid body")
 	}
 }
+
+func TestHTTPExecuteQueryParam(t *testing.T) {
+	count := 0
+	headersOK := false
+	bodyOK := false
+	expectedBody := "my custom body"
+	query := map[string]string{
+		"a":       "b",
+		"trololo": "huhu",
+	}
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		q := r.URL.Query()
+		for k, v := range query {
+			params, ok := q[k]
+			if !ok {
+				t.Fatalf("Query param %s not found", k)
+			}
+			if params[0] != v {
+				t.Fatalf("Incorrect query param %s", k)
+			}
+		}
+		if r.Method != "POST" {
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			if r.Header.Get("Foo") == "Bar" && r.Header.Get("User-agent") == "Cabourotte" {
+				headersOK = true
+			}
+			bodyBytes, _ := io.ReadAll(r.Body)
+			body := string(bodyBytes)
+			if body == expectedBody {
+				bodyOK = true
+			}
+			count++
+			w.WriteHeader(http.StatusOK)
+		}
+	}))
+	defer ts.Close()
+
+	port, err := strconv.ParseUint(strings.Split(ts.URL, ":")[2], 10, 16)
+	if err != nil {
+		t.Fatalf("error getting HTTP server port :\n%v", err)
+	}
+	h := HTTPHealthcheck{
+		Logger: zap.NewExample(),
+		Config: &HTTPHealthcheckConfiguration{
+			ValidStatus: []uint{200},
+			Headers:     map[string]string{"Foo": "Bar"},
+			Port:        uint(port),
+			Target:      "127.0.0.1",
+			Query:       query,
+			Method:      "POST",
+			Protocol:    HTTP,
+			Body:        expectedBody,
+			Path:        "/",
+			Timeout:     Duration(time.Second * 2),
+		},
+	}
+	err = h.Initialize()
+	if err != nil {
+		t.Fatalf("Initialization error :\n%v", err)
+	}
+	err = h.Execute()
+	if err != nil {
+		t.Fatalf("healthcheck error :\n%v", err)
+	}
+	if count != 1 {
+		t.Fatal("The request counter is invalid")
+	}
+	if !headersOK {
+		t.Fatal("Invalid headers")
+	}
+	if !bodyOK {
+		t.Fatal("Invalid body")
+	}
+}
