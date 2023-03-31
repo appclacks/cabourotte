@@ -58,7 +58,7 @@ func (c *Component) startWrapper(w *Wrapper) {
 			duration := time.Since(start)
 			result := NewResult(
 				w.healthcheck,
-				duration.Seconds(),
+				duration.Milliseconds(),
 				err)
 			status := "failure"
 			if result.Success {
