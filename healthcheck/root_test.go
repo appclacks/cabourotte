@@ -6,7 +6,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/mcorbin/cabourotte/prometheus"
+	"github.com/appclacks/cabourotte/prometheus"
 )
 
 func TestStartStop(t *testing.T) {

@@ -8,7 +8,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/mcorbin/cabourotte/tls"
+	"github.com/appclacks/cabourotte/tls"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"gopkg.in/tomb.v2"

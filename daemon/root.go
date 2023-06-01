@@ -7,12 +7,12 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 
-	"github.com/mcorbin/cabourotte/discovery"
-	"github.com/mcorbin/cabourotte/exporter"
-	"github.com/mcorbin/cabourotte/healthcheck"
-	"github.com/mcorbin/cabourotte/http"
-	"github.com/mcorbin/cabourotte/memorystore"
-	"github.com/mcorbin/cabourotte/prometheus"
+	"github.com/appclacks/cabourotte/discovery"
+	"github.com/appclacks/cabourotte/exporter"
+	"github.com/appclacks/cabourotte/healthcheck"
+	"github.com/appclacks/cabourotte/http"
+	"github.com/appclacks/cabourotte/memorystore"
+	"github.com/appclacks/cabourotte/prometheus"
 )
 
 // Component is the component which will manage the HTTP server and the program

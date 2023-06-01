@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/mcorbin/cabourotte/cmd"
+	"github.com/appclacks/cabourotte/cmd"
 )
 
 func main() {

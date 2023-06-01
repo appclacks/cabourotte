@@ -13,9 +13,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/mcorbin/cabourotte/healthcheck"
-	"github.com/mcorbin/cabourotte/memorystore"
-	"github.com/mcorbin/cabourotte/prometheus"
+	"github.com/appclacks/cabourotte/healthcheck"
+	"github.com/appclacks/cabourotte/memorystore"
+	"github.com/appclacks/cabourotte/prometheus"
 )
 
 func TestHandlers(t *testing.T) {

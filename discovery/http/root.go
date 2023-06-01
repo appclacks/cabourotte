@@ -13,8 +13,8 @@ import (
 	"go.uber.org/zap"
 	"gopkg.in/tomb.v2"
 
-	"github.com/mcorbin/cabourotte/healthcheck"
-	"github.com/mcorbin/cabourotte/tls"
+	"github.com/appclacks/cabourotte/healthcheck"
+	"github.com/appclacks/cabourotte/tls"
 )
 
 // HTTPDiscovery the http discovery struct

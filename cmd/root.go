@@ -9,7 +9,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/mcorbin/cabourotte/daemon"
+	"github.com/appclacks/cabourotte/daemon"
 
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"

@@ -6,9 +6,9 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 
-	dhttp "github.com/mcorbin/cabourotte/discovery/http"
-	"github.com/mcorbin/cabourotte/healthcheck"
-	"github.com/mcorbin/cabourotte/prometheus"
+	dhttp "github.com/appclacks/cabourotte/discovery/http"
+	"github.com/appclacks/cabourotte/healthcheck"
+	"github.com/appclacks/cabourotte/prometheus"
 	prom "github.com/prometheus/client_golang/prometheus"
 )
 

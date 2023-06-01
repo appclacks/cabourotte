@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 	"gopkg.in/tomb.v2"
 
-	"github.com/mcorbin/cabourotte/healthcheck"
+	"github.com/appclacks/cabourotte/healthcheck"
 )
 
 // MemoryStore A store containing the latest healthchecks results

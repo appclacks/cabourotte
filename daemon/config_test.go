@@ -9,11 +9,11 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/mcorbin/cabourotte/discovery"
-	dhttp "github.com/mcorbin/cabourotte/discovery/http"
-	"github.com/mcorbin/cabourotte/exporter"
-	"github.com/mcorbin/cabourotte/healthcheck"
-	"github.com/mcorbin/cabourotte/http"
+	"github.com/appclacks/cabourotte/discovery"
+	dhttp "github.com/appclacks/cabourotte/discovery/http"
+	"github.com/appclacks/cabourotte/exporter"
+	"github.com/appclacks/cabourotte/healthcheck"
+	"github.com/appclacks/cabourotte/http"
 )
 
 func TestUnmarshalConfig(t *testing.T) {

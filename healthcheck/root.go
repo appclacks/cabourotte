@@ -12,7 +12,7 @@ import (
 	prom "github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 
-	"github.com/mcorbin/cabourotte/prometheus"
+	"github.com/appclacks/cabourotte/prometheus"
 )
 
 // HealthcheckConfiguration is the interface for the healthcheck configuration

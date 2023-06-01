@@ -16,7 +16,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 
-	"github.com/mcorbin/cabourotte/healthcheck"
+	"github.com/appclacks/cabourotte/healthcheck"
 	"github.com/mcorbin/corbierror"
 )
 

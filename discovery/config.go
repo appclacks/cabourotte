@@ -1,7 +1,7 @@
 package discovery
 
 import (
-	"github.com/mcorbin/cabourotte/discovery/http"
+	"github.com/appclacks/cabourotte/discovery/http"
 )
 
 // Configuration the service discovery mechanisms configuration

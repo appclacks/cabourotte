@@ -9,8 +9,8 @@ import (
 	riemanngo "github.com/riemann/riemann-go-client"
 	"go.uber.org/zap"
 
-	"github.com/mcorbin/cabourotte/healthcheck"
-	"github.com/mcorbin/cabourotte/tls"
+	"github.com/appclacks/cabourotte/healthcheck"
+	"github.com/appclacks/cabourotte/tls"
 )
 
 // RiemannConfiguration the Riemann exporter configuration

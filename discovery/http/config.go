@@ -3,7 +3,7 @@ package http
 import (
 	"github.com/pkg/errors"
 
-	"github.com/mcorbin/cabourotte/healthcheck"
+	"github.com/appclacks/cabourotte/healthcheck"
 )
 
 type Configuration struct {

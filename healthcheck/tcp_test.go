@@ -11,7 +11,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/mcorbin/cabourotte/prometheus"
+	"github.com/appclacks/cabourotte/prometheus"
 )
 
 func TestTCPBuildURL(t *testing.T) {

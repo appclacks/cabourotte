@@ -3,10 +3,10 @@ package daemon
 import (
 	"github.com/pkg/errors"
 
-	"github.com/mcorbin/cabourotte/discovery"
-	"github.com/mcorbin/cabourotte/exporter"
-	"github.com/mcorbin/cabourotte/healthcheck"
-	"github.com/mcorbin/cabourotte/http"
+	"github.com/appclacks/cabourotte/discovery"
+	"github.com/appclacks/cabourotte/exporter"
+	"github.com/appclacks/cabourotte/healthcheck"
+	"github.com/appclacks/cabourotte/http"
 )
 
 // Configuration the HTTP server configuration
