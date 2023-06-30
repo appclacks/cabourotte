@@ -27,6 +27,7 @@ type HTTPHealthcheckConfiguration struct {
 	ValidStatus []uint `json:"valid-status" yaml:"valid-status"`
 	// can be an IP or a domain
 	Target     string            `json:"target"`
+	Host       string            `json:"host,omitempty"`
 	Method     string            `json:"method"`
 	Port       uint              `json:"port"`
 	Redirect   bool              `json:"redirect"`
@@ -232,6 +233,9 @@ func (h *HTTPHealthcheck) Execute() error {
 	redirect := http.ErrUseLastResponse
 	if h.Config.Redirect {
 		redirect = nil
+	}
+	if h.Config.Host != "" {
+		req.Host = h.Config.Host
 	}
 	client := &http.Client{
 		Transport: h.transport,

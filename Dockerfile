@@ -1,4 +1,4 @@
-FROM golang:1.20-1-buster as build-env
+FROM golang:1.20.5-bullseye as build-env
 
 ADD . /app
 WORKDIR /app
