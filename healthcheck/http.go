@@ -3,18 +3,16 @@ package healthcheck
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"html"
 	"io"
 	"net"
 	"net/http"
-	"os"
 	"regexp"
 	"time"
 
+	"github.com/appclacks/cabourotte/tls"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 
@@ -39,6 +37,7 @@ type HTTPHealthcheckConfiguration struct {
 	SourceIP   IP                `json:"source-ip,omitempty" yaml:"source-ip,omitempty"`
 	BodyRegexp []Regexp          `json:"body-regexp,omitempty" yaml:"body-regexp,omitempty"`
 	Insecure   bool              `json:"insecure"`
+	ServerName string            `json:"server-name"`
 	Timeout    Duration          `json:"timeout"`
 	Key        string            `json:"key,omitempty"`
 	Cert       string            `json:"cert,omitempty"`
@@ -127,7 +126,6 @@ func (h *HTTPHealthcheck) Initialize() error {
 	h.buildURL()
 
 	dialer := net.Dialer{}
-	tlsConfig := &tls.Config{}
 	if h.Config.SourceIP != nil {
 		srcIP := net.IP(h.Config.SourceIP).String()
 		addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:0", srcIP))
@@ -138,27 +136,10 @@ func (h *HTTPHealthcheck) Initialize() error {
 			LocalAddr: addr,
 		}
 	}
-	if h.Config.Key != "" {
-		cert, err := tls.LoadX509KeyPair(h.Config.Cert, h.Config.Key)
-		if err != nil {
-			return errors.Wrapf(err, "Fail to load certificates")
-		}
-		tlsConfig.Certificates = []tls.Certificate{cert}
+	tlsConfig, err := tls.GetTLSConfig(h.Config.Key, h.Config.Cert, h.Config.Cacert, h.Config.ServerName, h.Config.Insecure)
+	if err != nil {
+		return err
 	}
-	if h.Config.Cacert != "" {
-		caCert, err := os.ReadFile(h.Config.Cacert)
-		if err != nil {
-			return errors.Wrapf(err, "Fail to load the ca certificate")
-		}
-		caCertPool := x509.NewCertPool()
-		result := caCertPool.AppendCertsFromPEM(caCert)
-		if !result {
-			return fmt.Errorf("fail to read ca certificate for healthcheck %s", h.Config.Base.Name)
-		}
-		tlsConfig.RootCAs = caCertPool
-
-	}
-	tlsConfig.InsecureSkipVerify = h.Config.Insecure
 	h.transport = &http.Transport{
 		DialContext:     dialer.DialContext,
 		TLSClientConfig: tlsConfig,
