@@ -1,1 +1,1 @@
-The documentation is available at [https://cabourotte.mcorbin.fr/](https://cabourotte.mcorbin.fr/)
+The documentation is available at [https://cabourotte.appclacks.com/](https://cabourotte.appclacks.com/)
