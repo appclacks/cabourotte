@@ -1,0 +1,30 @@
+name: publish docker image
+on: 
+  push:
+    tags:
+      - "*"
+
+jobs:
+  publish-docker-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: git fetch --prune --unshallow
+
+      - name: Login to Appclacks Container Registry
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_LOGIN }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Build/Push image appclacks/cabourotte:latest
+        shell: /usr/bin/bash {0}
+        run: |
+          docker build . -t appclacks/cabourotte:latest
+          docker push       appclacks/cabourotte:latest
+          # get tags of current commit
+          tag=$(git describe --exact-match --tags $(git log -n1 --pretty='%h'))
+          if [ ! -z "$tag" ]; then
+            echo "Tag name from git describe: $tag"
+            docker tag  appclacks/cabourotte:latest appclacks/cabourotte:$tag
+            docker push appclacks/cabourotte:$tag
+          fi
