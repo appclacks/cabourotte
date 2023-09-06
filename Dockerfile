@@ -1,4 +1,4 @@
-FROM golang:1.20.5-bullseye as build-env
+FROM golang:1.21.1-bookworm as build-env
 
 ADD . /app
 WORKDIR /app
