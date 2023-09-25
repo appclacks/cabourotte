@@ -107,7 +107,7 @@ func New(logger *zap.Logger, memstore *memorystore.MemoryStore, promComponent *p
 
 // Start starts the http server
 func (c *Component) Start() error {
-	address := fmt.Sprintf("%s:%d", c.Config.Host, c.Config.Port)
+	address := fmt.Sprintf("[%s]:%d", c.Config.Host, c.Config.Port)
 	c.Logger.Info(fmt.Sprintf("Starting the HTTP server component on %s", address))
 	c.handlers()
 	err := c.Prometheus.Register(c.responseCounter)
