@@ -38,7 +38,7 @@ func New(logger *zap.Logger, config *Configuration) (*Component, error) {
 		return nil, err
 	}
 	chanResult := make(chan *healthcheck.Result, config.ResultBuffer)
-	checkComponent, err := healthcheck.New(logger, chanResult, prom, config.MetricsLabels)
+	checkComponent, err := healthcheck.New(logger, chanResult, prom, config.HealthchecksLabels)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Fail to create the healthcheck component")
 	}

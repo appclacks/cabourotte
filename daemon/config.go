@@ -11,16 +11,16 @@ import (
 
 // Configuration the HTTP server configuration
 type Configuration struct {
-	ResultBuffer  uint `yaml:"result-buffer"`
-	HTTP          http.Configuration
-	MetricsLabels []string                                      `yaml:"metrics-labels"`
-	CommandChecks []healthcheck.CommandHealthcheckConfiguration `yaml:"command-checks"`
-	DNSChecks     []healthcheck.DNSHealthcheckConfiguration     `yaml:"dns-checks"`
-	TCPChecks     []healthcheck.TCPHealthcheckConfiguration     `yaml:"tcp-checks"`
-	HTTPChecks    []healthcheck.HTTPHealthcheckConfiguration    `yaml:"http-checks"`
-	TLSChecks     []healthcheck.TLSHealthcheckConfiguration     `yaml:"tls-checks"`
-	Exporters     exporter.Configuration
-	Discovery     discovery.Configuration
+	ResultBuffer       uint `yaml:"result-buffer"`
+	HTTP               http.Configuration
+	HealthchecksLabels []string                                      `yaml:"healthchecks-labels"`
+	CommandChecks      []healthcheck.CommandHealthcheckConfiguration `yaml:"command-checks"`
+	DNSChecks          []healthcheck.DNSHealthcheckConfiguration     `yaml:"dns-checks"`
+	TCPChecks          []healthcheck.TCPHealthcheckConfiguration     `yaml:"tcp-checks"`
+	HTTPChecks         []healthcheck.HTTPHealthcheckConfiguration    `yaml:"http-checks"`
+	TLSChecks          []healthcheck.TLSHealthcheckConfiguration     `yaml:"tls-checks"`
+	Exporters          exporter.Configuration
+	Discovery          discovery.Configuration
 }
 
 // DefaultBufferSize the default siez for the buffer containing healthchecks results
