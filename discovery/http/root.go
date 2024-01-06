@@ -100,7 +100,7 @@ func (c *HTTPDiscovery) request() error {
 	}
 	var payload ResultPayload
 	if err := json.Unmarshal(responseBody, &payload); err != nil {
-		return fmt.Errorf("HTTP Discovery: fail to convert the payload %s from json", string(responseBody))
+		return fmt.Errorf("HTTP Discovery: fail to convert the payload from json: %s", err.Error())
 	}
 	return c.Healthcheck.ReloadForSource(
 		fmt.Sprintf("%s-%s", healthcheck.SourceHTTPDiscovery, c.Config.Name),
