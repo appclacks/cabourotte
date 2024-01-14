@@ -250,8 +250,7 @@ func (h *HTTPHealthcheck) Execute() error {
 		message = responseBodyStr[0:maxMessageSize]
 	}
 	if !h.isSuccessful(response) {
-
-		errorMsg := fmt.Sprintf("HTTP request failed: (status %d) => %s", response.StatusCode, html.EscapeString(message))
+		errorMsg := fmt.Sprintf("HTTP request failed: status %d. Body: '%s'", response.StatusCode, html.EscapeString(message))
 		err = errors.New(errorMsg)
 		return err
 	}
