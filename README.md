@@ -1,7 +1,8 @@
 # Cabourotte
 
-Cabourotte is a tool that can be configure to execute health checks on your infrastructure. +
-It's the tool used to execute health checks on the [Appclacks Cloud platform](https://appclacks.com/). It's a free software that you can also install on your private infrastructure.
+Cabourotte is a tool that can be configure to execute health checks on your infrastructure.
+
+It's used to execute health checks on the [Appclacks Cloud platform](https://appclacks.com/). It's a free software that you can also install on your private infrastructure.
 
 The Appclacks Cloud platform documentation is available at [https://doc.appclacks.com/](https://doc.appclacks.com/) and the Cabourotte documentation is available at [https://cabourotte.appclacks.com/](https://cabourotte.appclacks.com/)
 
