@@ -24,7 +24,7 @@ type Configuration struct {
 }
 
 // DefaultBufferSize the default siez for the buffer containing healthchecks results
-const DefaultBufferSize = 5000
+const DefaultBufferSize = 20000
 
 // UnmarshalYAML Parse a configuration from YAML.
 func (configuration *Configuration) UnmarshalYAML(unmarshal func(interface{}) error) error {
