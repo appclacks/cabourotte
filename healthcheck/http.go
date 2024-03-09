@@ -89,9 +89,9 @@ type HTTPHealthcheck struct {
 	Config *HTTPHealthcheckConfiguration
 	URL    string
 
-	Tick      *time.Ticker
-	t         tomb.Tomb
-	transport *http.Transport
+	Tick   *time.Ticker
+	t      tomb.Tomb
+	Client *http.Client
 }
 
 // buildURL build the target URL for the HTTP healthcheck, depending of its
@@ -140,9 +140,19 @@ func (h *HTTPHealthcheck) Initialize() error {
 	if err != nil {
 		return err
 	}
-	h.transport = &http.Transport{
+	transport := &http.Transport{
 		DialContext:     dialer.DialContext,
 		TLSClientConfig: tlsConfig,
+	}
+	redirect := http.ErrUseLastResponse
+	if h.Config.Redirect {
+		redirect = nil
+	}
+	h.Client = &http.Client{
+		Transport: transport,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return redirect
+		},
 	}
 	return nil
 }
@@ -207,23 +217,17 @@ func (h *HTTPHealthcheck) Execute() error {
 	if err != nil {
 		return errors.Wrapf(err, "fail to initialize HTTP request")
 	}
+	if h.Config.Host != "" {
+		req.Host = h.Config.Host
+	}
 	req.Header.Set("User-Agent", "Cabourotte")
 	for k, v := range h.Config.Headers {
 		req.Header.Set(k, v)
 	}
-	redirect := http.ErrUseLastResponse
-	if h.Config.Redirect {
-		redirect = nil
-	}
 	if h.Config.Host != "" {
 		req.Host = h.Config.Host
 	}
-	client := &http.Client{
-		Transport: h.transport,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return redirect
-		},
-	}
+	client := h.Client
 	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(h.Config.Timeout))
 	defer cancel()
 	req = req.WithContext(timeoutCtx)
