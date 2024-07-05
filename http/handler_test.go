@@ -42,19 +42,19 @@ func TestHandlers(t *testing.T) {
 		payload  string
 	}{
 		{
-			endpoint: "/healthcheck/dns",
+			endpoint: "/api/v1/healthcheck/dns",
 			payload:  `{"name":"foo","description":"bar","domain":"mcorbin.fr","interval":"10m","one-off":false, "timeout": "1s"}`,
 		},
 		{
-			endpoint: "/healthcheck/tcp",
+			endpoint: "/api/v1/healthcheck/tcp",
 			payload:  `{"name":"bar","description":"bar","interval":"10m","one-off":false,"target":"mcorbin.fr","port":9999,"timeout":"10s"}`,
 		},
 		{
-			endpoint: "/healthcheck/http",
+			endpoint: "/api/v1/healthcheck/http",
 			payload:  `{"name":"baz","description":"bar","domain":"mcorbin.fr","interval":"10m","one-off":false,"target":"mcorbin.fr","port":9999,"timeout":"10s","protocol":"http","valid-status":[200]}`,
 		},
 		{
-			endpoint: "/healthcheck/tls",
+			endpoint: "/api/v1/healthcheck/tls",
 			payload:  `{"name":"tls-check","description":"bar","interval":"10m","one-off":false,"target":"mcorbin.fr","port":9999,"timeout":"10s"}`,
 		},
 	}
@@ -78,7 +78,7 @@ func TestHandlers(t *testing.T) {
 	}
 
 	// get the healthchecks
-	resp, err := http.Get("http://127.0.0.1:2001/healthcheck")
+	resp, err := http.Get("http://127.0.0.1:2001/api/v1/healthcheck")
 	if err != nil {
 		t.Fatalf("Fail to get the healthchecks\n%v", err)
 	}
@@ -98,7 +98,7 @@ func TestHandlers(t *testing.T) {
 		t.Fatalf("Invalid body\n")
 	}
 	// get one healthcheck
-	resp, err = http.Get("http://127.0.0.1:2001/healthcheck/foo")
+	resp, err = http.Get("http://127.0.0.1:2001/api/v1/healthcheck/foo")
 	if err != nil {
 		t.Fatalf("Fail to get the healthchecks\n%v", err)
 	}
@@ -112,7 +112,7 @@ func TestHandlers(t *testing.T) {
 		t.Fatalf("Invalid body\n")
 	}
 	// get one invalid healthcheck
-	resp, err = http.Get("http://127.0.0.1:2001/healthcheck/doesnotexist")
+	resp, err = http.Get("http://127.0.0.1:2001/api/v1/healthcheck/doesnotexist")
 	if err != nil {
 		t.Fatalf("Fail to get the healthchecks\n%v", err)
 	}
@@ -131,7 +131,7 @@ func TestHandlers(t *testing.T) {
 	// delete everything
 	checks := []string{"foo", "bar", "baz", "tls-check"}
 	for _, c := range checks {
-		req, err := http.NewRequest("DELETE", fmt.Sprintf("http://127.0.0.1:2001/healthcheck/%s", c), nil)
+		req, err := http.NewRequest("DELETE", fmt.Sprintf("http://127.0.0.1:2001/api/v1/healthcheck/%s", c), nil)
 		if err != nil {
 			t.Fatalf("Fail to build the HTTP request\n%v", err)
 		}
@@ -196,7 +196,7 @@ func TestOneOffCheck(t *testing.T) {
 	}
 	client := &http.Client{}
 	reqBody := fmt.Sprintf(`{"name":"baz","description":"bar","interval":"10m","one-off":true,"target":"127.0.0.1","port":%d,"timeout":"10s","protocol":"http","valid-status":[200]}`, port)
-	req, err := http.NewRequest("POST", "http://127.0.0.1:2001/healthcheck/http", bytes.NewBuffer([]byte(reqBody)))
+	req, err := http.NewRequest("POST", "http://127.0.0.1:2001/api/v1/healthcheck/http", bytes.NewBuffer([]byte(reqBody)))
 	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		t.Fatalf("Fail to build the HTTP request\n%v", err)
@@ -247,7 +247,7 @@ func TestBulkEndpoint(t *testing.T) {
 
 	client := &http.Client{}
 	reqBody := `{"http-checks": [{"name":"baz","description":"bar","interval":"10m","target":"127.0.0.1","port":3000,"timeout":"10s","protocol":"http","valid-status":[200],"body-regexp":["test*"]}]}`
-	req, err := http.NewRequest("POST", "http://127.0.0.1:2001/healthcheck/bulk", bytes.NewBuffer([]byte(reqBody)))
+	req, err := http.NewRequest("POST", "http://127.0.0.1:2001/api/v1/healthcheck/bulk", bytes.NewBuffer([]byte(reqBody)))
 	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		t.Fatalf("Fail to build the HTTP request\n%v", err)
@@ -320,14 +320,14 @@ func TestBasicAuth(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to start the component\n%v", err)
 	}
-	resp, err := http.Get("http://127.0.0.1:2001/result")
+	resp, err := http.Get("http://127.0.0.1:2001/api/v1/result")
 	if err != nil {
 		t.Fatalf("HTTP request failed\n%v", err)
 	}
 	if resp.StatusCode != 401 {
 		t.Fatalf("Expected 401, got status %d", resp.StatusCode)
 	}
-	req, err := http.NewRequest("GET", "http://127.0.0.1:2001/result", nil)
+	req, err := http.NewRequest("GET", "http://127.0.0.1:2001/api/v1/result", nil)
 	if err != nil {
 		t.Fatalf("Fail to build the request\n%v", err)
 	}

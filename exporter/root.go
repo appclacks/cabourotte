@@ -125,7 +125,7 @@ func (c *Component) Start() error {
 		for message := range c.ChanResult {
 			c.MemoryStore.Add(message)
 			if message.Success {
-				c.Logger.Info("Healthcheck successful",
+				c.Logger.Debug("Healthcheck successful",
 					zap.String("name", message.Name),
 					zap.Reflect("labels", message.Labels),
 					zap.Int64("healthcheck-timestamp", message.HealthcheckTimestamp),

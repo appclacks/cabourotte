@@ -20,6 +20,14 @@ import (
 	"github.com/mcorbin/corbierror"
 )
 
+type ListResultsOutput struct {
+	Result []healthcheck.Result `json:"result"`
+}
+
+type ListHealthchecksOutput struct {
+	Result []healthcheck.Healthcheck `json:"result"`
+}
+
 // BasicResponse a type for HTTP responses
 type BasicResponse struct {
 	Messages []string `json:"messages"`
@@ -101,8 +109,9 @@ func (c *Component) handlers() {
 		return corbierror.New("Not found", corbierror.NotFound, true)
 	}
 	var bulkLock sync.RWMutex
+	apiGroup := c.Server.Group("/api/v1")
 	if !c.Config.DisableHealthcheckAPI {
-		c.Server.POST("/healthcheck/dns", func(ec echo.Context) error {
+		apiGroup.POST("/healthcheck/dns", func(ec echo.Context) error {
 			var config healthcheck.DNSHealthcheckConfiguration
 			if err := ec.Bind(&config); err != nil {
 				msg := fmt.Sprintf("Fail to create the dns healthcheck. Invalid JSON: %s", err.Error())
@@ -117,7 +126,7 @@ func (c *Component) handlers() {
 			return c.handleCheck(ec, healthcheck)
 		})
 
-		c.Server.POST("/healthcheck/tcp", func(ec echo.Context) error {
+		apiGroup.POST("/healthcheck/tcp", func(ec echo.Context) error {
 			var config healthcheck.TCPHealthcheckConfiguration
 			if err := ec.Bind(&config); err != nil {
 				msg := fmt.Sprintf("Fail to create the TCP healthcheck. Invalid JSON: %s", err.Error())
@@ -132,7 +141,7 @@ func (c *Component) handlers() {
 			return c.handleCheck(ec, healthcheck)
 		})
 
-		c.Server.POST("/healthcheck/tls", func(ec echo.Context) error {
+		apiGroup.POST("/healthcheck/tls", func(ec echo.Context) error {
 			var config healthcheck.TLSHealthcheckConfiguration
 			if err := ec.Bind(&config); err != nil {
 				msg := fmt.Sprintf("Fail to create the TLS healthcheck. Invalid JSON: %s", err.Error())
@@ -147,7 +156,7 @@ func (c *Component) handlers() {
 			return c.handleCheck(ec, healthcheck)
 		})
 
-		c.Server.POST("/healthcheck/http", func(ec echo.Context) error {
+		apiGroup.POST("/healthcheck/http", func(ec echo.Context) error {
 			var config healthcheck.HTTPHealthcheckConfiguration
 			if err := ec.Bind(&config); err != nil {
 				msg := fmt.Sprintf("Fail to create the HTTP healthcheck. Invalid JSON: %s", err.Error())
@@ -162,7 +171,7 @@ func (c *Component) handlers() {
 			return c.handleCheck(ec, healthcheck)
 		})
 
-		c.Server.POST("/healthcheck/command", func(ec echo.Context) error {
+		apiGroup.POST("/healthcheck/command", func(ec echo.Context) error {
 			var config healthcheck.CommandHealthcheckConfiguration
 			if err := ec.Bind(&config); err != nil {
 				msg := fmt.Sprintf("Fail to create the Command healthcheck. Invalid JSON: %s", err.Error())
@@ -177,7 +186,7 @@ func (c *Component) handlers() {
 			return c.handleCheck(ec, healthcheck)
 		})
 
-		c.Server.POST("/healthcheck/bulk", func(ec echo.Context) error {
+		apiGroup.POST("/healthcheck/bulk", func(ec echo.Context) error {
 			bulkLock.Lock()
 			defer bulkLock.Unlock()
 			var payload BulkPayload
@@ -244,10 +253,12 @@ func (c *Component) handlers() {
 			return ec.JSON(http.StatusCreated, newResponse("Healthchecks successfully added"))
 		})
 
-		c.Server.GET("/healthcheck", func(ec echo.Context) error {
-			return ec.JSON(http.StatusOK, c.healthcheck.ListChecks())
+		apiGroup.GET("/healthcheck", func(ec echo.Context) error {
+			return ec.JSON(http.StatusOK, ListHealthchecksOutput{
+				Result: c.healthcheck.ListChecks(),
+			})
 		})
-		c.Server.GET("/healthcheck/:name", func(ec echo.Context) error {
+		apiGroup.GET("/healthcheck/:name", func(ec echo.Context) error {
 			name := ec.Param("name")
 			healthcheck := c.healthcheck.GetCheck(name)
 			if healthcheck == nil {
@@ -256,7 +267,7 @@ func (c *Component) handlers() {
 			return ec.JSON(http.StatusOK, healthcheck)
 		})
 
-		c.Server.DELETE("/healthcheck/:name", func(ec echo.Context) error {
+		apiGroup.DELETE("/healthcheck/:name", func(ec echo.Context) error {
 			name := ec.Param("name")
 			c.Logger.Info(fmt.Sprintf("Deleting healthcheck %s", name))
 			err := c.healthcheck.RemoveCheck(name)
@@ -267,11 +278,14 @@ func (c *Component) handlers() {
 			return ec.JSON(http.StatusOK, newResponse(fmt.Sprintf("Successfully deleted healthcheck %s", name)))
 		})
 	}
+
 	if !c.Config.DisableResultAPI {
-		c.Server.GET("/result", func(ec echo.Context) error {
-			return ec.JSON(http.StatusOK, c.MemoryStore.List())
+		apiGroup.GET("/result", func(ec echo.Context) error {
+			return ec.JSON(http.StatusOK, ListResultsOutput{
+				Result: c.MemoryStore.List(),
+			})
 		})
-		c.Server.GET("/result/:name", func(ec echo.Context) error {
+		apiGroup.GET("/result/:name", func(ec echo.Context) error {
 			name := ec.Param("name")
 			result, err := c.MemoryStore.Get(name)
 			if err != nil {
@@ -280,12 +294,12 @@ func (c *Component) handlers() {
 			return ec.JSON(http.StatusOK, result)
 
 		})
-		c.Server.GET("/frontend", func(ec echo.Context) error {
-			err := ec.Redirect(http.StatusFound, "/frontend/index.html")
+		apiGroup.GET("/frontend", func(ec echo.Context) error {
+			err := ec.Redirect(http.StatusFound, "/api/v1/frontend/index.html")
 			return err
 		})
-		c.Server.GET("/frontend/*", func(ec echo.Context) error {
-			path := strings.TrimPrefix(ec.Request().URL.Path, "/frontend/")
+		apiGroup.GET("/frontend/*", func(ec echo.Context) error {
+			path := strings.TrimPrefix(ec.Request().URL.Path, "/api/v1/frontend/")
 
 			if path == "" {
 				path = "index.html"
