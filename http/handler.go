@@ -294,12 +294,12 @@ func (c *Component) handlers() {
 			return ec.JSON(http.StatusOK, result)
 
 		})
-		apiGroup.GET("/frontend", func(ec echo.Context) error {
-			err := ec.Redirect(http.StatusFound, "/api/v1/frontend/index.html")
+		c.Server.GET("/frontend", func(ec echo.Context) error {
+			err := ec.Redirect(http.StatusFound, "/frontend/index.html")
 			return err
 		})
-		apiGroup.GET("/frontend/*", func(ec echo.Context) error {
-			path := strings.TrimPrefix(ec.Request().URL.Path, "/api/v1/frontend/")
+		c.Server.GET("/frontend/*", func(ec echo.Context) error {
+			path := strings.TrimPrefix(ec.Request().URL.Path, "/frontend/")
 
 			if path == "" {
 				path = "index.html"

@@ -53,7 +53,7 @@
             <li><b>Summary</b>: {{.Summary }}</li>
             <li><b>Source</b>: {{.Source }}</li>
             <li><b>Timestamp</b>: {{ formatts .HealthcheckTimestamp }}</li>
-            <li><b>Duration</b>: {{ .Duration }} seconds</li>
+            <li><b>Duration</b>: {{ .Duration }} milliseconds</li>
           </ul>
             {{ if .Labels }}<br/>
             {{ range $key, $value := .Labels }}
