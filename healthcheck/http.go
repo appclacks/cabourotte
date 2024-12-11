@@ -121,7 +121,7 @@ func (h *HTTPHealthcheck) Summary() string {
 	return summary
 }
 
-// Initialize the healthcheck.
+// Initialize the
 func (h *HTTPHealthcheck) Initialize() error {
 	h.buildURL()
 
@@ -209,13 +209,13 @@ func (h *HTTPHealthcheck) LogInfo(message string) {
 }
 
 // Execute executes an healthcheck on the given target
-func (h *HTTPHealthcheck) Execute() error {
+func (h *HTTPHealthcheck) Execute() ExecutionError {
 	h.LogDebug("start executing healthcheck")
 	ctx := h.t.Context(context.TODO())
 	body := bytes.NewBuffer([]byte(h.Config.Body))
 	req, err := http.NewRequest(h.Config.Method, h.URL, body)
 	if err != nil {
-		return errors.Wrapf(err, "fail to initialize HTTP request")
+		return ExecutionError{Error: errors.Wrapf(err, "fail to initialize HTTP request")}
 	}
 	if h.Config.Host != "" {
 		req.Host = h.Config.Host
@@ -240,31 +240,35 @@ func (h *HTTPHealthcheck) Execute() error {
 	}
 	response, err := client.Do(req)
 	if err != nil {
-		return errors.Wrapf(err, "HTTP request failed")
+		return ExecutionError{Error: errors.Wrapf(err, "HTTP request failed")}
 	}
 	defer response.Body.Close()
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
-		return errors.Wrapf(err, "Fail to read request body")
+		return ExecutionError{Error: errors.Wrapf(err, "Fail to read request body")}
 	}
 	responseBodyStr := string(responseBody)
 	maxMessageSize := 1000
 	message := responseBodyStr
+
+	var eErr ExecutionError
+	eErr.HTTPStatusCode = response.StatusCode
 	if len(responseBodyStr) > maxMessageSize {
 		message = responseBodyStr[0:maxMessageSize]
 	}
 	if !h.isSuccessful(response) {
 		errorMsg := fmt.Sprintf("HTTP request failed: status %d. Body: '%s'", response.StatusCode, html.EscapeString(message))
-		err = errors.New(errorMsg)
-		return err
+		eErr.Error = errors.New(errorMsg)
+		return eErr
 	}
 	for _, regex := range h.Config.BodyRegexp {
 		r := regexp.Regexp(regex)
 		if !r.MatchString(responseBodyStr) {
-			return fmt.Errorf("healthcheck body does not match regex %s: %s", r.String(), message)
+			eErr.Error = fmt.Errorf("healthcheck body does not match regex %s: %s", r.String(), message)
+			return eErr
 		}
 	}
-	return nil
+	return eErr
 }
 
 // NewHTTPHealthcheck creates a HTTP healthcheck from a logger and a configuration

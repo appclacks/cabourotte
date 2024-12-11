@@ -129,15 +129,15 @@ func (h *TCPHealthcheck) LogInfo(message string) {
 }
 
 // Execute executes an healthcheck on the given target
-func (h *TCPHealthcheck) Execute() error {
-	h.LogDebug("start executing healthcheck")
+func (h *TCPHealthcheck) Execute() ExecutionError {
+	h.LogDebug("start executing healthcheckExecutionError")
 	ctx := h.t.Context(context.TODO())
 	dialer := net.Dialer{}
 	if h.Config.SourceIP != nil {
 		srcIP := net.IP(h.Config.SourceIP).String()
 		addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:0", srcIP))
 		if err != nil {
-			return errors.Wrapf(err, "Fail to set the source IP %s", srcIP)
+			return ExecutionError{Error: errors.Wrapf(err, "Fail to set the source IP %s", srcIP)}
 		}
 		dialer = net.Dialer{
 			LocalAddr: addr,
@@ -149,15 +149,15 @@ func (h *TCPHealthcheck) Execute() error {
 	if h.Config.ShouldFail {
 		if err == nil {
 			defer conn.Close()
-			return fmt.Errorf("TCP check is successful on %s but an error was expected", h.URL)
+			return ExecutionError{Error: fmt.Errorf("TCP check is successful on %s but an error was expected", h.URL)}
 		}
 	} else {
 		if err != nil {
-			return errors.Wrapf(err, "TCP connection failed on %s", h.URL)
+			return ExecutionError{Error: errors.Wrapf(err, "TCP connection failed on %s", h.URL)}
 		}
 		defer conn.Close()
 	}
-	return nil
+	return ExecutionError{Error: nil}
 }
 
 // NewTCPHealthcheck creates a TCP healthcheck from a logger and a configuration

@@ -107,7 +107,7 @@ func (h *CommandHealthcheck) LogInfo(message string) {
 }
 
 // Execute executes an healthcheck on the given domain
-func (h *CommandHealthcheck) Execute() error {
+func (h *CommandHealthcheck) Execute() ExecutionError {
 	h.LogDebug("start executing healthcheck")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(h.Config.Timeout)*time.Second)
 	defer cancel()
@@ -122,10 +122,10 @@ func (h *CommandHealthcheck) Execute() error {
 		} else {
 			errorMsg = fmt.Sprintf("The command failed, stderr=%s", stdErr.String())
 		}
-		return errors.Wrapf(err, errorMsg)
+		return ExecutionError{Error: errors.Wrapf(err, errorMsg)}
 	}
 
-	return nil
+	return ExecutionError{Error: nil}
 }
 
 // NewCommandHealthcheck creates a Command healthcheck from a logger and a configuration

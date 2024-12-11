@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Cabourotte</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <link rel="stylesheet" href="bulma.min.css">
     <style>
       .healthcheck {
           border: 1px dashed grey;
@@ -54,6 +54,7 @@
             <li><b>Source</b>: {{.Source }}</li>
             <li><b>Timestamp</b>: {{ formatts .HealthcheckTimestamp }}</li>
             <li><b>Duration</b>: {{ .Duration }} milliseconds</li>
+            {{ if ne .HTTPStatusCode 0 }}<li><b>HTTP Status Code</b>: {{ .HTTPStatusCode }}</li>{{ end }}
           </ul>
             {{ if .Labels }}<br/>
             {{ range $key, $value := .Labels }}

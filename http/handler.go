@@ -8,7 +8,6 @@ import (
 	"io/fs"
 	"net/http"
 	"reflect"
-	"strings"
 	"sync"
 	"text/template"
 	"time"
@@ -60,7 +59,7 @@ func (c *Component) oneOff(ec echo.Context, healthcheck healthcheck.Healthcheck)
 		msg := fmt.Sprintf("Fail to initialize one off healthcheck %s: %s", healthcheck.Base().Name, err.Error())
 		return corbierror.New(msg, corbierror.Internal, true)
 	}
-	err = healthcheck.Execute()
+	err = healthcheck.Execute().Error
 	if err != nil {
 		msg := fmt.Sprintf("Execution of one off healthcheck %s failed: %s", healthcheck.Base().Name, err.Error())
 		c.Logger.Error(msg)
@@ -93,6 +92,7 @@ func (c *Component) handlers() {
 	c.Server.HTTPErrorHandler = errorHandler(c.Logger)
 	c.Server.Use(c.metricMiddleware)
 	fsys, _ := fs.Sub(embededFiles, "assets")
+	assetHandler := http.FileServer(http.FS(fsys))
 	if c.Config.BasicAuth.Username != "" {
 		c.Server.Use(middleware.BasicAuth(func(username, password string, ctx echo.Context) (bool, error) {
 			if subtle.ConstantTimeCompare([]byte(username),
@@ -298,13 +298,12 @@ func (c *Component) handlers() {
 			err := ec.Redirect(http.StatusFound, "/frontend/index.html")
 			return err
 		})
-		c.Server.GET("/frontend/*", func(ec echo.Context) error {
-			path := strings.TrimPrefix(ec.Request().URL.Path, "/frontend/")
-
-			if path == "" {
-				path = "index.html"
-			}
-
+		c.Server.GET("/frontend/", func(ec echo.Context) error {
+			err := ec.Redirect(http.StatusFound, "/frontend/index.html")
+			return err
+		})
+		c.Server.GET("/frontend/index.html", func(ec echo.Context) error {
+			path := "index.html"
 			c.Logger.Info(path)
 			file, err := fsys.Open(path)
 			if err != nil {
@@ -320,34 +319,29 @@ func (c *Component) handlers() {
 			if err != nil {
 				return corbierror.Wrap(err, "Internal error", corbierror.Internal, true)
 			}
-			if path == "index.html" {
-				tmpl := template.New("frontend")
-				tmpl.Funcs(template.FuncMap{
-					"last": func(x int, a interface{}) bool {
-						return x == reflect.ValueOf(a).Len()-1
-					},
-					"mod": func(i, j int) int { return i % j },
-					"formatts": func(ts int64) string {
-						tm := time.Unix(ts, 0)
-						return tm.Format("2006/01/02 15:04:05")
-					},
-				})
+			tmpl := template.New("frontend")
+			tmpl.Funcs(template.FuncMap{
+				"last": func(x int, a interface{}) bool {
+					return x == reflect.ValueOf(a).Len()-1
+				},
+				"mod": func(i, j int) int { return i % j },
+				"formatts": func(ts int64) string {
+					tm := time.Unix(ts, 0)
+					return tm.Format("2006/01/02 15:04:05")
+				},
+			})
 
-				tmpl, err = tmpl.Parse(string(buffer))
-				if err != nil {
-					return corbierror.Wrap(err, "Internal error", corbierror.Internal, true)
-				}
-				var tmplBytes bytes.Buffer
-				if err := tmpl.Execute(&tmplBytes, c.MemoryStore.List()); err != nil {
-					return corbierror.Wrap(err, "Internal error", corbierror.Internal, true)
-				}
-				return ec.HTML(http.StatusOK, tmplBytes.String())
-
-			} else {
-				return ec.HTML(http.StatusOK, string(buffer))
+			tmpl, err = tmpl.Parse(string(buffer))
+			if err != nil {
+				return corbierror.Wrap(err, "Internal error", corbierror.Internal, true)
 			}
-
+			var tmplBytes bytes.Buffer
+			if err := tmpl.Execute(&tmplBytes, c.MemoryStore.List()); err != nil {
+				return corbierror.Wrap(err, "Internal error", corbierror.Internal, true)
+			}
+			return ec.HTML(http.StatusOK, tmplBytes.String())
 		})
+		c.Server.GET("/frontend/*", echo.WrapHandler(http.StripPrefix("/frontend/", assetHandler)))
 	}
 
 	c.Server.GET("/health", func(ec echo.Context) error {

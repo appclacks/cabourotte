@@ -150,17 +150,17 @@ func (h *DNSHealthcheck) lookupIP() ([]net.IP, error) {
 }
 
 // Execute executes an healthcheck on the given domain
-func (h *DNSHealthcheck) Execute() error {
+func (h *DNSHealthcheck) Execute() ExecutionError {
 	h.LogDebug("start executing healthcheck")
 	ips, err := h.lookupIP()
 	if err != nil {
-		return errors.Wrapf(err, "Fail to lookup IP for domain")
+		return ExecutionError{Error: errors.Wrapf(err, "Fail to lookup IP for domain")}
 	}
 	err = verifyIPs(h.Config.ExpectedIPs, ips)
 	if err != nil {
-		return err
+		return ExecutionError{Error: err}
 	}
-	return nil
+	return ExecutionError{Error: nil}
 }
 
 // NewDNSHealthcheck creates a DNS healthcheck from a logger and a configuration

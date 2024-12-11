@@ -25,12 +25,17 @@ type Healthcheck interface {
 	Initialize() error
 	GetConfig() interface{}
 	Summary() string
-	Execute() error
+	Execute() ExecutionError
 	LogDebug(message string)
 	LogInfo(message string)
 	Base() Base
 	SetSource(source string)
 	LogError(err error, message string)
+}
+
+type ExecutionError struct {
+	Error          error
+	HTTPStatusCode int
 }
 
 // Component is the component which will manage healthchecks
@@ -54,12 +59,12 @@ func (c *Component) startWrapper(w *Wrapper) {
 		time.Sleep(time.Duration(wait) * time.Millisecond)
 		for {
 			start := time.Now()
-			err := w.healthcheck.Execute()
+			eErr := w.healthcheck.Execute()
 			duration := time.Since(start)
 			result := NewResult(
 				w.healthcheck,
 				duration.Milliseconds(),
-				err)
+				eErr)
 			status := "failure"
 			if result.Success {
 				status = "success"

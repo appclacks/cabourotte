@@ -14,6 +14,8 @@ type Result struct {
 	Message              string            `json:"message"`
 	Duration             int64             `json:"duration"`
 	Source               string            `json:"source"`
+	HTTPError            string            `json:"http-error"`
+	HTTPStatusCode       int64             `json:"http-status-code"`
 }
 
 // Equals implements Equals for Result
@@ -39,6 +41,9 @@ func (r Result) Equals(v Result) bool {
 	if r.Source != v.Source {
 		return false
 	}
+	if r.HTTPStatusCode != v.HTTPStatusCode {
+		return false
+	}
 	if len(r.Labels) != len(v.Labels) {
 		return false
 	}
@@ -51,7 +56,7 @@ func (r Result) Equals(v Result) bool {
 }
 
 // NewResult build a a new result for an healthcheck
-func NewResult(healthcheck Healthcheck, duration int64, err error) *Result {
+func NewResult(healthcheck Healthcheck, duration int64, eErr ExecutionError) *Result {
 	now := time.Now()
 	source := "configuration"
 	if healthcheck.Base().Source != "" {
@@ -64,10 +69,11 @@ func NewResult(healthcheck Healthcheck, duration int64, err error) *Result {
 		HealthcheckTimestamp: now.Unix(),
 		Duration:             duration,
 		Source:               source,
+		HTTPStatusCode:       int64(eErr.HTTPStatusCode),
 	}
-	if err != nil {
+	if eErr.Error != nil {
 		result.Success = false
-		result.Message = err.Error()
+		result.Message = eErr.Error.Error()
 	} else {
 		result.Success = true
 		result.Message = "success"

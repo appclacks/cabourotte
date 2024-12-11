@@ -141,7 +141,7 @@ func (h *TLSHealthcheck) LogInfo(message string) {
 }
 
 // Execute executes an healthcheck on the given target
-func (h *TLSHealthcheck) Execute() error {
+func (h *TLSHealthcheck) Execute() ExecutionError {
 	h.LogDebug("start executing healthcheck")
 	dialer := net.Dialer{}
 	ctx := h.t.Context(context.TODO())
@@ -149,7 +149,7 @@ func (h *TLSHealthcheck) Execute() error {
 		srcIP := net.IP(h.Config.SourceIP).String()
 		addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:0", srcIP))
 		if err != nil {
-			return errors.Wrapf(err, "Fail to set the source IP %s", srcIP)
+			return ExecutionError{Error: errors.Wrapf(err, "Fail to set the source IP %s", srcIP)}
 		}
 		dialer = net.Dialer{
 			LocalAddr: addr,
@@ -161,14 +161,14 @@ func (h *TLSHealthcheck) Execute() error {
 	defer cancel()
 	conn, err := dialer.DialContext(timeoutCtx, "tcp", h.URL)
 	if err != nil {
-		return errors.Wrapf(err, "TLS connection failed on %s", h.URL)
+		return ExecutionError{Error: errors.Wrapf(err, "TLS connection failed on %s", h.URL)}
 	}
 	defer conn.Close()
 	tlsConn := cryptotls.Client(conn, h.TLSConfig)
 	defer tlsConn.Close()
 	err = tlsConn.Handshake()
 	if err != nil {
-		return errors.Wrapf(err, "TLS handshake failed on %s", h.URL)
+		return ExecutionError{Error: errors.Wrapf(err, "TLS handshake failed on %s", h.URL)}
 	}
 	if h.Config.ExpirationDelay != 0 {
 		state := tlsConn.ConnectionState()
@@ -180,11 +180,11 @@ func (h *TLSHealthcheck) Execute() error {
 		}
 		expirationTimeLimit := time.Now().Add(time.Duration(h.Config.ExpirationDelay))
 		if expirationTime.Before(expirationTimeLimit) {
-			return fmt.Errorf("The certificate for %s will expire at %s", h.URL, expirationTime.String())
+			return ExecutionError{Error: fmt.Errorf("The certificate for %s will expire at %s", h.URL, expirationTime.String())}
 		}
 	}
 
-	return nil
+	return ExecutionError{Error: nil}
 }
 
 // NewTLSHealthcheck creates a TLS healthcheck from a logger and a configuration
