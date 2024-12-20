@@ -104,9 +104,9 @@ func TestHTTPExecuteGetSuccess(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Initialization error :\n%v", err)
 	}
-	err = h.Execute()
-	if err != nil {
-		t.Fatalf("healthcheck error :\n%v", err)
+	eErr := h.Execute()
+	if eErr.Error != nil {
+		t.Fatalf("healthcheck error :\n%v", eErr.Error)
 	}
 	if count != 1 {
 		t.Fatal("The request counter is invalid")
@@ -154,9 +154,9 @@ func TestHTTPExecuteRegexpSuccess(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Initialization error :\n%v", err)
 	}
-	err = h.Execute()
-	if err != nil {
-		t.Fatalf("healthcheck error :\n%v", err)
+	eErr := h.Execute()
+	if eErr.Error != nil {
+		t.Fatalf("healthcheck error :\n%v", eErr.Error)
 	}
 	if count != 1 {
 		t.Fatal("The request counter is invalid")
@@ -198,8 +198,8 @@ func TestHTTPExecuteRegexpFailure(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Initialization error :\n%v", err)
 	}
-	err = h.Execute()
-	if err == nil {
+	eErr := h.Execute()
+	if eErr.Error == nil {
 		t.Fatalf("Was expecting an error")
 	}
 
@@ -240,9 +240,9 @@ func TestHTTPv6ExecuteSuccess(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Initialization error :\n%v", err)
 	}
-	err = h.Execute()
-	if err != nil {
-		t.Fatalf("healthcheck error :\n%v", err)
+	eErr := h.Execute()
+	if eErr.Error != nil {
+		t.Fatalf("healthcheck error :\n%v", eErr.Error)
 	}
 	if count != 1 {
 		t.Fatalf("The request counter is invalid")
@@ -279,8 +279,8 @@ func TestHTTPExecuteFailure(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Initialization error :\n%v", err)
 	}
-	err = h.Execute()
-	if err == nil {
+	eErr := h.Execute()
+	if eErr.Error == nil {
 		t.Fatalf("Was expecting an error")
 	}
 	if count != 1 {
@@ -407,9 +407,9 @@ func TestHTTPExecuteSourceIP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Initialization error :\n%v", err)
 	}
-	err = h.Execute()
-	if err != nil {
-		t.Fatalf("healthcheck error :\n%v", err)
+	eErr := h.Execute()
+	if eErr.Error != nil {
+		t.Fatalf("healthcheck error :\n%v", eErr.Error)
 	}
 	if count != 1 {
 		t.Fatal("The request counter is invalid")
@@ -470,9 +470,9 @@ func TestHTTPExecutePostSuccess(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Initialization error :\n%v", err)
 	}
-	err = h.Execute()
-	if err != nil {
-		t.Fatalf("healthcheck error :\n%v", err)
+	eErr := h.Execute()
+	if eErr.Error != nil {
+		t.Fatalf("healthcheck error :\n%v", eErr.Error)
 	}
 	if count != 1 {
 		t.Fatal("The request counter is invalid")
@@ -546,9 +546,9 @@ func TestHTTPExecuteQueryParam(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Initialization error :\n%v", err)
 	}
-	err = h.Execute()
-	if err != nil {
-		t.Fatalf("healthcheck error :\n%v", err)
+	eErr := h.Execute()
+	if eErr.Error != nil {
+		t.Fatalf("healthcheck error :\n%v", eErr.Error)
 	}
 	if count != 1 {
 		t.Fatal("The request counter is invalid")

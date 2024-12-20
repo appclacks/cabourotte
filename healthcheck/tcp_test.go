@@ -47,9 +47,9 @@ func TestTCPExecuteSuccess(t *testing.T) {
 		},
 	}
 	h.buildURL()
-	err = h.Execute()
-	if err != nil {
-		t.Fatalf("healthcheck error :\n%v", err)
+	eErr := h.Execute()
+	if eErr.Error != nil {
+		t.Fatalf("healthcheck error :\n%v", eErr.Error)
 	}
 }
 
@@ -73,9 +73,9 @@ func TestTCPExecuteSuccessSourceIP(t *testing.T) {
 		},
 	}
 	h.buildURL()
-	err = h.Execute()
-	if err != nil {
-		t.Fatalf("healthcheck error :\n%v", err)
+	eErr := h.Execute()
+	if eErr.Error != nil {
+		t.Fatalf("healthcheck error :\n%v", eErr.Error)
 	}
 }
 
@@ -106,9 +106,9 @@ func TestTCPv6ExecuteSuccess(t *testing.T) {
 		},
 	}
 	h.buildURL()
-	err = h.Execute()
-	if err != nil {
-		t.Fatalf("healthcheck error :\n%v", err)
+	eErr := h.Execute()
+	if eErr.Error != nil {
+		t.Fatalf("healthcheck error :\n%v", eErr.Error)
 	}
 }
 
@@ -155,8 +155,8 @@ func TestTCPExecuteSuccessShoulddFail(t *testing.T) {
 		},
 	}
 	h.buildURL()
-	err := h.Execute()
-	if err != nil {
-		t.Fatalf("healthcheck error :\n%v", err)
+	eErr := h.Execute()
+	if eErr.Error != nil {
+		t.Fatalf("healthcheck error :\n%v", eErr.Error)
 	}
 }

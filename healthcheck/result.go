@@ -1,6 +1,7 @@
 package healthcheck
 
 import (
+	"reflect"
 	"time"
 )
 
@@ -14,8 +15,7 @@ type Result struct {
 	Message              string            `json:"message"`
 	Duration             int64             `json:"duration"`
 	Source               string            `json:"source"`
-	HTTPError            string            `json:"http-error"`
-	HTTPStatusCode       int64             `json:"http-status-code"`
+	Annotations          map[string]string `json:"annotations"`
 }
 
 // Equals implements Equals for Result
@@ -41,7 +41,7 @@ func (r Result) Equals(v Result) bool {
 	if r.Source != v.Source {
 		return false
 	}
-	if r.HTTPStatusCode != v.HTTPStatusCode {
+	if eq := reflect.DeepEqual(r.Annotations, v.Annotations); eq == false {
 		return false
 	}
 	if len(r.Labels) != len(v.Labels) {
@@ -62,6 +62,7 @@ func NewResult(healthcheck Healthcheck, duration int64, eErr ExecutionError) *Re
 	if healthcheck.Base().Source != "" {
 		source = healthcheck.Base().Source
 	}
+
 	result := Result{
 		Name:                 healthcheck.Base().Name,
 		Summary:              healthcheck.Summary(),
@@ -69,7 +70,7 @@ func NewResult(healthcheck Healthcheck, duration int64, eErr ExecutionError) *Re
 		HealthcheckTimestamp: now.Unix(),
 		Duration:             duration,
 		Source:               source,
-		HTTPStatusCode:       int64(eErr.HTTPStatusCode),
+		Annotations:          eErr.Annotations,
 	}
 	if eErr.Error != nil {
 		result.Success = false

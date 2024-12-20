@@ -34,8 +34,8 @@ type Healthcheck interface {
 }
 
 type ExecutionError struct {
-	Error          error
-	HTTPStatusCode int
+	Error       error
+	Annotations map[string]string
 }
 
 // Component is the component which will manage healthchecks

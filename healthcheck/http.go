@@ -252,7 +252,8 @@ func (h *HTTPHealthcheck) Execute() ExecutionError {
 	message := responseBodyStr
 
 	var eErr ExecutionError
-	eErr.HTTPStatusCode = response.StatusCode
+	eErr.Annotations = make(map[string]string)
+	eErr.Annotations["HTTP Status Code"] = fmt.Sprintf("%v", response.StatusCode)
 	if len(responseBodyStr) > maxMessageSize {
 		message = responseBodyStr[0:maxMessageSize]
 	}

@@ -3,6 +3,7 @@ package exporter
 import (
 	"fmt"
 	"net"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -156,6 +157,11 @@ func (c *RiemannExporter) Push(result *healthcheck.Result) error {
 	}
 	for k, v := range result.Labels {
 		attributes[k] = v
+	}
+	for k, v := range result.Annotations {
+		k = strings.ToLower(k)
+		k = strings.TrimSpace(k)
+		attributes[strings.ToLower(k)] = v
 	}
 	event := &riemanngo.Event{
 		Service:     "cabourotte-healthcheck",

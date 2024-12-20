@@ -20,9 +20,9 @@ func TestDNSExecuteSuccess(t *testing.T) {
 		},
 	}
 
-	err := h.Execute()
-	if err != nil {
-		t.Fatalf("healthcheck error :\n%v", err)
+	eErr := h.Execute()
+	if eErr.Error != nil {
+		t.Fatalf("healthcheck error :\n%v", eErr.Error)
 	}
 }
 
@@ -35,8 +35,8 @@ func TestDNSExecuteFailure(t *testing.T) {
 		},
 	}
 
-	err := h.Execute()
-	if err == nil {
+	eErr := h.Execute()
+	if eErr.Error == nil {
 		t.Fatalf("Was expecting an error: the domain does not exist")
 	}
 }

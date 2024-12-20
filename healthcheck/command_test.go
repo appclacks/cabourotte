@@ -15,9 +15,9 @@ func TestCommandExecuteSuccess(t *testing.T) {
 			Timeout: Duration(time.Second * 2),
 		},
 	}
-	err := h.Execute()
-	if err != nil {
-		t.Fatalf("healthcheck error :\n%v", err)
+	eErr := h.Execute()
+	if eErr.Error != nil {
+		t.Fatalf("healthcheck error :\n%v", eErr.Error)
 	}
 }
 
@@ -30,8 +30,8 @@ func TestCommandExecuteFailure(t *testing.T) {
 			Timeout:   Duration(time.Second * 2),
 		},
 	}
-	err := h.Execute()
-	if err == nil {
+	eErr := h.Execute()
+	if eErr.Error == nil {
 		t.Fatalf("healthcheck was expected to fail")
 	}
 }
