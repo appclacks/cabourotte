@@ -141,10 +141,9 @@ func (h *TLSHealthcheck) LogInfo(message string) {
 }
 
 // Execute executes an healthcheck on the given target
-func (h *TLSHealthcheck) Execute() error {
+func (h *TLSHealthcheck) Execute(ctx context.Context) error {
 	h.LogDebug("start executing healthcheck")
 	dialer := net.Dialer{}
-	ctx := h.t.Context(context.TODO())
 	if h.Config.SourceIP != nil {
 		srcIP := net.IP(h.Config.SourceIP).String()
 		addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:0", srcIP))

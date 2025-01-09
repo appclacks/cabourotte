@@ -2,10 +2,12 @@ package exporter
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
+	"net/http/httptrace"
 	"time"
 
 	"github.com/pkg/errors"
@@ -13,6 +15,8 @@ import (
 
 	"github.com/appclacks/cabourotte/healthcheck"
 	"github.com/appclacks/cabourotte/tls"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 // HTTPConfiguration The configuration for the HTTP exporter.
@@ -86,8 +90,13 @@ func NewHTTPExporter(logger *zap.Logger, config *HTTPConfiguration) (*HTTPExport
 		Config: config,
 		URL:    url,
 		Client: &http.Client{
-			Transport: transport,
-			Timeout:   time.Second * 3,
+			Transport: otelhttp.NewTransport(
+				transport,
+				otelhttp.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
+					return otelhttptrace.NewClientTrace(ctx)
+				}),
+			),
+			Timeout: time.Second * 3,
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
 				return http.ErrUseLastResponse
 			},
@@ -134,14 +143,14 @@ func (c *HTTPExporter) GetConfig() interface{} {
 }
 
 // Push pushes events to the HTTP destination
-func (c *HTTPExporter) Push(result *healthcheck.Result) error {
+func (c *HTTPExporter) Push(ctx context.Context, result *healthcheck.Result) error {
 	var jsonBytes []byte
 	payload := []*healthcheck.Result{result}
 	jsonBytes, err := json.Marshal(payload)
 	if err != nil {
 		return errors.Wrapf(err, "Fail to convert result to json:\n%v", result)
 	}
-	req, err := http.NewRequest("POST", c.URL, bytes.NewBuffer(jsonBytes))
+	req, err := http.NewRequestWithContext(ctx, "POST", c.URL, bytes.NewBuffer(jsonBytes))
 	if err != nil {
 		return errors.Wrapf(err, "HTTP exporter: fail to create request for %s", c.URL)
 	}

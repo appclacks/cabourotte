@@ -13,11 +13,14 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
-
 	"github.com/appclacks/cabourotte/healthcheck"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/mcorbin/corbierror"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 )
 
 type ListResultsOutput struct {
@@ -54,18 +57,27 @@ var embededFiles embed.FS
 
 // oneOff executes an one-off healthcheck and returns its result
 func (c *Component) oneOff(ec echo.Context, healthcheck healthcheck.Healthcheck) error {
+	tracer := otel.Tracer("healthcheck")
+	ctx, span := tracer.Start(ec.Request().Context(), "oneoff_healthcheck")
+	defer span.End()
+	span.SetAttributes(attribute.String("cabourotte.healthcheck.name", healthcheck.Base().Name))
 	c.Logger.Info(fmt.Sprintf("Executing one-off healthcheck %s", healthcheck.Base().Name))
 	err := healthcheck.Initialize()
 	if err != nil {
 		msg := fmt.Sprintf("Fail to initialize one off healthcheck %s: %s", healthcheck.Base().Name, err.Error())
 		return corbierror.New(msg, corbierror.Internal, true)
 	}
-	err = healthcheck.Execute()
+	err = healthcheck.Execute(ctx)
 	if err != nil {
 		msg := fmt.Sprintf("Execution of one off healthcheck %s failed: %s", healthcheck.Base().Name, err.Error())
 		c.Logger.Error(msg)
+		span.RecordError(err)
+		span.SetAttributes(attribute.String("cabourotte.healthcheck.status", "failure"))
+		span.SetStatus(codes.Error, "healthcheck failure")
 		return corbierror.New(msg, corbierror.Internal, true)
 	}
+	span.SetAttributes(attribute.String("cabourotte.healthcheck.status", "success"))
+	span.SetStatus(codes.Ok, "healthcheck successful")
 	msg := fmt.Sprintf("One-off healthcheck %s successfully executed", healthcheck.Base().Name)
 	c.Logger.Info(msg)
 	return ec.JSON(http.StatusCreated, newResponse(msg))
@@ -91,6 +103,7 @@ func (c *Component) handleCheck(ec echo.Context, healthcheck healthcheck.Healthc
 // handlers configures the handlers for the http server component
 func (c *Component) handlers() {
 	c.Server.HTTPErrorHandler = errorHandler(c.Logger)
+	c.Server.Use(otelecho.Middleware("cabourotte"))
 	c.Server.Use(c.metricMiddleware)
 	fsys, _ := fs.Sub(embededFiles, "assets")
 	if c.Config.BasicAuth.Username != "" {

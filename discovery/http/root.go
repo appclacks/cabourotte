@@ -1,20 +1,26 @@
 package http
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
+	"net/http/httptrace"
 	"time"
-
-	"github.com/pkg/errors"
-	prom "github.com/prometheus/client_golang/prometheus"
-	"go.uber.org/zap"
-	"gopkg.in/tomb.v2"
 
 	"github.com/appclacks/cabourotte/healthcheck"
 	"github.com/appclacks/cabourotte/tls"
+	"github.com/pkg/errors"
+	prom "github.com/prometheus/client_golang/prometheus"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.uber.org/zap"
+	"gopkg.in/tomb.v2"
 )
 
 // HTTPDiscovery the http discovery struct
@@ -57,8 +63,13 @@ func New(logger *zap.Logger, config *Configuration, checkComponent *healthcheck.
 		Config:           config,
 		URL:              url,
 		Client: &http.Client{
-			Transport: transport,
-			Timeout:   time.Second * 5,
+			Transport: otelhttp.NewTransport(
+				transport,
+				otelhttp.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
+					return otelhttptrace.NewClientTrace(ctx)
+				}),
+			),
+			Timeout: time.Second * 5,
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
 				return http.ErrUseLastResponse
 			},
@@ -67,8 +78,8 @@ func New(logger *zap.Logger, config *Configuration, checkComponent *healthcheck.
 	return &component, nil
 }
 
-func (c *HTTPDiscovery) request() error {
-	req, err := http.NewRequest("GET", c.URL, nil)
+func (c *HTTPDiscovery) request(ctx context.Context) error {
+	req, err := http.NewRequestWithContext(ctx, "GET", c.URL, nil)
 	if err != nil {
 		return errors.Wrapf(err, "HTTP discovery: fail to create request for %s", c.URL)
 	}
@@ -120,16 +131,26 @@ func (c *HTTPDiscovery) Start() error {
 		for {
 			select {
 			case <-c.tick.C:
+				tracer := otel.Tracer("discovery")
+				ctx, span := tracer.Start(context.Background(), "discovery")
+				span.SetAttributes(attribute.String("cabourotte.discovery.name", c.Config.Name))
+				span.SetAttributes(attribute.String("cabourotte.discovery.type", "http"))
 				c.Logger.Debug(fmt.Sprintf("HTTP discovery: polling %s", c.URL))
 				start := time.Now()
 				status := "success"
-				err := c.request()
+				err := c.request(ctx)
 				duration := time.Since(start)
 				if err != nil {
+					span.RecordError(err)
+					span.SetStatus(codes.Error, "discovery failure")
 					status = "failure"
 					msg := fmt.Sprintf("HTTP discovery error: %s", err.Error())
 					c.Logger.Error(msg)
+				} else {
+					span.SetStatus(codes.Ok, "discovery successful")
 				}
+				span.SetAttributes(attribute.String("cabourotte.discovery.status", status))
+				span.End()
 				c.requestHistogram.With(prom.Labels{"name": c.Config.Name}).Observe(duration.Seconds())
 				c.responseCounter.With(prom.Labels{"status": status, "name": c.Config.Name}).Inc()
 			case <-c.t.Dying():

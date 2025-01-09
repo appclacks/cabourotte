@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -10,9 +11,13 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/appclacks/cabourotte/daemon"
-
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/sdk/resource"
+	"go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 	"go.uber.org/zap"
 )
 
@@ -56,6 +61,31 @@ func Main() {
 					if err != nil {
 						return errors.Wrapf(err, "Fail to start the logger")
 					}
+					ctx := context.Background()
+					exp, err := otlptracehttp.New(ctx)
+					if err != nil {
+						return err
+					}
+
+					r := resource.NewWithAttributes(
+						semconv.SchemaURL,
+						semconv.ServiceName("cabourotte"),
+					)
+
+					shutdownFn := func() {}
+
+					if os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT") != "" || os.Getenv("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT") != "" {
+						logger.Info("starting opentelemetry traces export")
+						tracerProvider := trace.NewTracerProvider(trace.WithBatcher(exp), trace.WithResource(r))
+						otel.SetTracerProvider(tracerProvider)
+						shutdownFn = func() {
+							err := tracerProvider.Shutdown(context.Background())
+							if err != nil {
+								panic(err)
+							}
+						}
+					}
+					defer shutdownFn()
 					// nolint
 					defer logger.Sync()
 					daemonComponent, err := daemon.New(logger, &config)

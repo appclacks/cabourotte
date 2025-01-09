@@ -9,11 +9,14 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/http/httptrace"
 	"regexp"
 	"time"
 
 	"github.com/appclacks/cabourotte/tls"
 	"github.com/pkg/errors"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.uber.org/zap"
 
 	"gopkg.in/tomb.v2"
@@ -149,7 +152,12 @@ func (h *HTTPHealthcheck) Initialize() error {
 		redirect = nil
 	}
 	h.Client = &http.Client{
-		Transport: transport,
+		Transport: otelhttp.NewTransport(
+			transport,
+			otelhttp.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
+				return otelhttptrace.NewClientTrace(ctx)
+			}),
+		),
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return redirect
 		},
@@ -209,9 +217,8 @@ func (h *HTTPHealthcheck) LogInfo(message string) {
 }
 
 // Execute executes an healthcheck on the given target
-func (h *HTTPHealthcheck) Execute() error {
+func (h *HTTPHealthcheck) Execute(ctx context.Context) error {
 	h.LogDebug("start executing healthcheck")
-	ctx := h.t.Context(context.TODO())
 	body := bytes.NewBuffer([]byte(h.Config.Body))
 	req, err := http.NewRequest(h.Config.Method, h.URL, body)
 	if err != nil {

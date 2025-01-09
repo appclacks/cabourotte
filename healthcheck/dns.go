@@ -135,8 +135,8 @@ func verifyIPs(expectedIPs []IP, lookupIPs []net.IP) error {
 	return nil
 }
 
-func (h *DNSHealthcheck) lookupIP() ([]net.IP, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(h.Config.Timeout))
+func (h *DNSHealthcheck) lookupIP(ctx context.Context) ([]net.IP, error) {
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(h.Config.Timeout))
 	defer cancel()
 	addrs, err := net.DefaultResolver.LookupIPAddr(ctx, h.Config.Domain)
 	if err != nil {
@@ -150,9 +150,9 @@ func (h *DNSHealthcheck) lookupIP() ([]net.IP, error) {
 }
 
 // Execute executes an healthcheck on the given domain
-func (h *DNSHealthcheck) Execute() error {
+func (h *DNSHealthcheck) Execute(ctx context.Context) error {
 	h.LogDebug("start executing healthcheck")
-	ips, err := h.lookupIP()
+	ips, err := h.lookupIP(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "Fail to lookup IP for domain")
 	}

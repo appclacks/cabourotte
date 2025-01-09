@@ -1,6 +1,7 @@
 package healthcheck
 
 import (
+	"context"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -47,7 +48,7 @@ func TestTCPExecuteSuccess(t *testing.T) {
 		},
 	}
 	h.buildURL()
-	err = h.Execute()
+	err = h.Execute(context.Background())
 	if err != nil {
 		t.Fatalf("healthcheck error :\n%v", err)
 	}
@@ -73,7 +74,7 @@ func TestTCPExecuteSuccessSourceIP(t *testing.T) {
 		},
 	}
 	h.buildURL()
-	err = h.Execute()
+	err = h.Execute(context.Background())
 	if err != nil {
 		t.Fatalf("healthcheck error :\n%v", err)
 	}
@@ -106,7 +107,7 @@ func TestTCPv6ExecuteSuccess(t *testing.T) {
 		},
 	}
 	h.buildURL()
-	err = h.Execute()
+	err = h.Execute(context.Background())
 	if err != nil {
 		t.Fatalf("healthcheck error :\n%v", err)
 	}
@@ -155,7 +156,7 @@ func TestTCPExecuteSuccessShoulddFail(t *testing.T) {
 		},
 	}
 	h.buildURL()
-	err := h.Execute()
+	err := h.Execute(context.Background())
 	if err != nil {
 		t.Fatalf("healthcheck error :\n%v", err)
 	}

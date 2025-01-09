@@ -1,18 +1,21 @@
 package exporter
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
 
-	"github.com/pkg/errors"
-	prom "github.com/prometheus/client_golang/prometheus"
-	"go.uber.org/zap"
-	"gopkg.in/tomb.v2"
-
 	"github.com/appclacks/cabourotte/healthcheck"
 	"github.com/appclacks/cabourotte/memorystore"
 	"github.com/appclacks/cabourotte/prometheus"
+	"github.com/pkg/errors"
+	prom "github.com/prometheus/client_golang/prometheus"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.uber.org/zap"
+	"gopkg.in/tomb.v2"
 )
 
 // Exporter the exporter interface
@@ -23,7 +26,7 @@ type Exporter interface {
 	IsStarted() bool
 	Name() string
 	GetConfig() interface{}
-	Push(*healthcheck.Result) error
+	Push(context.Context, *healthcheck.Result) error
 }
 
 // Component the exporter component
@@ -122,7 +125,9 @@ func (c *Component) Start() error {
 	})
 	go func() {
 		defer c.wg.Done()
+		tracer := otel.Tracer("exporter")
 		for message := range c.ChanResult {
+			ctx, span := tracer.Start(context.Background(), "export")
 			c.MemoryStore.Add(message)
 			if message.Success {
 				c.Logger.Debug("Healthcheck successful",
@@ -140,21 +145,28 @@ func (c *Component) Start() error {
 			}
 			for k := range c.Exporters {
 				exporter := c.Exporters[k]
+				ctx, exporterSpan := tracer.Start(ctx, "exporter")
+				exporterSpan.SetAttributes(attribute.String("cabourotte.exporter.name", exporter.Name()))
 				if exporter.IsStarted() {
 					start := time.Now()
-					err := exporter.Push(message)
+					err := exporter.Push(ctx, message)
 					duration := time.Since(start)
 					status := "success"
 					name := exporter.Name()
 					if err != nil {
 						c.Logger.Error(fmt.Sprintf("Failed to push healthchecks result for exporter %s: %s", name, err.Error()))
 						status = "failure"
+						exporterSpan.RecordError(err)
+						exporterSpan.SetStatus(codes.Error, "exporter failure")
 						err := exporter.Stop()
 						if err != nil {
 							// do not return error
 							// on purpose
+							exporterSpan.RecordError(err)
 							c.Logger.Error(fmt.Sprintf("Fail to close the exporter %s: %s", name, err.Error()))
 						}
+					} else {
+						span.SetStatus(codes.Ok, "successfully exported results")
 					}
 					c.exporterHistogram.With(prom.Labels{"name": name, "status": status}).Observe(duration.Seconds())
 				}
@@ -163,10 +175,13 @@ func (c *Component) Start() error {
 					if err != nil {
 						// do not return error
 						// on purpose
+						exporterSpan.SetStatus(codes.Error, "exporter failure")
+						span.RecordError(err)
 						c.Logger.Error(fmt.Sprintf("fail to reconnect the exporter %s: %s", exporter.Name(), err.Error()))
 					}
 				}
 			}
+			span.End()
 		}
 		c.Logger.Info("Exporter routine stopped")
 

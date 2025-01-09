@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"encoding/json"
 	"net"
 	"net/http"
@@ -124,7 +125,7 @@ func TestRequest(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to create the HTTP discovery component :\n%v", err)
 	}
-	err = discovery.request()
+	err = discovery.request(context.Background())
 	if err != nil {
 		t.Fatalf("HTTP discovery request failed\n%v", err)
 	}
@@ -135,7 +136,7 @@ func TestRequest(t *testing.T) {
 	if checks[0].Base().Name != "foo" {
 		t.Fatalf("Invalid healthcheck name %s", checks[0].Base().Name)
 	}
-	err = discovery.request()
+	err = discovery.request(context.Background())
 	if err != nil {
 		t.Fatalf("HTTP discovery request failed\n%v", err)
 	}

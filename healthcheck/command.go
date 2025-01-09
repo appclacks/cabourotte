@@ -107,9 +107,9 @@ func (h *CommandHealthcheck) LogInfo(message string) {
 }
 
 // Execute executes an healthcheck on the given domain
-func (h *CommandHealthcheck) Execute() error {
+func (h *CommandHealthcheck) Execute(ctx context.Context) error {
 	h.LogDebug("start executing healthcheck")
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(h.Config.Timeout)*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(h.Config.Timeout)*time.Second)
 	defer cancel()
 	var stdErr bytes.Buffer
 	cmd := exec.CommandContext(ctx, h.Config.Command, h.Config.Arguments...)

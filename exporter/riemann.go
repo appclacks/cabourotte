@@ -1,6 +1,7 @@
 package exporter
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"time"
@@ -145,7 +146,7 @@ func (c *RiemannExporter) IsStarted() bool {
 }
 
 // Push pushes events to the desination
-func (c *RiemannExporter) Push(result *healthcheck.Result) error {
+func (c *RiemannExporter) Push(_ context.Context, result *healthcheck.Result) error {
 	state := "ok"
 	if !result.Success {
 		state = "critical"

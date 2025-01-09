@@ -1,6 +1,7 @@
 package exporter
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -39,7 +40,7 @@ func TestHTTPExporter(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to start the http exporter:\n%v", err)
 	}
-	err = exporter.Push(&healthcheck.Result{
+	err = exporter.Push(context.Background(), &healthcheck.Result{
 		Name:                 "foo",
 		Success:              true,
 		HealthcheckTimestamp: time.Now().Unix(),

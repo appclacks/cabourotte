@@ -1,6 +1,7 @@
 package healthcheck
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -44,7 +45,7 @@ func TestTLSExecuteError(t *testing.T) {
 		},
 	}
 	h.buildURL()
-	err = h.Execute()
+	err = h.Execute(context.Background())
 	if err == nil {
 		t.Fatalf("Was expecting an error")
 	}
@@ -60,7 +61,7 @@ func TestTLSExecuteErrorNoTarget(t *testing.T) {
 		},
 	}
 	h.buildURL()
-	err := h.Execute()
+	err := h.Execute(context.Background())
 	if err == nil {
 		t.Fatalf("Was expecting an error")
 	}

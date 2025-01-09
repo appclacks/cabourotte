@@ -1,6 +1,7 @@
 package healthcheck
 
 import (
+	"context"
 	"net"
 	"testing"
 	"time"
@@ -20,7 +21,7 @@ func TestDNSExecuteSuccess(t *testing.T) {
 		},
 	}
 
-	err := h.Execute()
+	err := h.Execute(context.Background())
 	if err != nil {
 		t.Fatalf("healthcheck error :\n%v", err)
 	}
@@ -35,7 +36,7 @@ func TestDNSExecuteFailure(t *testing.T) {
 		},
 	}
 
-	err := h.Execute()
+	err := h.Execute(context.Background())
 	if err == nil {
 		t.Fatalf("Was expecting an error: the domain does not exist")
 	}

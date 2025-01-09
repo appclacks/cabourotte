@@ -1,6 +1,7 @@
 package healthcheck
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -15,7 +16,7 @@ func TestCommandExecuteSuccess(t *testing.T) {
 			Timeout: Duration(time.Second * 2),
 		},
 	}
-	err := h.Execute()
+	err := h.Execute(context.Background())
 	if err != nil {
 		t.Fatalf("healthcheck error :\n%v", err)
 	}
@@ -30,7 +31,7 @@ func TestCommandExecuteFailure(t *testing.T) {
 			Timeout:   Duration(time.Second * 2),
 		},
 	}
-	err := h.Execute()
+	err := h.Execute(context.Background())
 	if err == nil {
 		t.Fatalf("healthcheck was expected to fail")
 	}

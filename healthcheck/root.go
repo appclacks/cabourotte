@@ -1,6 +1,7 @@
 package healthcheck
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"reflect"
@@ -10,6 +11,9 @@ import (
 
 	"github.com/pkg/errors"
 	prom "github.com/prometheus/client_golang/prometheus"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.uber.org/zap"
 
 	"github.com/appclacks/cabourotte/prometheus"
@@ -25,7 +29,7 @@ type Healthcheck interface {
 	Initialize() error
 	GetConfig() interface{}
 	Summary() string
-	Execute() error
+	Execute(ctx context.Context) error
 	LogDebug(message string)
 	LogInfo(message string)
 	Base() Base
@@ -47,14 +51,17 @@ type Component struct {
 
 // Start an healthcheck wrapper
 func (c *Component) startWrapper(w *Wrapper) {
+	tracer := otel.Tracer("healthcheck")
 	w.healthcheck.LogInfo("Starting healthcheck")
 	w.Tick = time.NewTicker(time.Duration(w.healthcheck.Base().Interval))
 	w.t.Go(func() error {
 		wait := rand.Intn(4000)
 		time.Sleep(time.Duration(wait) * time.Millisecond)
 		for {
+			ctx, span := tracer.Start(context.Background(), "periodic_healthcheck")
+			span.SetAttributes(attribute.String("cabourotte.healthcheck.name", w.healthcheck.Base().Name))
 			start := time.Now()
-			err := w.healthcheck.Execute()
+			err := w.healthcheck.Execute(ctx)
 			duration := time.Since(start)
 			result := NewResult(
 				w.healthcheck,
@@ -63,7 +70,13 @@ func (c *Component) startWrapper(w *Wrapper) {
 			status := "failure"
 			if result.Success {
 				status = "success"
+				span.SetStatus(codes.Ok, "healthcheck successful")
+			} else {
+				span.RecordError(err)
+				span.SetStatus(codes.Error, "healthcheck failure")
 			}
+			span.SetAttributes(attribute.String("cabourotte.healthcheck.status", status))
+			span.End()
 			histoLabels := map[string]string{
 				"name": w.healthcheck.Base().Name,
 			}
