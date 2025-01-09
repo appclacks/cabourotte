@@ -18,8 +18,6 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.uber.org/zap"
-
-	"gopkg.in/tomb.v2"
 )
 
 // HTTPHealthcheckConfiguration defines an HTTP healthcheck configuration
@@ -93,7 +91,6 @@ type HTTPHealthcheck struct {
 	URL    string
 
 	Tick   *time.Ticker
-	t      tomb.Tomb
 	Client *http.Client
 }
 

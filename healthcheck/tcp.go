@@ -9,8 +9,6 @@ import (
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
-
-	"gopkg.in/tomb.v2"
 )
 
 // TCPHealthcheckConfiguration defines a TCP healthcheck configuration
@@ -56,7 +54,6 @@ type TCPHealthcheck struct {
 	URL    string
 
 	Tick *time.Ticker
-	t    tomb.Tomb
 }
 
 // buildURL build the target URL for the TCP healthcheck, depending of its

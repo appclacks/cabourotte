@@ -11,7 +11,6 @@ import (
 	"github.com/appclacks/cabourotte/tls"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
-	"gopkg.in/tomb.v2"
 )
 
 // TLSHealthcheckConfiguration defines a TLS healthcheck configuration
@@ -38,7 +37,6 @@ type TLSHealthcheck struct {
 	TLSConfig *cryptotls.Config
 
 	Tick *time.Ticker
-	t    tomb.Tomb
 }
 
 // Validate validates the healthcheck configuration
