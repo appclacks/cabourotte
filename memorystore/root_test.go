@@ -1,6 +1,7 @@
 package memorystore
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -18,8 +19,8 @@ func TestMemoryExporter(t *testing.T) {
 		HealthcheckTimestamp: ts.Unix(),
 		Message:              "message",
 	}
-	store.Add(result)
-	resultList := store.List()
+	store.Add(context.Background(), result)
+	resultList := store.List(context.Background())
 	if !resultList[0].Equals(*result) {
 		t.Fatalf("Invalid result content")
 	}
@@ -33,13 +34,13 @@ func TestMemoryExporter(t *testing.T) {
 		HealthcheckTimestamp: ts.Unix(),
 		Message:              "message",
 	}
-	store.Add(expiredResult)
-	resultList = store.List()
+	store.Add(context.Background(), expiredResult)
+	resultList = store.List(context.Background())
 	if len(resultList) != 2 {
 		t.Fatalf("Invalid result list size: %d", len(resultList))
 	}
-	store.Purge()
-	resultList = store.List()
+	store.Purge(context.Background())
+	resultList = store.List(context.Background())
 	if !resultList[0].Equals(*result) {
 		t.Fatalf("Invalid result content")
 	}

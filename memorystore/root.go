@@ -1,6 +1,7 @@
 package memorystore
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"sync"
@@ -10,6 +11,7 @@ import (
 	"gopkg.in/tomb.v2"
 
 	"github.com/appclacks/cabourotte/healthcheck"
+	"go.opentelemetry.io/otel"
 )
 
 // MemoryStore A store containing the latest healthchecks results
@@ -41,7 +43,7 @@ func (m *MemoryStore) Start() {
 		for {
 			select {
 			case <-m.Tick.C:
-				m.Purge()
+				m.Purge(context.Background())
 			case <-m.t.Dying():
 				return nil
 			}
@@ -61,14 +63,20 @@ func (m *MemoryStore) Stop() error {
 }
 
 // Add a new Result to the store
-func (m *MemoryStore) Add(result *healthcheck.Result) {
+func (m *MemoryStore) Add(ctx context.Context, result *healthcheck.Result) {
+	tracer := otel.Tracer("memorystore")
+	_, span := tracer.Start(ctx, "memory_store_add")
+	defer span.End()
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	m.Results[result.Name] = result
 }
 
 // Purge the expired results
-func (m *MemoryStore) Purge() {
+func (m *MemoryStore) Purge(ctx context.Context) {
+	tracer := otel.Tracer("memorystore")
+	_, span := tracer.Start(ctx, "memory_store_purge")
+	defer span.End()
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	now := time.Now()
@@ -84,7 +92,10 @@ func (m *MemoryStore) Purge() {
 }
 
 // List returns the current value of the results
-func (m *MemoryStore) List() []healthcheck.Result {
+func (m *MemoryStore) List(ctx context.Context) []healthcheck.Result {
+	tracer := otel.Tracer("memorystore")
+	_, span := tracer.Start(ctx, "memory_store_list")
+	defer span.End()
 	m.lock.RLock()
 	defer m.lock.RUnlock()
 	result := make([]healthcheck.Result, 0, len(m.Results))
@@ -99,7 +110,10 @@ func (m *MemoryStore) List() []healthcheck.Result {
 }
 
 // Get returns the current value for a healthcheck
-func (m *MemoryStore) Get(name string) (healthcheck.Result, error) {
+func (m *MemoryStore) Get(ctx context.Context, name string) (healthcheck.Result, error) {
+	tracer := otel.Tracer("memorystore")
+	_, span := tracer.Start(ctx, "memory_store_get")
+	defer span.End()
 	m.lock.RLock()
 	defer m.lock.RUnlock()
 	if result, ok := m.Results[name]; ok {

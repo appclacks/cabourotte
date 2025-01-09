@@ -128,7 +128,7 @@ func (c *Component) Start() error {
 		tracer := otel.Tracer("exporter")
 		for message := range c.ChanResult {
 			ctx, span := tracer.Start(context.Background(), "export")
-			c.MemoryStore.Add(message)
+			c.MemoryStore.Add(ctx, message)
 			if message.Success {
 				c.Logger.Debug("Healthcheck successful",
 					zap.String("name", message.Name),

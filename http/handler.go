@@ -295,12 +295,12 @@ func (c *Component) handlers() {
 	if !c.Config.DisableResultAPI {
 		apiGroup.GET("/result", func(ec echo.Context) error {
 			return ec.JSON(http.StatusOK, ListResultsOutput{
-				Result: c.MemoryStore.List(),
+				Result: c.MemoryStore.List(ec.Request().Context()),
 			})
 		})
 		apiGroup.GET("/result/:name", func(ec echo.Context) error {
 			name := ec.Param("name")
-			result, err := c.MemoryStore.Get(name)
+			result, err := c.MemoryStore.Get(ec.Request().Context(), name)
 			if err != nil {
 				return corbierror.New(err.Error(), corbierror.NotFound, true)
 			}
@@ -351,7 +351,7 @@ func (c *Component) handlers() {
 					return corbierror.Wrap(err, "Internal error", corbierror.Internal, true)
 				}
 				var tmplBytes bytes.Buffer
-				if err := tmpl.Execute(&tmplBytes, c.MemoryStore.List()); err != nil {
+				if err := tmpl.Execute(&tmplBytes, c.MemoryStore.List(ec.Request().Context())); err != nil {
 					return corbierror.Wrap(err, "Internal error", corbierror.Internal, true)
 				}
 				return ec.HTML(http.StatusOK, tmplBytes.String())
