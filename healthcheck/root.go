@@ -76,6 +76,9 @@ func (c *Component) startWrapper(w *Wrapper) {
 				span.SetStatus(codes.Error, "healthcheck failure")
 			}
 			span.SetAttributes(attribute.String("cabourotte.healthcheck.status", status))
+			for k, v := range w.healthcheck.Base().Labels {
+				span.SetAttributes(attribute.String(fmt.Sprintf("cabourotte.healthcheck.label.%s", k), v))
+			}
 			span.End()
 			histoLabels := map[string]string{
 				"name": w.healthcheck.Base().Name,
