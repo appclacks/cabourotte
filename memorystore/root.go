@@ -65,7 +65,7 @@ func (m *MemoryStore) Stop() error {
 // Add a new Result to the store
 func (m *MemoryStore) Add(ctx context.Context, result *healthcheck.Result) {
 	tracer := otel.Tracer("memorystore")
-	_, span := tracer.Start(ctx, "memory_store_add")
+	_, span := tracer.Start(ctx, "memorystore.add")
 	defer span.End()
 	m.lock.Lock()
 	defer m.lock.Unlock()
@@ -75,7 +75,7 @@ func (m *MemoryStore) Add(ctx context.Context, result *healthcheck.Result) {
 // Purge the expired results
 func (m *MemoryStore) Purge(ctx context.Context) {
 	tracer := otel.Tracer("memorystore")
-	_, span := tracer.Start(ctx, "memory_store_purge")
+	_, span := tracer.Start(ctx, "memorystore.purge")
 	defer span.End()
 	m.lock.Lock()
 	defer m.lock.Unlock()
@@ -94,7 +94,7 @@ func (m *MemoryStore) Purge(ctx context.Context) {
 // List returns the current value of the results
 func (m *MemoryStore) List(ctx context.Context) []healthcheck.Result {
 	tracer := otel.Tracer("memorystore")
-	_, span := tracer.Start(ctx, "memory_store_list")
+	_, span := tracer.Start(ctx, "memorystore.list")
 	defer span.End()
 	m.lock.RLock()
 	defer m.lock.RUnlock()
@@ -112,7 +112,7 @@ func (m *MemoryStore) List(ctx context.Context) []healthcheck.Result {
 // Get returns the current value for a healthcheck
 func (m *MemoryStore) Get(ctx context.Context, name string) (healthcheck.Result, error) {
 	tracer := otel.Tracer("memorystore")
-	_, span := tracer.Start(ctx, "memory_store_get")
+	_, span := tracer.Start(ctx, "memorystore.get")
 	defer span.End()
 	m.lock.RLock()
 	defer m.lock.RUnlock()

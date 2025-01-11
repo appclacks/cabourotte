@@ -58,7 +58,7 @@ var embededFiles embed.FS
 // oneOff executes an one-off healthcheck and returns its result
 func (c *Component) oneOff(ec echo.Context, healthcheck healthcheck.Healthcheck) error {
 	tracer := otel.Tracer("healthcheck")
-	ctx, span := tracer.Start(ec.Request().Context(), "oneoff_healthcheck")
+	ctx, span := tracer.Start(ec.Request().Context(), "healthcheck.oneoff")
 	defer span.End()
 	span.SetAttributes(attribute.String("cabourotte.healthcheck.name", healthcheck.Base().Name))
 	c.Logger.Info(fmt.Sprintf("Executing one-off healthcheck %s", healthcheck.Base().Name))

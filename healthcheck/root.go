@@ -58,7 +58,7 @@ func (c *Component) startWrapper(w *Wrapper) {
 		wait := rand.Intn(4000)
 		time.Sleep(time.Duration(wait) * time.Millisecond)
 		for {
-			ctx, span := tracer.Start(context.Background(), "periodic_healthcheck")
+			ctx, span := tracer.Start(context.Background(), "healthcheck.periodic")
 			span.SetAttributes(attribute.String("cabourotte.healthcheck.name", w.healthcheck.Base().Name))
 			start := time.Now()
 			err := w.healthcheck.Execute(ctx)
