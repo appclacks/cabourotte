@@ -1,4 +1,4 @@
-FROM golang:1.22.1 as build-env
+FROM golang:1.23.5 AS build-env
 
 ADD . /app
 WORKDIR /app
@@ -7,7 +7,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
 
 # -----------------------------------------------------------------------------
 
-FROM alpine:3.19.0
+FROM alpine:3.21.2
 
 RUN addgroup -S -g 10000 api \
  && adduser -S -D -u 10000 -s /sbin/nologin -G api api
