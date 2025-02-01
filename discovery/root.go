@@ -76,7 +76,7 @@ func New(logger *zap.Logger, config Configuration, promComponent *prometheus.Pro
 
 // Start start all discovery mechanisms
 func (c *Component) Start() error {
-	if c.HTTPDiscovery != nil && len(c.HTTPDiscovery) != 0 {
+	if c.HTTPDiscovery != nil && len(c.HTTPDiscovery) != 0 { // nolint
 		for i := range c.HTTPDiscovery {
 			discovery := c.HTTPDiscovery[i]
 			err := discovery.Start()
@@ -90,7 +90,7 @@ func (c *Component) Start() error {
 
 // Stop stop all discovery mechanisms
 func (c *Component) Stop() error {
-	if c.HTTPDiscovery != nil && len(c.HTTPDiscovery) != 0 {
+	if c.HTTPDiscovery != nil && len(c.HTTPDiscovery) != 0 { // nolint
 		for i := range c.HTTPDiscovery {
 			discovery := c.HTTPDiscovery[i]
 			err := discovery.Stop()

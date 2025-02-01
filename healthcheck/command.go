@@ -122,7 +122,7 @@ func (h *CommandHealthcheck) Execute(ctx context.Context) error {
 		} else {
 			errorMsg = fmt.Sprintf("The command failed, stderr=%s", stdErr.String())
 		}
-		return errors.Wrapf(err, errorMsg)
+		return errors.Wrap(err, errorMsg)
 	}
 
 	return nil
