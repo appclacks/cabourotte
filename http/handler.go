@@ -8,7 +8,6 @@ import (
 	"io/fs"
 	"net/http"
 	"reflect"
-	"strings"
 	"sync"
 	"text/template"
 	"time"
@@ -83,7 +82,7 @@ func (c *Component) oneOff(ec echo.Context, healthcheck healthcheck.Healthcheck)
 	return ec.JSON(http.StatusCreated, newResponse(msg))
 }
 
-func (c *Component) addCheckError(ec echo.Context, healthcheck healthcheck.Healthcheck, err error) error {
+func (c *Component) addCheckError(_ echo.Context, healthcheck healthcheck.Healthcheck, err error) error {
 	msg := fmt.Sprintf("Fail to start the healthcheck %s: %s", healthcheck.Base().Name, err.Error())
 	return corbierror.New(msg, corbierror.Internal, true)
 }
@@ -106,6 +105,7 @@ func (c *Component) handlers() {
 	c.Server.Use(otelecho.Middleware("cabourotte"))
 	c.Server.Use(c.metricMiddleware)
 	fsys, _ := fs.Sub(embededFiles, "assets")
+	assetHandler := http.FileServer(http.FS(fsys))
 	if c.Config.BasicAuth.Username != "" {
 		c.Server.Use(middleware.BasicAuth(func(username, password string, ctx echo.Context) (bool, error) {
 			if subtle.ConstantTimeCompare([]byte(username),
@@ -311,8 +311,12 @@ func (c *Component) handlers() {
 			err := ec.Redirect(http.StatusFound, "/frontend/index.html")
 			return err
 		})
-		c.Server.GET("/frontend/*", func(ec echo.Context) error {
-			path := strings.TrimPrefix(ec.Request().URL.Path, "/frontend/")
+		c.Server.GET("/frontend/", func(ec echo.Context) error {
+			err := ec.Redirect(http.StatusFound, "/frontend/index.html")
+			return err
+		})
+		c.Server.GET("/frontend/index.html", func(ec echo.Context) error {
+			path := "index.html"
 
 			if path == "" {
 				path = "index.html"
@@ -359,8 +363,8 @@ func (c *Component) handlers() {
 			} else {
 				return ec.HTML(http.StatusOK, string(buffer))
 			}
-
 		})
+		c.Server.GET("/frontend/*", echo.WrapHandler(http.StripPrefix("/frontend/", assetHandler)))
 	}
 
 	c.Server.GET("/health", func(ec echo.Context) error {
