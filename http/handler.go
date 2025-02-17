@@ -66,7 +66,7 @@ func (c *Component) oneOff(ec echo.Context, healthcheck healthcheck.Healthcheck)
 		msg := fmt.Sprintf("Fail to initialize one off healthcheck %s: %s", healthcheck.Base().Name, err.Error())
 		return corbierror.New(msg, corbierror.Internal, true)
 	}
-	err = healthcheck.Execute(ctx)
+	err = healthcheck.Execute(&ctx)
 	if err != nil {
 		msg := fmt.Sprintf("Execution of one off healthcheck %s failed: %s", healthcheck.Base().Name, err.Error())
 		c.Logger.Error(msg)

@@ -45,7 +45,8 @@ func TestTLSExecuteError(t *testing.T) {
 		},
 	}
 	h.buildURL()
-	err = h.Execute(context.Background())
+	ctx := context.Background()
+	err = h.Execute(&ctx)
 	if err == nil {
 		t.Fatalf("Was expecting an error")
 	}
@@ -61,7 +62,8 @@ func TestTLSExecuteErrorNoTarget(t *testing.T) {
 		},
 	}
 	h.buildURL()
-	err := h.Execute(context.Background())
+	ctx := context.Background()
+	err := h.Execute(&ctx)
 	if err == nil {
 		t.Fatalf("Was expecting an error")
 	}

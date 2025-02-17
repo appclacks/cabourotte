@@ -20,8 +20,8 @@ func TestDNSExecuteSuccess(t *testing.T) {
 			Timeout: Duration(time.Second * 2),
 		},
 	}
-
-	err := h.Execute(context.Background())
+	ctx := context.Background()
+	err := h.Execute(&ctx)
 	if err != nil {
 		t.Fatalf("healthcheck error :\n%v", err)
 	}
@@ -35,8 +35,8 @@ func TestDNSExecuteFailure(t *testing.T) {
 			Timeout: Duration(time.Second * 2),
 		},
 	}
-
-	err := h.Execute(context.Background())
+	ctx := context.Background()
+	err := h.Execute(&ctx)
 	if err == nil {
 		t.Fatalf("Was expecting an error: the domain does not exist")
 	}

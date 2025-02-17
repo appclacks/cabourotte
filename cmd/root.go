@@ -90,7 +90,7 @@ func Main() {
 					defer logger.Sync()
 					daemonComponent, err := daemon.New(logger, &config)
 					if err != nil {
-						return errors.Wrapf(err, "Fail to creae the daemon")
+						return errors.Wrapf(err, "Fail to create the daemon")
 					}
 					signals := make(chan os.Signal, 1)
 					errChan := make(chan error)
