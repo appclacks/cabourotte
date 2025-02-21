@@ -214,7 +214,7 @@ func (h *HTTPHealthcheck) LogInfo(message string) {
 }
 
 // Execute executes an healthcheck on the given target
-func (h *HTTPHealthcheck) Execute(ctx context.Context) error {
+func (h *HTTPHealthcheck) Execute(ctx *context.Context) error {
 	h.LogDebug("start executing healthcheck")
 	body := bytes.NewBuffer([]byte(h.Config.Body))
 	req, err := http.NewRequest(h.Config.Method, h.URL, body)
@@ -232,7 +232,7 @@ func (h *HTTPHealthcheck) Execute(ctx context.Context) error {
 		req.Host = h.Config.Host
 	}
 	client := h.Client
-	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(h.Config.Timeout))
+	timeoutCtx, cancel := context.WithTimeout(*ctx, time.Duration(h.Config.Timeout))
 	defer cancel()
 	req = req.WithContext(timeoutCtx)
 	if len(h.Config.Query) != 0 {
@@ -257,6 +257,7 @@ func (h *HTTPHealthcheck) Execute(ctx context.Context) error {
 	if len(responseBodyStr) > maxMessageSize {
 		message = responseBodyStr[0:maxMessageSize]
 	}
+	*ctx = context.WithValue(*ctx, "labels", map[string]string{"HTTP Status Code": fmt.Sprintf("%v", response.StatusCode)})
 	if !h.isSuccessful(response) {
 		errorMsg := fmt.Sprintf("HTTP request failed: status %d. Body: '%s'", response.StatusCode, html.EscapeString(message))
 		err = errors.New(errorMsg)

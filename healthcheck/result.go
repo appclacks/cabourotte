@@ -12,6 +12,7 @@ type Result struct {
 	Success              bool              `json:"success"`
 	HealthcheckTimestamp int64             `json:"healthcheck-timestamp"`
 	Message              string            `json:"message"`
+	MessageLabels        map[string]string `json:"message_labels"`
 	Duration             int64             `json:"duration"`
 	Source               string            `json:"source"`
 }
@@ -51,7 +52,7 @@ func (r Result) Equals(v Result) bool {
 }
 
 // NewResult build a a new result for an healthcheck
-func NewResult(healthcheck Healthcheck, duration int64, err error) *Result {
+func NewResult(healthcheck Healthcheck, duration int64, labels map[string]string, err error) *Result {
 	now := time.Now()
 	source := "configuration"
 	if healthcheck.Base().Source != "" {
@@ -64,6 +65,7 @@ func NewResult(healthcheck Healthcheck, duration int64, err error) *Result {
 		HealthcheckTimestamp: now.Unix(),
 		Duration:             duration,
 		Source:               source,
+		MessageLabels:        labels,
 	}
 	if err != nil {
 		result.Success = false

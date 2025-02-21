@@ -105,7 +105,8 @@ func TestHTTPExecuteGetSuccess(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Initialization error :\n%v", err)
 	}
-	err = h.Execute(context.Background())
+	ctx := context.Background()
+	err = h.Execute(&ctx)
 	if err != nil {
 		t.Fatalf("healthcheck error :\n%v", err)
 	}
@@ -155,7 +156,8 @@ func TestHTTPExecuteRegexpSuccess(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Initialization error :\n%v", err)
 	}
-	err = h.Execute(context.Background())
+	ctx := context.Background()
+	err = h.Execute(&ctx)
 	if err != nil {
 		t.Fatalf("healthcheck error :\n%v", err)
 	}
@@ -199,7 +201,8 @@ func TestHTTPExecuteRegexpFailure(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Initialization error :\n%v", err)
 	}
-	err = h.Execute(context.Background())
+	ctx := context.Background()
+	err = h.Execute(&ctx)
 	if err == nil {
 		t.Fatalf("Was expecting an error")
 	}
@@ -241,7 +244,8 @@ func TestHTTPv6ExecuteSuccess(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Initialization error :\n%v", err)
 	}
-	err = h.Execute(context.Background())
+	ctx := context.Background()
+	err = h.Execute(&ctx)
 	if err != nil {
 		t.Fatalf("healthcheck error :\n%v", err)
 	}
@@ -280,7 +284,8 @@ func TestHTTPExecuteFailure(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Initialization error :\n%v", err)
 	}
-	err = h.Execute(context.Background())
+	ctx := context.Background()
+	err = h.Execute(&ctx)
 	if err == nil {
 		t.Fatalf("Was expecting an error")
 	}
@@ -408,7 +413,8 @@ func TestHTTPExecuteSourceIP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Initialization error :\n%v", err)
 	}
-	err = h.Execute(context.Background())
+	ctx := context.Background()
+	err = h.Execute(&ctx)
 	if err != nil {
 		t.Fatalf("healthcheck error :\n%v", err)
 	}
@@ -471,7 +477,8 @@ func TestHTTPExecutePostSuccess(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Initialization error :\n%v", err)
 	}
-	err = h.Execute(context.Background())
+	ctx := context.Background()
+	err = h.Execute(&ctx)
 	if err != nil {
 		t.Fatalf("healthcheck error :\n%v", err)
 	}
@@ -547,7 +554,8 @@ func TestHTTPExecuteQueryParam(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Initialization error :\n%v", err)
 	}
-	err = h.Execute(context.Background())
+	ctx := context.Background()
+	err = h.Execute(&ctx)
 	if err != nil {
 		t.Fatalf("healthcheck error :\n%v", err)
 	}

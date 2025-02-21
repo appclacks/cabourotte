@@ -54,6 +54,11 @@
             <li><b>Source</b>: {{.Source }}</li>
             <li><b>Timestamp</b>: {{ formatts .HealthcheckTimestamp }}</li>
             <li><b>Duration</b>: {{ .Duration }} milliseconds</li>
+            {{ if .MessageLabels }}
+            {{ range $key, $value := .MessageLabels }}
+            <li><b>{{ $key }}</b>: {{ $value }}</li>
+            {{ end }}
+            {{ end }}
           </ul>
             {{ if .Labels }}<br/>
             {{ range $key, $value := .Labels }}

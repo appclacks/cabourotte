@@ -126,7 +126,7 @@ func (h *TCPHealthcheck) LogInfo(message string) {
 }
 
 // Execute executes an healthcheck on the given target
-func (h *TCPHealthcheck) Execute(ctx context.Context) error {
+func (h *TCPHealthcheck) Execute(ctx *context.Context) error {
 	h.LogDebug("start executing healthcheck")
 	dialer := net.Dialer{}
 	if h.Config.SourceIP != nil {
@@ -139,7 +139,7 @@ func (h *TCPHealthcheck) Execute(ctx context.Context) error {
 			LocalAddr: addr,
 		}
 	}
-	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(h.Config.Timeout))
+	timeoutCtx, cancel := context.WithTimeout(*ctx, time.Duration(h.Config.Timeout))
 	defer cancel()
 	conn, err := dialer.DialContext(timeoutCtx, "tcp", h.URL)
 	if h.Config.ShouldFail {
