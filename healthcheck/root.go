@@ -19,6 +19,10 @@ import (
 	"github.com/appclacks/cabourotte/prometheus"
 )
 
+type contextKey string
+
+const messageLabels contextKey = "labels"
+
 // HealthcheckConfiguration is the interface for the healthcheck configuration
 type HealthcheckConfiguration interface {
 	Validate() error
@@ -29,7 +33,7 @@ type Healthcheck interface {
 	Initialize() error
 	GetConfig() interface{}
 	Summary() string
-	Execute(ctx context.Context) error
+	Execute(ctx *context.Context) error
 	LogDebug(message string)
 	LogInfo(message string)
 	Base() Base
@@ -61,12 +65,16 @@ func (c *Component) startWrapper(w *Wrapper) {
 			ctx, span := tracer.Start(context.Background(), "healthcheck.periodic")
 			span.SetAttributes(attribute.String("cabourotte.healthcheck.name", w.healthcheck.Base().Name))
 			start := time.Now()
-			err := w.healthcheck.Execute(ctx)
+			err := w.healthcheck.Execute(&ctx)
 			duration := time.Since(start)
 			result := NewResult(
 				w.healthcheck,
 				duration.Milliseconds(),
+				map[string]string{},
 				err)
+			if ctx.Value(messageLabels) != nil {
+				result.MessageLabels = ctx.Value(messageLabels).(map[string]string)
+			}
 			status := "failure"
 			if result.Success {
 				status = "success"
