@@ -41,9 +41,6 @@ func (config *CommandHealthcheckConfiguration) Validate() error {
 		return errors.New("The healthcheck timeout is missing")
 	}
 	if !config.Base.OneOff {
-		if config.Base.Interval < Duration(2*time.Second) {
-			return errors.New("The healthcheck interval should be greater than 2 second")
-		}
 		if config.Base.Interval < config.Timeout {
 			return errors.New("The healthcheck interval should be greater than the timeout")
 		}
