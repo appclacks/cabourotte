@@ -47,7 +47,7 @@ type HTTPHealthcheckConfiguration struct {
 
 // Validate validates the healthcheck configuration
 func (config *HTTPHealthcheckConfiguration) Validate() error {
-	if config.Base.Name == "" {
+	if config.Name == "" {
 		return errors.New("The healthcheck name is missing")
 	}
 	if len(config.ValidStatus) == 0 {
@@ -69,12 +69,12 @@ func (config *HTTPHealthcheckConfiguration) Validate() error {
 	} else {
 		config.Method = "GET"
 	}
-	if !config.Base.OneOff {
-		if config.Base.Interval < config.Timeout {
+	if !config.OneOff {
+		if config.Interval < config.Timeout {
 			return errors.New("The healthcheck interval should be greater than the timeout")
 		}
 	}
-	if !((config.Key != "" && config.Cert != "") ||
+	if !((config.Key != "" && config.Cert != "") || //nolint
 		(config.Key == "" && config.Cert == "")) {
 		return errors.New("Invalid certificates")
 	}
@@ -108,8 +108,8 @@ func (h *HTTPHealthcheck) buildURL() {
 // Summary returns an healthcheck summary
 func (h *HTTPHealthcheck) Summary() string {
 	summary := ""
-	if h.Config.Base.Description != "" {
-		summary = fmt.Sprintf("HTTP healthcheck %s on %s:%d", h.Config.Base.Description, h.Config.Target, h.Config.Port)
+	if h.Config.Description != "" {
+		summary = fmt.Sprintf("HTTP healthcheck %s on %s:%d", h.Config.Description, h.Config.Target, h.Config.Port)
 
 	} else {
 		summary = fmt.Sprintf("HTTP healthcheck on %s:%d", h.Config.Target, h.Config.Port)
@@ -171,7 +171,7 @@ func (h *HTTPHealthcheck) Base() Base {
 
 // SetSource set the healthcheck source
 func (h *HTTPHealthcheck) SetSource(source string) {
-	h.Config.Base.Source = source
+	h.Config.Source = source
 }
 
 // isSuccessful verifies if a healthcheck result is considered valid
@@ -191,7 +191,7 @@ func (h *HTTPHealthcheck) LogError(err error, message string) {
 		zap.String("extra", message),
 		zap.String("target", h.Config.Target),
 		zap.Uint("port", h.Config.Port),
-		zap.String("name", h.Config.Base.Name))
+		zap.String("name", h.Config.Name))
 }
 
 // LogDebug logs a message with context
@@ -199,7 +199,7 @@ func (h *HTTPHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
 		zap.String("target", h.Config.Target),
 		zap.Uint("port", h.Config.Port),
-		zap.String("name", h.Config.Base.Name))
+		zap.String("name", h.Config.Name))
 }
 
 // LogInfo logs a message with context
@@ -207,7 +207,7 @@ func (h *HTTPHealthcheck) LogInfo(message string) {
 	h.Logger.Info(message,
 		zap.String("target", h.Config.Target),
 		zap.Uint("port", h.Config.Port),
-		zap.String("name", h.Config.Base.Name))
+		zap.String("name", h.Config.Name))
 }
 
 // Execute executes an healthcheck on the given target
@@ -243,7 +243,7 @@ func (h *HTTPHealthcheck) Execute(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrapf(err, "HTTP request failed")
 	}
-	defer response.Body.Close()
+	defer response.Body.Close() //nolint
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
 		return errors.Wrapf(err, "Fail to read request body")

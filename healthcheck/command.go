@@ -31,7 +31,7 @@ type CommandHealthcheck struct {
 
 // Validate validates the healthcheck configuration
 func (config *CommandHealthcheckConfiguration) Validate() error {
-	if config.Base.Name == "" {
+	if config.Name == "" {
 		return errors.New("The healthcheck name is missing")
 	}
 	if config.Command == "" {
@@ -40,8 +40,8 @@ func (config *CommandHealthcheckConfiguration) Validate() error {
 	if config.Timeout == 0 {
 		return errors.New("The healthcheck timeout is missing")
 	}
-	if !config.Base.OneOff {
-		if config.Base.Interval < config.Timeout {
+	if !config.OneOff {
+		if config.Interval < config.Timeout {
 			return errors.New("The healthcheck interval should be greater than the timeout")
 		}
 	}
@@ -65,14 +65,14 @@ func (h *CommandHealthcheck) Base() Base {
 
 // SetSource set the healthcheck source
 func (h *CommandHealthcheck) SetSource(source string) {
-	h.Config.Base.Source = source
+	h.Config.Source = source
 }
 
 // Summary returns an healthcheck summary
 func (h *CommandHealthcheck) Summary() string {
 	summary := ""
-	if h.Config.Base.Description != "" {
-		summary = fmt.Sprintf("%s, command %s", h.Config.Base.Description, h.Config.Command)
+	if h.Config.Description != "" {
+		summary = fmt.Sprintf("%s, command %s", h.Config.Description, h.Config.Command)
 
 	} else {
 		summary = fmt.Sprintf("command %s", h.Config.Command)
@@ -86,21 +86,21 @@ func (h *CommandHealthcheck) LogError(err error, message string) {
 	h.Logger.Error(err.Error(),
 		zap.String("extra", message),
 		zap.String("command", h.Config.Command),
-		zap.String("name", h.Config.Base.Name))
+		zap.String("name", h.Config.Name))
 }
 
 // LogDebug logs a message with context
 func (h *CommandHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
 		zap.String("command", h.Config.Command),
-		zap.String("name", h.Config.Base.Name))
+		zap.String("name", h.Config.Name))
 }
 
 // LogInfo logs a message with context
 func (h *CommandHealthcheck) LogInfo(message string) {
 	h.Logger.Info(message,
 		zap.String("command", h.Config.Command),
-		zap.String("name", h.Config.Base.Name))
+		zap.String("name", h.Config.Name))
 }
 
 // Execute executes an healthcheck on the given domain

@@ -119,5 +119,5 @@ func (m *MemoryStore) Get(ctx context.Context, name string) (healthcheck.Result,
 	if result, ok := m.Results[name]; ok {
 		return *result, nil
 	}
-	return healthcheck.Result{}, fmt.Errorf("Result not found for healthcheck %s", name)
+	return healthcheck.Result{}, fmt.Errorf("result not found for healthcheck %s", name)
 }

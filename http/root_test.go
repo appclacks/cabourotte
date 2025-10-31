@@ -81,7 +81,7 @@ func TestStartStopTLS(t *testing.T) {
 	if err != nil {
 		t.Fatalf("HTTP error\n%v", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Fail reading response body\n%v", err)

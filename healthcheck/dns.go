@@ -32,7 +32,7 @@ type DNSHealthcheck struct {
 
 // Validate validates the healthcheck configuration
 func (config *DNSHealthcheckConfiguration) Validate() error {
-	if config.Base.Name == "" {
+	if config.Name == "" {
 		return errors.New("The healthcheck name is missing")
 	}
 	if config.Domain == "" {
@@ -41,8 +41,8 @@ func (config *DNSHealthcheckConfiguration) Validate() error {
 	if config.Timeout == 0 {
 		return errors.New("The healthcheck timeout is missing")
 	}
-	if !config.Base.OneOff {
-		if config.Base.Interval < config.Timeout {
+	if !config.OneOff {
+		if config.Interval < config.Timeout {
 			return errors.New("The healthcheck interval should be greater than the timeout")
 		}
 	}
@@ -66,14 +66,14 @@ func (h *DNSHealthcheck) Base() Base {
 
 // SetSource set the healthcheck source
 func (h *DNSHealthcheck) SetSource(source string) {
-	h.Config.Base.Source = source
+	h.Config.Source = source
 }
 
 // Summary returns an healthcheck summary
 func (h *DNSHealthcheck) Summary() string {
 	summary := ""
-	if h.Config.Base.Description != "" {
-		summary = fmt.Sprintf("DNS healthcheck %s on %s", h.Config.Base.Description, h.Config.Domain)
+	if h.Config.Description != "" {
+		summary = fmt.Sprintf("DNS healthcheck %s on %s", h.Config.Description, h.Config.Domain)
 
 	} else {
 		summary = fmt.Sprintf("DNS healthcheck on %s", h.Config.Domain)
@@ -87,21 +87,21 @@ func (h *DNSHealthcheck) LogError(err error, message string) {
 	h.Logger.Error(err.Error(),
 		zap.String("extra", message),
 		zap.String("domain", h.Config.Domain),
-		zap.String("name", h.Config.Base.Name))
+		zap.String("name", h.Config.Name))
 }
 
 // LogDebug logs a message with context
 func (h *DNSHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
 		zap.String("domain", h.Config.Domain),
-		zap.String("name", h.Config.Base.Name))
+		zap.String("name", h.Config.Name))
 }
 
 // LogInfo logs a message with context
 func (h *DNSHealthcheck) LogInfo(message string) {
 	h.Logger.Info(message,
 		zap.String("domain", h.Config.Domain),
-		zap.String("name", h.Config.Base.Name))
+		zap.String("name", h.Config.Name))
 }
 
 func verifyIPs(expectedIPs []IP, lookupIPs []net.IP) error {
@@ -127,7 +127,7 @@ func verifyIPs(expectedIPs []IP, lookupIPs []net.IP) error {
 		for _, ip := range lookupIPs {
 			lookup = append(lookup, ip.String())
 		}
-		return fmt.Errorf("The IP addresses %s were not found. The DNS result was %s ", strings.Join(l, ", "), strings.Join(lookup, ", "))
+		return fmt.Errorf("the IP addresses %s were not found. The DNS result was %s ", strings.Join(l, ", "), strings.Join(lookup, ", "))
 	}
 	return nil
 }

@@ -98,7 +98,7 @@ func (c *HTTPDiscovery) request(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrapf(err, "HTTP discovery: fail to send request to %s", c.URL)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("HTTP discovery: request failed, status %d", resp.StatusCode)
 	}

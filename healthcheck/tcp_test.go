@@ -88,7 +88,7 @@ func TestTCPv6ExecuteSuccess(t *testing.T) {
 	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
-	ts.Listener.Close()
+	ts.Listener.Close() //nolint
 	ts.Listener = l
 	ts.Start()
 	defer ts.Close()

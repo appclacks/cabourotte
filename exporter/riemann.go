@@ -50,7 +50,7 @@ func (c *RiemannConfiguration) UnmarshalYAML(unmarshal func(interface{}) error) 
 	if raw.Port == 0 {
 		return errors.New("Invalid port for the Riemann server")
 	}
-	if !((raw.Key != "" && raw.Cert != "") ||
+	if !((raw.Key != "" && raw.Cert != "") || //nolint
 		(raw.Key == "" && raw.Cert == "")) {
 		return errors.New("Invalid certificates")
 	}
