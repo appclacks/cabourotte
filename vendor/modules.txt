@@ -1,8 +1,6 @@
 # github.com/beorn7/perks v1.0.1
 ## explicit; go 1.11
 github.com/beorn7/perks/quantile
-# github.com/cenkalti/backoff/v4 v4.3.0
-## explicit; go 1.18
 # github.com/cenkalti/backoff/v5 v5.0.3
 ## explicit; go 1.23
 github.com/cenkalti/backoff/v5
@@ -126,7 +124,6 @@ go.opentelemetry.io/otel/codes
 go.opentelemetry.io/otel/internal/baggage
 go.opentelemetry.io/otel/internal/global
 go.opentelemetry.io/otel/propagation
-go.opentelemetry.io/otel/semconv/v1.17.0
 go.opentelemetry.io/otel/semconv/v1.37.0
 go.opentelemetry.io/otel/semconv/v1.37.0/httpconv
 go.opentelemetry.io/otel/semconv/v1.37.0/otelconv
