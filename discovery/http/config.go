@@ -48,7 +48,7 @@ func (configuration *Configuration) UnmarshalYAML(unmarshal func(interface{}) er
 	if raw.Interval < 10 {
 		return errors.New("The interval should be greater or equal than 10 seconds")
 	}
-	if !((raw.Key != "" && raw.Cert != "") ||
+	if !((raw.Key != "" && raw.Cert != "") || //nolint
 		(raw.Key == "" && raw.Cert == "")) {
 		return errors.New("Invalid certificates")
 	}

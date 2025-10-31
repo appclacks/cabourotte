@@ -82,7 +82,7 @@ func TestHandlers(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to get the healthchecks\n%v", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Fail to read the body\n%v", err)
@@ -102,7 +102,7 @@ func TestHandlers(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to get the healthchecks\n%v", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint
 	bodyBytes, err = io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Fail to read the body\n%v", err)
@@ -116,7 +116,7 @@ func TestHandlers(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to get the healthchecks\n%v", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint
 	if resp.StatusCode != http.StatusNotFound {
 		t.Fatalf("Was expecting a 404 response, got %d", resp.StatusCode)
 	}
@@ -142,7 +142,7 @@ func TestHandlers(t *testing.T) {
 		if resp.StatusCode != http.StatusOK {
 			t.Fatalf("HTTP request failed, status %d", resp.StatusCode)
 		}
-		defer resp.Body.Close()
+		defer resp.Body.Close() //nolint
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
 			t.Fatalf("Fail to read the body\n%v", err)
@@ -211,7 +211,7 @@ func TestOneOffCheck(t *testing.T) {
 	if count != 1 {
 		t.Fatalf("The target server was not reached: %d", count)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Fail to read the body\n%v", err)
@@ -259,7 +259,7 @@ func TestBulkEndpoint(t *testing.T) {
 	if resp.StatusCode != http.StatusCreated {
 		t.Fatalf("HTTP request failed, status %d", resp.StatusCode)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Fail to read the body\n%v", err)

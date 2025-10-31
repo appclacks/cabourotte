@@ -24,7 +24,7 @@ type TCPHealthcheckConfiguration struct {
 
 // Validate validates the healthcheck configuration
 func (config *TCPHealthcheckConfiguration) Validate() error {
-	if config.Base.Name == "" {
+	if config.Name == "" {
 		return errors.New("The healthcheck name is missing")
 	}
 	if config.Target == "" {
@@ -36,8 +36,8 @@ func (config *TCPHealthcheckConfiguration) Validate() error {
 	if config.Timeout == 0 {
 		return errors.New("The healthcheck timeout is missing")
 	}
-	if !config.Base.OneOff {
-		if config.Base.Interval < config.Timeout {
+	if !config.OneOff {
+		if config.Interval < config.Timeout {
 			return errors.New("The healthcheck interval should be greater than the timeout")
 		}
 	}
@@ -62,8 +62,8 @@ func (h *TCPHealthcheck) buildURL() {
 // Summary returns an healthcheck summary
 func (h *TCPHealthcheck) Summary() string {
 	summary := ""
-	if h.Config.Base.Description != "" {
-		summary = fmt.Sprintf("TCP healthcheck %s on %s:%d", h.Config.Base.Description, h.Config.Target, h.Config.Port)
+	if h.Config.Description != "" {
+		summary = fmt.Sprintf("TCP healthcheck %s on %s:%d", h.Config.Description, h.Config.Target, h.Config.Port)
 
 	} else {
 		summary = fmt.Sprintf("TCP healthcheck on %s:%d", h.Config.Target, h.Config.Port)
@@ -94,7 +94,7 @@ func (h *TCPHealthcheck) Base() Base {
 
 // SetSource set the healthcheck source
 func (h *TCPHealthcheck) SetSource(source string) {
-	h.Config.Base.Source = source
+	h.Config.Source = source
 }
 
 // LogError logs an error with context
@@ -103,7 +103,7 @@ func (h *TCPHealthcheck) LogError(err error, message string) {
 		zap.String("extra", message),
 		zap.String("target", h.Config.Target),
 		zap.Uint("port", h.Config.Port),
-		zap.String("name", h.Config.Base.Name))
+		zap.String("name", h.Config.Name))
 }
 
 // LogDebug logs a message with context
@@ -111,7 +111,7 @@ func (h *TCPHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
 		zap.String("target", h.Config.Target),
 		zap.Uint("port", h.Config.Port),
-		zap.String("name", h.Config.Base.Name))
+		zap.String("name", h.Config.Name))
 }
 
 // LogInfo logs a message with context
@@ -119,7 +119,7 @@ func (h *TCPHealthcheck) LogInfo(message string) {
 	h.Logger.Info(message,
 		zap.String("target", h.Config.Target),
 		zap.Uint("port", h.Config.Port),
-		zap.String("name", h.Config.Base.Name))
+		zap.String("name", h.Config.Name))
 }
 
 // Execute executes an healthcheck on the given target
@@ -141,14 +141,14 @@ func (h *TCPHealthcheck) Execute(ctx context.Context) error {
 	conn, err := dialer.DialContext(timeoutCtx, "tcp", h.URL)
 	if h.Config.ShouldFail {
 		if err == nil {
-			defer conn.Close()
+			defer conn.Close() //nolint
 			return fmt.Errorf("TCP check is successful on %s but an error was expected", h.URL)
 		}
 	} else {
 		if err != nil {
 			return errors.Wrapf(err, "TCP connection failed on %s", h.URL)
 		}
-		defer conn.Close()
+		defer conn.Close() //nolint
 	}
 	return nil
 }

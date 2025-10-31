@@ -1,6 +1,6 @@
 module github.com/appclacks/cabourotte
 
-go 1.23.5
+go 1.25.3
 
 require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect

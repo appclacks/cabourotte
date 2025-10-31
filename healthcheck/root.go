@@ -301,8 +301,8 @@ func (c *Component) ReloadForSource(
 	for i := range command {
 		config := &command[i]
 		MergeLabels(&config.Base, commonLabels)
-		config.Base.Source = source
-		newChecks[config.Base.Name] = true
+		config.Source = source
+		newChecks[config.Name] = true
 		err := config.Validate()
 		if err != nil {
 			return err
@@ -316,8 +316,8 @@ func (c *Component) ReloadForSource(
 	for i := range dns {
 		config := &dns[i]
 		MergeLabels(&config.Base, commonLabels)
-		config.Base.Source = source
-		newChecks[config.Base.Name] = true
+		config.Source = source
+		newChecks[config.Name] = true
 		err := config.Validate()
 		if err != nil {
 			return err
@@ -331,8 +331,8 @@ func (c *Component) ReloadForSource(
 	for i := range http {
 		config := &http[i]
 		MergeLabels(&config.Base, commonLabels)
-		config.Base.Source = source
-		newChecks[config.Base.Name] = true
+		config.Source = source
+		newChecks[config.Name] = true
 		err := config.Validate()
 		if err != nil {
 			return err
@@ -346,8 +346,8 @@ func (c *Component) ReloadForSource(
 	for i := range tcp {
 		config := &tcp[i]
 		MergeLabels(&config.Base, commonLabels)
-		config.Base.Source = source
-		newChecks[config.Base.Name] = true
+		config.Source = source
+		newChecks[config.Name] = true
 		err := config.Validate()
 		if err != nil {
 			return err
@@ -361,8 +361,8 @@ func (c *Component) ReloadForSource(
 	for i := range tls {
 		config := &tls[i]
 		MergeLabels(&config.Base, commonLabels)
-		config.Base.Source = source
-		newChecks[config.Base.Name] = true
+		config.Source = source
+		newChecks[config.Name] = true
 		err := config.Validate()
 		if err != nil {
 			return err

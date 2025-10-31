@@ -20,7 +20,7 @@ func TestHTTPExporter(t *testing.T) {
 		count++
 		w.WriteHeader(http.StatusOK)
 	}))
-	defer ts.Close()
+	defer ts.Close() //nolint
 
 	port, err := strconv.ParseUint(strings.Split(ts.URL, ":")[2], 10, 16)
 	if err != nil {

@@ -221,7 +221,7 @@ func (c *Component) handlers() {
 				if err != nil {
 					return c.addCheckError(ec, healthcheck, err)
 				}
-				newChecks[config.Base.Name] = true
+				newChecks[config.Name] = true
 			}
 			for i := range payload.TCPChecks {
 				config := payload.TCPChecks[i]
@@ -230,7 +230,7 @@ func (c *Component) handlers() {
 				if err != nil {
 					return c.addCheckError(ec, healthcheck, err)
 				}
-				newChecks[config.Base.Name] = true
+				newChecks[config.Name] = true
 			}
 			for i := range payload.DNSChecks {
 				config := payload.DNSChecks[i]
@@ -239,7 +239,7 @@ func (c *Component) handlers() {
 				if err != nil {
 					return c.addCheckError(ec, healthcheck, err)
 				}
-				newChecks[config.Base.Name] = true
+				newChecks[config.Name] = true
 			}
 			for i := range payload.TLSChecks {
 				config := payload.TLSChecks[i]
@@ -248,7 +248,7 @@ func (c *Component) handlers() {
 				if err != nil {
 					return c.addCheckError(ec, healthcheck, err)
 				}
-				newChecks[config.Base.Name] = true
+				newChecks[config.Name] = true
 			}
 			for i := range payload.CommandChecks {
 				config := payload.CommandChecks[i]
@@ -257,7 +257,7 @@ func (c *Component) handlers() {
 				if err != nil {
 					return c.addCheckError(ec, healthcheck, err)
 				}
-				newChecks[config.Base.Name] = true
+				newChecks[config.Name] = true
 			}
 			err = c.healthcheck.RemoveNonConfiguredHealthchecks(oldChecks, newChecks)
 			if err != nil {

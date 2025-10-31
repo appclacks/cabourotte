@@ -45,10 +45,10 @@ func (c *Configuration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	if (raw.Cert != "" && raw.Key == "") || (raw.Cert == "" && raw.Key != "") {
 		return errors.New("The cert and key options should be configured together")
 	}
-	if !((raw.Key != "" && raw.Cert != "" && raw.Cacert != "") ||
+	if !((raw.Key != "" && raw.Cert != "" && raw.Cacert != "") || //nolint
 		(raw.Key == "" && raw.Cert == "" && raw.Cacert == "")) {
 		return errors.New("Invalid certificates")
-	}
+	} //nolint
 	if (raw.BasicAuth.Username == "" && raw.BasicAuth.Password != "") ||
 		(raw.BasicAuth.Username != "" && raw.BasicAuth.Password == "") {
 		return errors.New("Invalid Basic Auth configuration")
@@ -71,7 +71,7 @@ func (p *BulkPayload) Validate() error {
 	oneOffErrorMsg := "One-off healthchecks are not supported for bulk requests"
 	for _, config := range p.DNSChecks {
 		err := config.Validate()
-		if config.Base.OneOff {
+		if config.OneOff {
 			return errors.New(oneOffErrorMsg)
 		}
 		if err != nil {
@@ -81,7 +81,7 @@ func (p *BulkPayload) Validate() error {
 	}
 	for _, config := range p.TCPChecks {
 		err := config.Validate()
-		if config.Base.OneOff {
+		if config.OneOff {
 			return errors.New(oneOffErrorMsg)
 		}
 		if err != nil {
@@ -91,7 +91,7 @@ func (p *BulkPayload) Validate() error {
 	}
 	for _, config := range p.HTTPChecks {
 		err := config.Validate()
-		if config.Base.OneOff {
+		if config.OneOff {
 			return errors.New(oneOffErrorMsg)
 		}
 		if err != nil {
@@ -101,7 +101,7 @@ func (p *BulkPayload) Validate() error {
 	}
 	for _, config := range p.TLSChecks {
 		err := config.Validate()
-		if config.Base.OneOff {
+		if config.OneOff {
 			return errors.New(oneOffErrorMsg)
 		}
 		if err != nil {
@@ -111,7 +111,7 @@ func (p *BulkPayload) Validate() error {
 	}
 	for _, config := range p.CommandChecks {
 		err := config.Validate()
-		if config.Base.OneOff {
+		if config.OneOff {
 			return errors.New(oneOffErrorMsg)
 		}
 		if err != nil {

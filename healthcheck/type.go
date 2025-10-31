@@ -73,7 +73,7 @@ func (p *Protocol) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	if err := unmarshal(&raw); err != nil {
 		return errors.Wrap(err, "Unable to read the healthcheck protocol")
 	}
-	if raw == "http" {
+	if raw == "http" { //nolint
 		*p = HTTP
 	} else if raw == "https" {
 		*p = HTTPS
@@ -89,7 +89,7 @@ func (p *Protocol) UnmarshalText(text []byte) error {
 		return errors.New(fmt.Sprintf("Invalid protocol %s", text))
 	}
 	s := unQuote(text)
-	if s == "http" {
+	if s == "http" { //nolint
 		*p = HTTP
 	} else if s == "https" {
 		*p = HTTPS
@@ -106,7 +106,7 @@ func (p *Protocol) UnmarshalJSON(text []byte) error {
 
 // MarshalJSON marshal to json a protocol
 func (p Protocol) MarshalJSON() ([]byte, error) {
-	if p == HTTP {
+	if p == HTTP { //nolint
 		return json.Marshal("http")
 	} else if p == HTTPS {
 		return json.Marshal("https")
@@ -183,7 +183,7 @@ func (i *IP) UnmarshalText(text []byte) error {
 	s := unQuote(text)
 	ip := net.ParseIP(s)
 	if ip == nil {
-		return fmt.Errorf("Invalid IP %s with source %s", s, string(text))
+		return fmt.Errorf("invalid IP %s with source %s", s, string(text))
 	}
 	*i = IP(ip)
 	return nil

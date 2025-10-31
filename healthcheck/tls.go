@@ -41,7 +41,7 @@ type TLSHealthcheck struct {
 
 // Validate validates the healthcheck configuration
 func (config *TLSHealthcheckConfiguration) Validate() error {
-	if config.Base.Name == "" {
+	if config.Name == "" {
 		return errors.New("The healthcheck name is missing")
 	}
 	if config.Target == "" {
@@ -53,12 +53,12 @@ func (config *TLSHealthcheckConfiguration) Validate() error {
 	if config.Timeout == 0 {
 		return errors.New("The healthcheck timeout is missing")
 	}
-	if !config.Base.OneOff {
-		if config.Base.Interval < config.Timeout {
+	if !config.OneOff {
+		if config.Interval < config.Timeout {
 			return errors.New("The healthcheck interval should be greater than the timeout")
 		}
 	}
-	if !((config.Key != "" && config.Cert != "") ||
+	if !((config.Key != "" && config.Cert != "") || //nolint
 		(config.Key == "" && config.Cert == "")) {
 		return errors.New("Invalid certificates")
 	}
@@ -72,14 +72,14 @@ func (h *TLSHealthcheck) Base() Base {
 
 // SetSource set the healthcheck source
 func (h *TLSHealthcheck) SetSource(source string) {
-	h.Config.Base.Source = source
+	h.Config.Source = source
 }
 
 // Summary returns an healthcheck summary
 func (h *TLSHealthcheck) Summary() string {
 	summary := ""
-	if h.Config.Base.Description != "" {
-		summary = fmt.Sprintf("TLS healthcheck %s on %s:%d", h.Config.Base.Description, h.Config.Target, h.Config.Port)
+	if h.Config.Description != "" {
+		summary = fmt.Sprintf("TLS healthcheck %s on %s:%d", h.Config.Description, h.Config.Target, h.Config.Port)
 
 	} else {
 		summary = fmt.Sprintf("TLS healthcheck on %s:%d", h.Config.Target, h.Config.Port)
@@ -116,7 +116,7 @@ func (h *TLSHealthcheck) LogError(err error, message string) {
 		zap.String("extra", message),
 		zap.String("target", h.Config.Target),
 		zap.Uint("port", h.Config.Port),
-		zap.String("name", h.Config.Base.Name))
+		zap.String("name", h.Config.Name))
 }
 
 // LogDebug logs a message with context
@@ -124,7 +124,7 @@ func (h *TLSHealthcheck) LogDebug(message string) {
 	h.Logger.Debug(message,
 		zap.String("target", h.Config.Target),
 		zap.Uint("port", h.Config.Port),
-		zap.String("name", h.Config.Base.Name))
+		zap.String("name", h.Config.Name))
 }
 
 // LogInfo logs a message with context
@@ -132,7 +132,7 @@ func (h *TLSHealthcheck) LogInfo(message string) {
 	h.Logger.Info(message,
 		zap.String("target", h.Config.Target),
 		zap.Uint("port", h.Config.Port),
-		zap.String("name", h.Config.Base.Name))
+		zap.String("name", h.Config.Name))
 }
 
 // Execute executes an healthcheck on the given target
@@ -157,9 +157,9 @@ func (h *TLSHealthcheck) Execute(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrapf(err, "TLS connection failed on %s", h.URL)
 	}
-	defer conn.Close()
+	defer conn.Close() //nolint
 	tlsConn := cryptotls.Client(conn, h.TLSConfig)
-	defer tlsConn.Close()
+	defer tlsConn.Close() //nolint
 	err = tlsConn.Handshake()
 	if err != nil {
 		return errors.Wrapf(err, "TLS handshake failed on %s", h.URL)
@@ -174,7 +174,7 @@ func (h *TLSHealthcheck) Execute(ctx context.Context) error {
 		}
 		expirationTimeLimit := time.Now().Add(time.Duration(h.Config.ExpirationDelay))
 		if expirationTime.Before(expirationTimeLimit) {
-			return fmt.Errorf("The certificate for %s will expire at %s", h.URL, expirationTime.String())
+			return fmt.Errorf("the certificate for %s will expire at %s", h.URL, expirationTime.String())
 		}
 	}
 
